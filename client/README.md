@@ -1,56 +1,189 @@
-# Welcome to your Expo app 👋
+# Citations Widget — Client
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo (SDK 57) app with a **development build** (`expo-dev-client`).  
+**Expo Go does not work** for this project — Android and iOS require a one-time native build and install.
 
-## Get started
+---
 
-1. Install dependencies
+## Prerequisites
 
-   ```bash
-   npm install
-   ```
+- **Node.js** 20+ (LTS recommended)
+- **npm** (comes with Node)
+- **Web:** no extra tools
+- **Android emulator or device:**
+  - [Android Studio](https://developer.android.com/studio) with Android SDK, Platform-Tools, and at least one AVD (emulator)
+  - `ANDROID_HOME` set to your SDK path (usually `%LOCALAPPDATA%\Android\Sdk` on Windows)
+  - `platform-tools` on your `PATH` (`adb` must work)
+- **Windows:** native Android builds fail if paths exceed 260 characters (`Filename longer than 260 characters`). Use one of:
+  - Move the repo to a short path (e.g. `C:\dev\citations-widget-app`), or
+  - Create a junction and build from it (no move required):
 
-2. Start the app
+    ```powershell
+    cmd /c mklink /J C:\cwa "C:\Users\navas\Desktop\workplace\personal\citations-widget-app"
+    cd C:\cwa\client
+    npx expo run:android
+    ```
 
-   ```bash
-   npx expo start
-   ```
+    Always run `npx expo run:android` from `C:\cwa\client` on Windows while using this junction.
+  - Or enable [Windows long paths](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation) (admin + restart).
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Optional — API backend (in `../server`):
 
 ```bash
-npm run reset-project
+cd ../server
+npm install
+npm run dev
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Server runs on `http://localhost:3001`. The client talks to it automatically on web/iOS; the Android emulator uses `http://10.0.2.2:3001`.
 
-### Other setup steps
+Optional — override API URL in `client/.env`:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```env
+EXPO_PUBLIC_API_URL=http://localhost:3001
+```
 
-## Learn more
+For a **physical Android device**, use your computer's LAN IP instead of `localhost`, e.g. `http://192.168.1.10:3001`.
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## First time
 
-## Join the community
+From the `client` directory:
 
-Join our community of developers creating universal apps.
+```bash
+npm install
+npx expo-doctor
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+| Target | Native build required? | Command |
+|--------|------------------------|---------|
+| **Web** | No | `npm run web` |
+| **Android emulator** | **Yes** (one-time install of dev build) | `npx expo run:android` |
+| **Physical Android device** | **Yes** (one-time install of dev build) | `npx expo run:android --device` |
+
+**Web** opens in the browser immediately — no Gradle/Xcode step.
+
+**Android emulator / device:** `npx expo run:android` compiles the native app, installs the development build (`com.anonymous.citationswidgetapp`), starts Metro, and launches the app. The first build can take several minutes.
+
+Before running on emulator, start an AVD in Android Studio (**Device Manager → Play**), or let Expo start one for you.
+
+Before running on a physical device:
+
+1. Enable **Developer options** and **USB debugging** on the phone
+2. Connect via USB (or use wireless debugging)
+3. Verify: `adb devices` lists the device
+4. Run: `npx expo run:android --device`
+
+---
+
+## Every time after
+
+### 1. Web
+
+No native build. Same command every time:
+
+```bash
+npm run web
+```
+
+Or:
+
+```bash
+npx expo start --web
+```
+
+Opens at `http://localhost:8081` (or the next free port).
+
+---
+
+### 2. Android emulator
+
+**Native build:** not needed for normal JS/TS changes.  
+**Rebuild** only when you add/remove native dependencies, change `app.json` plugins, or upgrade the Expo SDK:
+
+```bash
+npx expo run:android
+```
+
+**Daily workflow** (dev build already installed on emulator):
+
+**Terminal 1** — start Metro:
+
+```bash
+npm start
+```
+
+**Terminal 2** (optional) — backend:
+
+```bash
+cd ../server && npm run dev
+```
+
+In the Expo terminal, press **`a`** to open on the Android emulator.
+
+Alternative — single command that starts Metro and targets Android:
+
+```bash
+npm run android:start
+```
+
+Then press **`a`** if the app does not open automatically.
+
+> If you see `No development build (com.anonymous.citationswidgetapp) for this project is installed`, run the first-time build: `npx expo run:android`.
+
+---
+
+### 3. Physical Android device
+
+**Native build:** same rules as emulator — rebuild only after native/config changes.
+
+**Daily workflow** (dev build already installed on the phone):
+
+1. Phone and computer on the **same Wi‑Fi**
+2. Set `EXPO_PUBLIC_API_URL` in `.env` to your PC's LAN IP if using the backend (not needed for emulator-only API access)
+3. Start Metro:
+
+```bash
+npm start
+```
+
+4. Open the **Citations Widget** dev build app on the phone (installed during first-time setup)
+5. Scan the QR code from the terminal, or tap the dev-client entry if it appears
+
+To reinstall or update the dev build on the device:
+
+```bash
+npx expo run:android --device
+```
+
+---
+
+## Quick reference
+
+| Case | First time | Every time after | Rebuild when |
+|------|------------|------------------|--------------|
+| **Web** | `npm run web` | `npm run web` | Never (for JS-only work) |
+| **Emulator** | `npx expo run:android` | `npm start` → press **`a`** | Native deps, plugins, SDK upgrade |
+| **Real device** | `npx expo run:android --device` | `npm start` → open dev build on phone | Same as emulator |
+
+## npm scripts
+
+| Script | Command | Use |
+|--------|---------|-----|
+| `npm start` | `expo start --dev-client` | Metro for emulator/device |
+| `npm run web` | `expo start --web` | Browser |
+| `npm run android` | `expo run:android` | Build + install + run on emulator |
+| `npm run android:start` | `expo start --android --dev-client` | Metro, Android-focused |
+| `npm run ios` | `expo run:ios` | macOS + Xcode only |
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `No development build ... is installed` | Run `npx expo run:android` (emulator) or `npx expo run:android --device` (phone) once |
+| `Port 8081 is already in use` | Stop other Metro/Expo processes, or accept another port when prompted |
+| `Filename longer than 260 characters` (Windows) | Build from a short path (`C:\dev\...`) or junction (`C:\cwa\client`), then clean and rebuild: `Remove-Item -Recurse -Force android\app\.cxx, android\app\build, android\build -ErrorAction SilentlyContinue` then `npx expo run:android` |
+| API errors on emulator | Start backend: `cd ../server && npm run dev` |
+| API errors on physical device | Set `EXPO_PUBLIC_API_URL=http://<your-pc-lan-ip>:3001` in `.env` |
+| Stale bundle | `npx expo start --clear` |
