@@ -1,0 +1,331 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Profile - Digital Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#c8c6c3",
+                    "background": "#fbf9f8",
+                    "on-surface-variant": "#44474d",
+                    "surface": "#fbf9f8",
+                    "on-tertiary-container": "#979693",
+                    "primary-fixed-dim": "#b3c8eb",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#b3c8eb",
+                    "surface-variant": "#e4e2e2",
+                    "surface-bright": "#fbf9f8",
+                    "outline-variant": "#c4c6ce",
+                    "surface-container-high": "#eae8e7",
+                    "tertiary-container": "#2e2f2d",
+                    "surface-tint": "#4b5f7e",
+                    "surface-container-highest": "#e4e2e2",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dbd9d9",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#191a18",
+                    "on-background": "#1b1c1c",
+                    "on-surface": "#1b1c1c",
+                    "on-primary-fixed": "#041c37",
+                    "secondary": "#735c00",
+                    "surface-container": "#efeded",
+                    "on-secondary-fixed-variant": "#574500",
+                    "on-primary-container": "#8397b8",
+                    "on-secondary-fixed": "#241a00",
+                    "on-secondary-container": "#745c00",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#f2f0f0",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#d4e3ff",
+                    "outline": "#74777e",
+                    "primary-container": "#1a2f4b",
+                    "on-tertiary-fixed-variant": "#474744",
+                    "secondary-fixed": "#ffe088",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f5f3f3",
+                    "secondary-container": "#fed65b",
+                    "inverse-surface": "#303030",
+                    "on-tertiary-fixed": "#1b1c1a",
+                    "on-primary-fixed-variant": "#334865",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#e4e2de",
+                    "secondary-fixed-dim": "#e9c349",
+                    "primary": "#021a35"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "container-max": "1200px",
+                    "margin-mobile": "20px",
+                    "gutter": "24px",
+                    "unit": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": [
+                            "\"Source Serif 4\""
+                    ],
+                    "body-md": [
+                            "Hanken Grotesk"
+                    ],
+                    "citation-xl": [
+                            "\"Source Serif 4\""
+                    ],
+                    "display-lg-mobile": [
+                            "\"Source Serif 4\""
+                    ],
+                    "display-lg": [
+                            "\"Source Serif 4\""
+                    ],
+                    "label-sm": [
+                            "Hanken Grotesk"
+                    ],
+                    "body-lg": [
+                            "Hanken Grotesk"
+                    ]
+            },
+            "fontSize": {
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "citation-xl": [
+                            "22px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        .shadow-ambient {
+            box-shadow: 0 4px 20px -2px rgba(2, 26, 53, 0.05);
+        }
+        
+        .input-academic {
+            border: none;
+            border-bottom: 1px solid theme('colors.outline-variant');
+            background: transparent;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        
+        .input-academic:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom: 1px solid theme('colors.primary');
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline flat no shadows docked full-width top-0 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full z-50">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary">menu_book</span>
+<h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-inverse-primary">Digital Sanctuary</h1>
+</div>
+</header>
+<main class="max-w-[container-max] mx-auto px-margin-mobile md:px-margin-desktop mt-8 md:mt-16 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Left Column: Profile Edit & Navigation -->
+<div class="md:col-span-4 space-y-12">
+<section class="bg-surface-bright p-8 rounded-lg shadow-ambient relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<h2 class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary mb-6">Scholar Profile</h2>
+<form class="space-y-6">
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">First Name</label>
+<input class="input-academic w-full font-body-md text-body-md text-on-surface transition-colors duration-200" type="text" value="Eleanor">
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">Last Name</label>
+<input class="input-academic w-full font-body-md text-body-md text-on-surface transition-colors duration-200" type="text" value="Vance">
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">Social / URL</label>
+<input class="input-academic w-full font-body-md text-body-md text-on-surface transition-colors duration-200" type="url" value="https://academic-commons.org/evance">
+</div>
+<button class="mt-8 px-6 py-3 bg-primary text-secondary rounded font-label-sm text-label-sm transition-colors duration-200 w-full md:w-auto" type="button">
+                        Save Changes
+                    </button>
+</form>
+</section>
+</div>
+<!-- Right Column: Submissions -->
+<div class="md:col-span-8 space-y-8 mt-12 md:mt-0">
+<div class="flex flex-col border-b border-outline-variant pb-4 gap-4">
+<h2 class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary">My Submissions</h2>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-full font-label-sm text-label-sm">All</button>
+<button class="px-4 py-2 border border-outline text-on-surface rounded-full font-label-sm text-label-sm">Pending</button>
+<button class="px-4 py-2 border border-outline text-on-surface rounded-full font-label-sm text-label-sm">Approved</button>
+<button class="px-4 py-2 border border-outline text-on-surface rounded-full font-label-sm text-label-sm">Rejected</button>
+<button class="px-4 py-2 border border-outline text-on-surface rounded-full font-label-sm text-label-sm">Private</button></div>
+</div>
+<div class="space-y-6">
+<!-- Submission Item 1: Pending -->
+<div class="bg-surface-bright p-6 rounded-lg shadow-ambient group">
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center px-2 py-1 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] mr-1">schedule</span>
+                            Pending Approval
+                        </span>
+<div class="flex gap-2">
+<button aria-label="Edit submission" class="text-outline">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button aria-label="Delete submission" class="text-outline">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<blockquote class="font-citation-xl text-citation-xl text-primary border-l-2 border-outline-variant pl-4 py-2 italic">
+                        "The pursuit of truth is like picking stars; you may never get one in your hands, but they guide you through the dark."
+                    </blockquote>
+<div class="mt-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                        Submitted: Oct 12, 2023
+                    </div>
+</div>
+<!-- Submission Item 2: Approved -->
+<div class="bg-surface-bright p-6 rounded-lg shadow-ambient group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center px-2 py-1 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] mr-1">check_circle</span>
+                            Approved
+                        </span>
+<div class="flex gap-2">
+<button aria-label="Edit submission" class="text-outline">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button aria-label="Delete submission" class="text-outline">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<blockquote class="font-citation-xl text-citation-xl text-primary border-l-2 border-secondary pl-4 py-2 italic">
+                        "In the quiet spaces between thoughts, the most profound revelations are born, untouched by the noise of the world."
+                    </blockquote>
+<div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                            Submitted: Sep 05, 2023
+                        </span>
+<span class="font-label-sm text-label-sm text-outline-variant flex items-center">
+<span class="material-symbols-outlined text-[14px] mr-1">info</span>
+                            Can be removed from public database upon request
+                        </span>
+</div>
+</div>
+<!-- Submission Item 3: Rejected -->
+<div class="bg-surface-bright p-6 rounded-lg shadow-ambient group">
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center px-2 py-1 rounded bg-error-container text-on-error-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] mr-1">cancel</span>
+                            Rejected
+                        </span>
+<div class="flex gap-2">
+<button aria-label="Edit submission" class="text-outline">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button aria-label="Delete submission" class="text-outline">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<blockquote class="font-citation-xl text-citation-xl text-on-surface-variant border-l-2 border-outline-variant pl-4 py-2 italic opacity-70">
+                        "Digital archives will inevitably replace physical texts entirely by 2050."
+                    </blockquote>
+<div class="mt-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                        Submitted: Aug 22, 2023
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-surface dark:bg-surface border-t border-outline-variant dark:border-outline flat no shadows">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 rounded w-full" href="#">
+<span class="material-symbols-outlined mb-1">bookmark</span>
+<span class="font-label-sm text-label-sm">Saved</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 rounded w-full" href="#">
+<span class="material-symbols-outlined mb-1">add_circle</span>
+<span class="font-label-sm text-label-sm">Submit</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 rounded w-full" href="#">
+<span class="material-symbols-outlined mb-1">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-bold relative after:content-[''] after:w-1 after:h-1 after:bg-secondary-container after:rounded-full after:mt-1 p-2 rounded w-full" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+
+</body></html>

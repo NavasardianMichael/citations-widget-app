@@ -1,0 +1,455 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Submit Citation - Digital Sanctuary</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&amp;family=Hanken+Grotesk:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-container-high': '#eae8e7',
+              error: '#ba1a1a',
+              'inverse-on-surface': '#f2f0f0',
+              'surface-variant': '#e4e2e2',
+              'primary-fixed': '#d4e3ff',
+              'on-primary-container': '#8397b8',
+              'primary-fixed-dim': '#b3c8eb',
+              'tertiary-fixed': '#e4e2de',
+              tertiary: '#191a18',
+              secondary: '#735c00',
+              'inverse-primary': '#b3c8eb',
+              'surface-tint': '#4b5f7e',
+              'surface-container-lowest': '#ffffff',
+              'surface-container': '#efeded',
+              'secondary-fixed-dim': '#e9c349',
+              'on-primary': '#ffffff',
+              'inverse-surface': '#303030',
+              'on-error': '#ffffff',
+              'on-surface-variant': '#44474d',
+              'on-tertiary-fixed': '#1b1c1a',
+              'on-secondary-fixed-variant': '#574500',
+              primary: '#021a35',
+              'on-background': '#1b1c1c',
+              'secondary-container': '#fed65b',
+              'on-surface': '#1b1c1c',
+              'on-secondary-container': '#745c00',
+              'tertiary-fixed-dim': '#c8c6c3',
+              'on-tertiary': '#ffffff',
+              'secondary-fixed': '#ffe088',
+              'tertiary-container': '#2e2f2d',
+              'outline-variant': '#c4c6ce',
+              background: '#fbf9f8',
+              surface: '#fbf9f8',
+              'on-primary-fixed-variant': '#334865',
+              'on-error-container': '#93000a',
+              'error-container': '#ffdad6',
+              outline: '#74777e',
+              'surface-bright': '#fbf9f8',
+              'surface-container-highest': '#e4e2e2',
+              'on-secondary': '#ffffff',
+              'on-tertiary-container': '#979693',
+              'on-primary-fixed': '#041c37',
+              'primary-container': '#1a2f4b',
+              'surface-container-low': '#f5f3f3',
+              'on-tertiary-fixed-variant': '#474744',
+              'on-secondary-fixed': '#241a00',
+              'surface-dim': '#dbd9d9',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'container-max': '1200px',
+              'margin-mobile': '20px',
+              unit: '8px',
+              gutter: '24px',
+              'margin-desktop': '64px',
+            },
+            fontFamily: {
+              'display-lg': ['"Source Serif 4"'],
+              'citation-xl': ['"Source Serif 4"'],
+              'body-lg': ['Hanken Grotesk'],
+              'display-lg-mobile': ['"Source Serif 4"'],
+              'body-md': ['Hanken Grotesk'],
+              'label-sm': ['Hanken Grotesk'],
+              'headline-md': ['"Source Serif 4"'],
+            },
+            fontSize: {
+              'display-lg': [
+                '48px',
+                {
+                  lineHeight: '56px',
+                  letterSpacing: '-0.02em',
+                  fontWeight: '700',
+                },
+              ],
+              'citation-xl': [
+                '22px',
+                {
+                  lineHeight: '36px',
+                  fontWeight: '400',
+                },
+              ],
+              'body-lg': [
+                '18px',
+                {
+                  lineHeight: '28px',
+                  fontWeight: '400',
+                },
+              ],
+              'display-lg-mobile': [
+                '32px',
+                {
+                  lineHeight: '40px',
+                  letterSpacing: '-0.01em',
+                  fontWeight: '700',
+                },
+              ],
+              'body-md': [
+                '16px',
+                {
+                  lineHeight: '24px',
+                  fontWeight: '400',
+                },
+              ],
+              'label-sm': [
+                '12px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.05em',
+                  fontWeight: '600',
+                },
+              ],
+              'headline-md': [
+                '24px',
+                {
+                  lineHeight: '32px',
+                  fontWeight: '600',
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: theme('colors.background');
+        color: theme('colors.on-background');
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .level-1-card {
+        background-color: theme('colors.surface-container-low');
+        box-shadow: 0 4px 20px rgba(2, 26, 53, 0.15); /* Primary color at 15% opacity */
+        border-radius: theme('borderRadius.DEFAULT');
+      }
+
+      .paper-input {
+        border: 1px solid theme('colors.outline-variant');
+        background-color: transparent;
+        transition: border-color 0.2s ease;
+        font-family: theme('fontFamily.body-md');
+        border-radius: theme('borderRadius.DEFAULT');
+      }
+
+      .paper-input:focus {
+        outline: none;
+        border-color: theme('colors.primary');
+        box-shadow: 0 0 0 1px theme('colors.primary');
+      }
+
+      .paper-textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+
+      /* Nav highlighting overriding */
+      .nav-item-active::after {
+        content: '';
+        width: 4px;
+        height: 4px;
+        background-color: theme('colors.secondary-container');
+        border-radius: 50%;
+        margin-top: 4px;
+      }
+
+      /* Toggle Switch Styles */
+      .toggle-checkbox:checked {
+        right: 0;
+        border-color: theme('colors.primary');
+      }
+      .toggle-checkbox:checked + .toggle-label {
+        background-color: theme('colors.primary');
+      }
+      .toggle-checkbox:checked + .toggle-label:after {
+        transform: translateX(100%);
+        border-color: white;
+      }
+    </style>
+  </head>
+  <body class="font-body-md text-body-md antialiased pb-24 md:pb-0">
+    <!-- TopAppBar -->
+    <header
+      class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full z-50 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline text-primary dark:text-inverse-primary docked full-width top-0 shadow-none"
+    >
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-2xl">menu_book</span>
+        <h1
+          class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary dark:text-inverse-primary font-extrabold tracking-tight"
+        >
+          Digital Sanctuary
+        </h1>
+      </div>
+      <!-- Desktop Nav (Hidden on Mobile) -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a
+          class="text-on-surface-variant dark:text-surface-variant font-label-sm text-label-sm transition-colors"
+          href="#"
+          >Saved</a
+        >
+        <a
+          class="text-primary dark:text-secondary-fixed font-label-sm text-label-sm font-bold nav-item-active flex flex-col items-center"
+          href="#"
+          >Submit</a
+        >
+        <a
+          class="text-on-surface-variant dark:text-surface-variant font-label-sm text-label-sm transition-colors"
+          href="#"
+          >Settings</a
+        >
+        <a
+          class="text-on-surface-variant dark:text-surface-variant font-label-sm text-label-sm transition-colors"
+          href="#"
+          >Profile</a
+        >
+      </nav>
+      <!-- Mobile Trailing (Avatar only) -->
+      <div
+        class="md:hidden w-8 h-8 rounded-full bg-surface-container-high overflow-hidden"
+      >
+        <img
+          alt="User profile avatar"
+          class="w-full h-full object-cover"
+          data-alt="A small, stylized profile avatar of a scholar in a softly lit, muted cream and midnight blue aesthetic. The illustration should be simple, elegant, and fit perfectly into a minimalist, academic UI design. Focus on soft gradients and subtle shading."
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCikO-osTzP7O1zLvRRrcY8Ux2lXJxOAkhLnMETDgX8xRqkM4XPosXZKhS5e-4gorL8vKmLdV1jZ9XoyAku21d5w6GlcDlT_eKWMg6lWGGCvbmlsPhmjqgWA_-ut6EbrnpC7P37RTGbIYmeKXcmEIpabbuy7Ham1PwKXTZavyCqza0cx_lMVgf1WhdxncnPaQo8ThK5oG-awUnZaStoLMcDmBWKPZ2knySDhp6X52MQT_c0LmCNtfWGMHxnviq0dvF8fMtXZj84iQ"
+        />
+      </div>
+    </header>
+    <!-- Main Content Area -->
+    <main
+      class="flex-grow flex items-center justify-center py-12 px-margin-mobile md:px-margin-desktop"
+    >
+      <div class="w-full max-w-2xl mx-auto">
+        <div class="text-center mb-12">
+          <h2
+            class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-4"
+          >
+            Submit Citation
+          </h2>
+          <p
+            class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto"
+          >
+            Contribute to the sanctuary. All submissions are gently reviewed by
+            our archivists before joining the public collection.
+          </p>
+        </div>
+        <!-- Form Container -->
+        <form class="level-1-card p-6 md:p-10">
+          <!-- Citation Text -->
+          <div class="mb-8">
+            <label
+              class="block font-label-sm text-label-sm text-primary mb-2"
+              for="citationText"
+              >Citation Text</label
+            >
+            <textarea
+              class="paper-input paper-textarea w-full text-citation-xl font-citation-xl text-on-surface placeholder-outline-variant p-4"
+              id="citationText"
+              placeholder="Enter the text to be preserved..."
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Author/Source -->
+            <div>
+              <label
+                class="block font-label-sm text-label-sm text-primary mb-2"
+                for="author"
+                >Author / Source</label
+              >
+              <input
+                class="paper-input w-full text-body-lg font-body-lg text-on-surface placeholder-outline-variant py-2 px-4"
+                id="author"
+                placeholder="e.g., C.S. Lewis"
+                type="text"
+              />
+            </div>
+            <!-- Topic Selection -->
+            <div>
+              <label class="block font-label-sm text-label-sm text-primary mb-3"
+                >Category</label
+              >
+              <div class="flex gap-4">
+                <label class="flex items-center cursor-pointer group">
+                  <input
+                    class="peer sr-only"
+                    name="topic"
+                    type="radio"
+                    value="bible"
+                  />
+                  <span
+                    class="px-4 py-2 border border-outline rounded text-on-surface-variant peer-checked:bg-secondary-container peer-checked:text-on-secondary-container peer-checked:border-secondary-container transition-colors font-body-md text-body-md"
+                  >
+                    Theology
+                  </span>
+                </label>
+                <label class="flex items-center cursor-pointer group">
+                  <input
+                    class="peer sr-only"
+                    name="topic"
+                    type="radio"
+                    value="fiction"
+                  />
+                  <span
+                    class="px-4 py-2 border border-outline rounded text-on-surface-variant peer-checked:bg-secondary-container peer-checked:text-on-secondary-container peer-checked:border-secondary-container transition-colors font-body-md text-body-md"
+                  >
+                    Literature
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <!-- Profile Sharing Toggle -->
+          <div class="mb-10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+              >
+                <input
+                  checked=""
+                  class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-surface-container appearance-none cursor-pointer z-10 transition-transform duration-200 ease-in-out"
+                  id="toggle"
+                  name="toggle"
+                  type="checkbox"
+                />
+                <label
+                  class="toggle-label block overflow-hidden h-5 rounded-full bg-surface-container cursor-pointer transition-colors duration-200 ease-in-out"
+                  for="toggle"
+                ></label>
+              </div>
+              <label
+                class="font-body-md text-body-md text-on-surface-variant cursor-pointer"
+                for="toggle"
+              >
+                Share my profile on other users' widgets if approved
+              </label>
+            </div>
+          </div>
+          <!-- Submit Button Area -->
+          <div
+            class="flex flex-col md:flex-row items-center justify-end pt-6 border-t border-outline-variant/30 gap-4"
+          >
+            <p
+              class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2 mr-auto hidden md:flex"
+            >
+              <span
+                class="material-symbols-outlined text-sm"
+                style="font-variation-settings: 'FILL' 1"
+                >info</span
+              >
+              Submissions pending review
+            </p>
+            <button
+              class="w-full md:w-auto px-6 py-3 border border-outline text-primary rounded font-label-sm text-label-sm transition-colors flex items-center justify-center gap-2"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-lg"
+                >bookmark_add</span
+              >
+              Save to My Custom List
+            </button>
+            <button
+              class="w-full md:w-auto px-6 py-3 bg-primary text-secondary-container rounded font-label-sm text-label-sm transition-colors flex items-center justify-center gap-2"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-lg">history_edu</span>
+              Submit for Review
+            </button>
+          </div>
+        </form>
+        <!-- Decorative Element -->
+        <div class="flex justify-center mt-12 opacity-50">
+          <svg
+            fill="none"
+            height="40"
+            viewbox="0 0 40 40"
+            width="40"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              class="text-secondary-container"
+              d="M20 0L22.5 17.5L40 20L22.5 22.5L20 40L17.5 22.5L0 20L17.5 17.5L20 0Z"
+              fill="currentColor"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </main>
+    <!-- BottomNavBar (Mobile Only) -->
+    <nav
+      class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-surface dark:bg-surface border-t border-outline-variant dark:border-outline shadow-none"
+    >
+      <a
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant font-label-sm text-label-sm transition-all active:scale-90 duration-200 w-16 h-16 rounded-lg"
+        href="#"
+      >
+        <span class="material-symbols-outlined mb-1">bookmark</span>
+        <span class="">Saved</span>
+      </a>
+      <a
+        class="flex flex-col items-center justify-center text-primary dark:text-secondary-fixed font-label-sm text-label-sm transition-all active:scale-90 duration-200 w-16 h-16 rounded-lg nav-item-active"
+        href="#"
+      >
+        <span
+          class="material-symbols-outlined mb-1"
+          style="font-variation-settings: 'FILL' 1"
+          >edit_note</span
+        >
+        <span class="">Submit</span>
+      </a>
+      <a
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant font-label-sm text-label-sm transition-all active:scale-90 duration-200 w-16 h-16 rounded-lg"
+        href="#"
+      >
+        <span class="material-symbols-outlined mb-1">settings</span>
+        <span class="">Settings</span>
+      </a>
+      <a
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant font-label-sm text-label-sm transition-all active:scale-90 duration-200 w-16 h-16 rounded-lg"
+        href="#"
+      >
+        <span class="material-symbols-outlined mb-1">person</span>
+        <span class="">Profile</span>
+      </a>
+    </nav>
+  </body>
+</html>

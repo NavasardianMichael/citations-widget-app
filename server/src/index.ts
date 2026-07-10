@@ -1,29 +1,10 @@
-import cors from "cors";
-import dotenv from "dotenv";
-import express from "express";
+import { config } from "./config.js";
+import { createApp } from "./app.js";
+import { runMigrations } from "./db/client.js";
 
-dotenv.config();
+runMigrations();
 
-const app = express();
-const PORT = Number(process.env.PORT ?? 3001);
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "citations-widget-api" });
-});
-
-app.get("/api/citations", (_req, res) => {
-  res.json([
-    {
-      id: "1",
-      text: "The only way to do great work is to love what you do.",
-      author: "Steve Jobs",
-    },
-  ]);
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+const app = createApp();
+app.listen(config.port, () => {
+  console.log(`Server running on http://localhost:${config.port}`);
 });

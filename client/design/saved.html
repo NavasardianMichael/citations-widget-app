@@ -1,0 +1,521 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Saved Citations - Digital Sanctuary</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'tertiary-fixed-dim': '#c8c6c3',
+              background: '#fbf9f8',
+              'on-surface-variant': '#44474d',
+              surface: '#fbf9f8',
+              'on-tertiary-container': '#979693',
+              'primary-fixed-dim': '#b3c8eb',
+              'error-container': '#ffdad6',
+              'inverse-primary': '#b3c8eb',
+              'surface-variant': '#e4e2e2',
+              'surface-bright': '#fbf9f8',
+              'outline-variant': '#c4c6ce',
+              'surface-container-high': '#eae8e7',
+              'tertiary-container': '#2e2f2d',
+              'surface-tint': '#4b5f7e',
+              'surface-container-highest': '#e4e2e2',
+              'on-tertiary': '#ffffff',
+              'surface-dim': '#dbd9d9',
+              'on-primary': '#ffffff',
+              tertiary: '#191a18',
+              'on-background': '#1b1c1c',
+              'on-surface': '#1b1c1c',
+              'on-primary-fixed': '#041c37',
+              secondary: '#735c00',
+              'surface-container': '#efeded',
+              'on-secondary-fixed-variant': '#574500',
+              'on-primary-container': '#8397b8',
+              'on-secondary-fixed': '#241a00',
+              'on-secondary-container': '#745c00',
+              'on-error-container': '#93000a',
+              'inverse-on-surface': '#f2f0f0',
+              'surface-container-lowest': '#ffffff',
+              'primary-fixed': '#d4e3ff',
+              outline: '#74777e',
+              'primary-container': '#1a2f4b',
+              'on-tertiary-fixed-variant': '#474744',
+              'secondary-fixed': '#ffe088',
+              'on-error': '#ffffff',
+              error: '#ba1a1a',
+              'surface-container-low': '#f5f3f3',
+              'secondary-container': '#fed65b',
+              'inverse-surface': '#303030',
+              'on-tertiary-fixed': '#1b1c1a',
+              'on-primary-fixed-variant': '#334865',
+              'on-secondary': '#ffffff',
+              'tertiary-fixed': '#e4e2de',
+              'secondary-fixed-dim': '#e9c349',
+              primary: '#021a35',
+            },
+            borderRadius: {
+              DEFAULT: '0.125rem',
+              lg: '0.25rem',
+              xl: '0.5rem',
+              full: '0.75rem',
+            },
+            spacing: {
+              'margin-desktop': '64px',
+              'container-max': '1200px',
+              'margin-mobile': '20px',
+              gutter: '24px',
+              unit: '8px',
+            },
+            fontFamily: {
+              'headline-md': ['"Source Serif 4"'],
+              'body-md': ['Hanken Grotesk'],
+              'citation-xl': ['"Source Serif 4"'],
+              'display-lg-mobile': ['"Source Serif 4"'],
+              'display-lg': ['"Source Serif 4"'],
+              'label-sm': ['Hanken Grotesk'],
+              'body-lg': ['Hanken Grotesk'],
+            },
+            fontSize: {
+              'headline-md': [
+                '24px',
+                { lineHeight: '32px', fontWeight: '600' },
+              ],
+              'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+              'citation-xl': [
+                '22px',
+                { lineHeight: '36px', fontWeight: '400' },
+              ],
+              'display-lg-mobile': [
+                '32px',
+                {
+                  lineHeight: '40px',
+                  letterSpacing: '-0.01em',
+                  fontWeight: '700',
+                },
+              ],
+              'display-lg': [
+                '48px',
+                {
+                  lineHeight: '56px',
+                  letterSpacing: '-0.02em',
+                  fontWeight: '700',
+                },
+              ],
+              'label-sm': [
+                '12px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.05em',
+                  fontWeight: '600',
+                },
+              ],
+              'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: theme('colors.background');
+        color: theme('colors.on-background');
+      }
+
+      .shadow-level-1 {
+        box-shadow: 0 4px 20px -2px rgba(2, 26, 53, 0.15); /* Midnight Blue shadow */
+      }
+
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: theme('spacing.gutter');
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen pb-32">
+    <!-- TopAppBar -->
+    <header
+      class="bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline docked full-width top-0 flat no shadows flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full z-50 sticky top-0"
+    >
+      <button
+        aria-label="Menu"
+        class="flex items-center justify-center p-2 text-primary dark:text-inverse-primary hover:text-secondary transition-colors"
+      >
+        <span class="material-symbols-outlined" data-icon="menu_book"
+          >menu_book</span
+        >
+      </button>
+      <h1
+        class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary dark:text-inverse-primary tracking-tight font-extrabold text-center flex-1"
+      >
+        Digital Sanctuary
+      </h1>
+      <button
+        aria-label="User Profile"
+        class="flex items-center justify-center p-2 text-primary dark:text-inverse-primary hover:text-secondary transition-colors"
+      >
+        <img
+          alt="User Avatar"
+          class="w-8 h-8 rounded-full object-cover shadow-level-1"
+          data-alt="A small, circular avatar portrait of a scholarly individual, depicted in a minimalist, light-mode illustration style with muted cream and dark blue tones, consistent with a serene digital sanctuary aesthetic."
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5YNuqTT1-W8h-PtQ3YRsDqxOgiTN3Hr5qr35KhC64hwqgxKmzPIqlkj7sE2on3LLFE9PnXum1e-qOG4naZZwEO0TqQzvqllWvplI_PLLDlgkwSmiMQMXJhTMG5W4wFGuKQj_SNqqwkylUej8PxbqDaesfugmRqesoxZJDDfQZj9h-DRkH1IOCit5yfDktbkfUOesip6N_q99hRU85CiLhiqAFFRrOAjRYn3CcpYbRUxzdeHHM_g3qUUX8Z8VkOC06E_5EBzBxRQ"
+        />
+      </button>
+    </header>
+    <main
+      class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop pt-12"
+    >
+      <section class="mb-12 text-center md:text-left">
+        <h2
+          class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-4"
+        >
+          Saved Citations
+        </h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+          A curated collection of your most cherished passages and academic
+          references.
+        </p>
+      </section>
+      <!-- Bento Grid Layout for Citations -->
+      <div class="bento-grid">
+        <!-- Citation Card 1 - Decorative -->
+        <article
+          class="col-span-12 md:col-span-8 bg-[#fdfaf8] rounded-xl p-8 shadow-level-1 relative overflow-hidden border-l-2 border-secondary group transition-transform duration-300 hover:-translate-y-1"
+        >
+          <!-- Subtle corner ornament -->
+          <div
+            class="absolute top-0 right-0 opacity-10 pointer-events-none p-4"
+          >
+            <span
+              class="material-symbols-outlined text-4xl text-secondary"
+              style="font-variation-settings: 'FILL' 1"
+              >eco</span
+            >
+          </div>
+          <blockquote
+            class="font-citation-xl text-citation-xl text-primary mb-6 italic relative z-10"
+          >
+            "The unexamined life is not worth living, but the examined life is
+            deeply exhausting if you don't take notes."
+          </blockquote>
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-auto"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden"
+              >
+                <img
+                  alt="Author"
+                  class="w-full h-full object-cover"
+                  data-alt="A subtle, minimalist monochrome portrait of Socrates, rendered in fine pencil lines on a cream background, conveying an atmosphere of ancient wisdom and academic study."
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIWE1jhND_dDIdxiHXp8GspyQKg2sbWFhp8kLq2c8emP0NY2xJyrHeQUlrrobVoaPzDvf2hKOUzdMjpAURgLC8wB19Ta_NlrDzLBHF70pO2y8tBIvQP9JyqGv196qnSAbux6ttk3GahBgoK8_ujeA6GIC0TwBVX7ARhNvxJvYIokBbUG1jHqrHTMYfb5EyVxlY1sToTKmQgPQBPEgtkCY4EdXVm2SfSexuesf3QT20wgJxCDuttSbb-uJ1ZmYejgtixr_Q1oCe4A"
+                />
+              </div>
+              <div>
+                <p class="font-body-md text-body-md font-semibold text-primary">
+                  Socrates
+                </p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant">
+                  Apology, 38a
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="px-3 py-1 bg-[#fdf5d3] text-[#745c00] rounded-DEFAULT font-label-sm text-label-sm"
+                >#Philosophy</span
+              >
+              <button
+                aria-label="Remove from Saved"
+                class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-error-container/20 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-sm"
+                  data-icon="bookmark_remove"
+                  >bookmark_remove</span
+                >
+              </button>
+            </div>
+          </div>
+        </article>
+        <!-- Citation Card 2 - Minimalist -->
+        <article
+          class="col-span-12 md:col-span-4 bg-[#fdfaf8] rounded-xl p-8 shadow-level-1 flex flex-col transition-transform duration-300 hover:-translate-y-1"
+        >
+          <blockquote
+            class="font-body-lg text-body-lg text-primary mb-8 flex-1"
+          >
+            "Faith is taking the first step even when you don't see the whole
+            staircase."
+          </blockquote>
+          <div class="mt-auto border-t border-[#e4e2e2] pt-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-body-md text-body-md font-semibold text-primary">
+                  Martin Luther King Jr.
+                </p>
+              </div>
+              <button
+                aria-label="Remove from Saved"
+                class="text-on-surface-variant hover:text-error transition-colors flex items-center"
+              >
+                <span
+                  class="material-symbols-outlined text-sm"
+                  data-icon="delete"
+                  >delete</span
+                >
+              </button>
+            </div>
+          </div>
+        </article>
+        <!-- Citation Card 3 - Image Background -->
+        <article
+          class="col-span-12 md:col-span-12 rounded-xl p-10 shadow-level-1 relative overflow-hidden flex flex-col justify-center items-center text-center min-h-[300px] transition-transform duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="absolute inset-0 bg-cover bg-center opacity-90 mix-blend-multiply z-0"
+            data-alt="A moody, low-contrast landscape of a misty forest at dawn, rendered in muted dark blues and deep creams to serve as an atmospheric, unobtrusive background for academic text, conveying a sense of profound stillness."
+            style="
+              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuANs8UG5iUnf1M6hD4UHPtNENwM3edBP06yo7zMHq1ruzLkxx2iB2ZuUDVppoU0ure6MhxRJGGSkQWMT-RH2YJj6FeS2KXuMMYE4SFY4yL1o_dB9Jl85FLGXc977KcSXRsfJWqi_EzyBBRyFRWXgyS6g-XTf8lhdSs1cZQ859bWzic0y4Fw0R0Qh4kQM8hbRfeqHGnJ0qe3tr0fIpQDw29p-uRcD-UHA1G-U13BELGt0Xff1YhVmv1LveofMuGVy3QLy7d5KeqNEA');
+            "
+          ></div>
+          <div class="absolute inset-0 bg-primary/80 z-0"></div>
+          <!-- Overlay for contrast -->
+          <div class="relative z-10 max-w-3xl">
+            <span
+              class="material-symbols-outlined text-secondary mb-4 text-3xl opacity-80"
+              data-icon="format_quote"
+              style="font-variation-settings: 'FILL' 1"
+              >format_quote</span
+            >
+            <blockquote
+              class="font-citation-xl text-citation-xl text-white mb-6 leading-relaxed"
+            >
+              "For the things we have to learn before we can do them, we learn
+              by doing them."
+            </blockquote>
+            <p
+              class="font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase mb-6"
+            >
+              — Aristotle, Nicomachean Ethics
+            </p>
+            <button
+              class="inline-flex items-center gap-2 border border-secondary text-white hover:bg-secondary/10 px-4 py-2 rounded-lg font-label-sm text-label-sm transition-colors"
+            >
+              <span
+                class="material-symbols-outlined text-sm"
+                data-icon="bookmark_remove"
+                >bookmark_remove</span
+              >
+              REMOVE
+            </button>
+          </div>
+        </article>
+        <!-- Citation Card 4 - Minimalist -->
+        <article
+          class="col-span-12 md:col-span-6 bg-[#fdfaf8] rounded-xl p-8 shadow-level-1 flex flex-col transition-transform duration-300 hover:-translate-y-1"
+        >
+          <div class="mb-4">
+            <span
+              class="px-3 py-1 bg-[#fdf5d3] text-[#745c00] rounded-DEFAULT font-label-sm text-label-sm mr-2"
+              >#Theology</span
+            >
+            <span
+              class="px-3 py-1 bg-[#fdf5d3] text-[#745c00] rounded-DEFAULT font-label-sm text-label-sm"
+              >#Nature</span
+            >
+          </div>
+          <blockquote
+            class="font-body-lg text-body-lg text-primary mb-8 flex-1"
+          >
+            "There are two books laid before us to study, to prevent our falling
+            into error; first, the volume of the Scriptures, which reveal the
+            will of God; then the volume of the Creatures, which express His
+            power."
+          </blockquote>
+          <div class="mt-auto border-t border-[#e4e2e2] pt-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-body-md text-body-md font-semibold text-primary">
+                  Francis Bacon
+                </p>
+              </div>
+              <button
+                aria-label="Remove from Saved"
+                class="text-on-surface-variant hover:text-error transition-colors flex items-center"
+              >
+                <span
+                  class="material-symbols-outlined text-sm"
+                  data-icon="delete"
+                  >delete</span
+                >
+              </button>
+            </div>
+          </div>
+        </article>
+        <!-- Citation Card 5 - Decorative -->
+        <article
+          class="col-span-12 md:col-span-6 bg-[#fdfaf8] rounded-xl p-8 shadow-level-1 relative overflow-hidden border-l-2 border-secondary group transition-transform duration-300 hover:-translate-y-1"
+        >
+          <blockquote
+            class="font-citation-xl text-citation-xl text-primary mb-6 italic relative z-10"
+          >
+            "Read not to contradict and confute; nor to believe and take for
+            granted; nor to find talk and discourse; but to weigh and consider."
+          </blockquote>
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-auto"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-headline-md"
+              >
+                B
+              </div>
+              <div>
+                <p class="font-body-md text-body-md font-semibold text-primary">
+                  Francis Bacon
+                </p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant">
+                  Of Studies
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                aria-label="Remove from Saved"
+                class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-error-container/20 flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-sm"
+                  data-icon="bookmark_remove"
+                  >bookmark_remove</span
+                >
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+    <!-- BottomNavBar -->
+    <nav
+      class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-surface dark:bg-surface border-t border-outline-variant dark:border-outline flat no shadows"
+    >
+      <a
+        class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-bold relative after:content-[''] after:w-1 after:h-1 after:bg-secondary-container after:rounded-full after:mt-1 transition-all active:scale-90 duration-200 p-2 rounded-lg w-16"
+        href="#"
+      >
+        <span
+          class="material-symbols-outlined mb-1"
+          data-icon="bookmark"
+          style="font-variation-settings: 'FILL' 1"
+          >bookmark</span
+        >
+        <span class="font-label-sm text-label-sm">Saved</span>
+      </a>
+      <a
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant transition-all active:scale-90 duration-200 p-2 rounded-lg w-16"
+        href="#"
+      >
+        <span class="material-symbols-outlined mb-1" data-icon="edit"
+          >edit</span
+        >
+        <span class="font-label-sm text-label-sm">Submit</span>
+      </a>
+      <a
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant transition-all active:scale-90 duration-200 p-2 rounded-lg w-16"
+        href="#"
+      >
+        <span class="material-symbols-outlined mb-1" data-icon="settings"
+          >settings</span
+        >
+        <span class="font-label-sm text-label-sm">Settings</span>
+      </a>
+      <a
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant transition-all active:scale-90 duration-200 p-2 rounded-lg w-16"
+        href="#"
+      >
+        <span class="material-symbols-outlined mb-1" data-icon="person"
+          >person</span
+        >
+        <span class="font-label-sm text-label-sm">Profile</span>
+      </a>
+    </nav>
+    <!-- Desktop Side Nav (Implied by semantic shell mandate for hidden bottom nav on desktop, simplified here as a floating action or omitted to favor the wide margin, but adding a subtle desktop nav variant if needed for full compliance, typically TopAppBar suffices if BottomNav is hidden, but let's ensure we follow the "Platform & Layout" pivot.) -->
+    <div
+      class="hidden md:flex fixed left-0 top-16 bottom-0 w-[240px] bg-surface border-r border-outline-variant flex-col py-8 px-4 gap-2 z-40"
+    >
+      <a
+        class="flex items-center gap-4 text-primary font-bold p-3 rounded-lg bg-surface-container-low relative after:content-[''] after:absolute after:left-0 after:top-2 after:bottom-2 after:w-1 after:bg-secondary after:rounded-r-full hover:bg-surface-container-low transition-colors"
+        href="#"
+      >
+        <span
+          class="material-symbols-outlined"
+          data-icon="bookmark"
+          style="font-variation-settings: 'FILL' 1"
+          >bookmark</span
+        >
+        <span class="font-body-md text-body-md">Saved</span>
+      </a>
+      <a
+        class="flex items-center gap-4 text-on-surface-variant p-3 rounded-lg hover:bg-surface-container-low transition-colors"
+        href="#"
+      >
+        <span class="material-symbols-outlined" data-icon="edit">edit</span>
+        <span class="font-body-md text-body-md">Submit</span>
+      </a>
+      <a
+        class="flex items-center gap-4 text-on-surface-variant p-3 rounded-lg hover:bg-surface-container-low transition-colors mt-auto"
+        href="#"
+      >
+        <span class="material-symbols-outlined" data-icon="settings"
+          >settings</span
+        >
+        <span class="font-body-md text-body-md">Settings</span>
+      </a>
+      <a
+        class="flex items-center gap-4 text-on-surface-variant p-3 rounded-lg hover:bg-surface-container-low transition-colors"
+        href="#"
+      >
+        <span class="material-symbols-outlined" data-icon="person">person</span>
+        <span class="font-body-md text-body-md">Profile</span>
+      </a>
+    </div>
+    <!-- Adjust main container margin for desktop sidebar -->
+    <style>
+      @media (min-width: 768px) {
+        main {
+          padding-left: 280px; /* 240px sidebar + gutter */
+          max-width: 1440px; /* Expand max width to accommodate side nav */
+        }
+      }
+    </style>
+  </body>
+</html>
