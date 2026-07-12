@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "Citations Widget",
+    "name": "Digital Sanctuary",
     "slug": "citations-widget-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "citationswidget",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -37,8 +38,7 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }

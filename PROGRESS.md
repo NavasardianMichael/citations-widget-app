@@ -95,37 +95,29 @@ server/data/citations.db   # runtime file, gitignored
 
 </details>
 
-## Status as of last session (2026-07-10, ~20:00)
+## Status as of last session (2026-07-11)
 
-### ✅ Done
+### ✅ Phase 1 complete
 
-**Backend (`server/`) — schema, migrations, routes all written; NOT yet seeded or smoke-tested end-to-end:**
-- Installed: `drizzle-orm`, `better-sqlite3`, `zod`, `drizzle-kit` (dev), `@types/better-sqlite3` (dev). Confirmed `better-sqlite3` native binary loads fine on this machine (Node 24).
-- `server/src/config.ts` — env config, calls `dotenv.config()` itself (self-sufficient regardless of import order).
-- `server/src/db/schema.ts` — all 4 tables per plan.
-- `server/drizzle.config.ts` + generated migration at `server/drizzle/0000_silly_wrecker.sql` (verified matches schema: 4 tables, FKs correct).
-- `server/src/db/client.ts` — better-sqlite3 connection (WAL mode, foreign_keys ON), `runMigrations()`.
-- `server/src/middleware/resolve-user.ts` — `x-device-id` header pseudo-auth, find-or-creates `users` row, sets `req.userId` (Express `Request` type augmented via `declare global`).
-- `server/src/middleware/error-handler.ts` — `HttpError` class, `notFound`, `errorHandler` (handles `ZodError` → 400 with issues).
-- `server/src/services/widget-citation-picker.ts` — `pickCitationForPool()` with the mixed-pool coin-flip logic.
-- `server/src/routes/{health,citations,saved,widget,profile,index}.ts` — full API surface per the table above.
-- `server/src/app.ts` — express factory (cors, json, `/api` mount, notFound, errorHandler).
-- `server/src/index.ts` — rewritten entrypoint (runs migrations, then listens).
-- `server/.gitignore` updated (added `data/*.db*`). `server/.env.example` added.
-- `server/package.json` — added `db:generate`/`db:seed`/`db:studio` scripts.
-- **`npx tsc --noEmit` passes clean** in `server/` (had to fix an Express 5 route-param typing quirk: `.patch()`/`.delete()` don't narrow `req.params.id` to `string` the way `.get()` does — fixed with explicit `as string` casts in `citations.ts`).
-- Seed data prepared on disk:
-  - `server/data/seed/kjv.json` — **full public-domain KJV, 31,100 verses**, downloaded from `thiagobodruk/bible` (GitHub) and normalized to `{id, book, chapter, verse, sourceRef, text}[]`. IDs like `bible-john-3-16`.
-  - `server/data/seed/fiction-quotes.json` — 30 hand-curated, carefully fact-checked public-domain literary/philosophical quotes (Socrates through Seneca; deliberately avoided commonly-misattributed "quotes" from Twain/Emerson/Wilde that don't actually verify against their published works). Shape: `{id, author, sourceRef, text, tags}[]`.
+**Backend (`server/`):**
+- Added `server/src/scripts/migrate.ts` + `npm run db:migrate`; `db:seed` now chains migrate automatically.
+- Database seeded: **31,100** Bible verses + **30** fiction quotes (31,130 total).
+- All API routes smoke-tested (health, citations, saved, widget-settings, widget/citation, widget/preview, profile).
 
-### 🚧 Not done yet — pick up here
+**Client (`client/`) — full Digital Sanctuary in-app product:**
+- NativeWind v4 + Tailwind 3.4 with M3 design tokens from `client/design/` mockups.
+- Google Fonts: Source Serif 4 + Hanken Grotesk via `useFonts()` in `_layout.tsx`.
+- `app.json`: light-only, tablet support (`orientation: default`, `ios.supportsTablet`).
+- Device identity: `expo-secure-store` (native) / `localStorage` (web) → `x-device-id` header.
+- Full API client in `src/services/api.ts` + `widget-settings.ts`.
+- 4 tabs: Saved (default), Submit, Settings, Profile — bottom bar on mobile, left sidebar on web `md:+`.
+- Shared components: cards, citation cards (bento variants), settings controls, widget preview, forms.
+- All 4 screens wired to real backend APIs.
+- `npx tsc --noEmit` passes. Web static export verified (`npx expo export --platform web`).
 
-1. **`server/src/scripts/seed.ts`** — now written (reads both seed JSON files, inserts via `db.transaction()` in batches of 500 with `.onConflictDoNothing()`, `status: "approved"`, `submittedByUserId: null`). Type-checks clean. **NOT yet run successfully** — see blocker below.
-2. **CURRENT BLOCKER**: ran `npm run db:seed` directly (before ever booting the server) → `SqliteError: no such table: citations`. Root cause: migrations only run inside `server/src/index.ts` (`runMigrations()` at boot) — a fresh `server/data/citations.db` has no tables until the server has been started at least once, or migrations are run standalone. **Fix**: either (a) run `npm run dev` briefly first (Ctrl+C after it logs "Server running on..."), then re-run `npm run db:seed`, or (b) cleaner — add a tiny standalone `db:migrate` script that just calls `runMigrations()` without booting Express, and call that from `db:seed` too so seeding never depends on the server having been started. Do (b) if picking this up fresh; it's a 5-minute fix and more robust.
-3. **Run `npm run db:seed`** once migrations are applied, then sanity check row counts (`npm run db:studio` or a quick query) — expect 31,100 + 30 = 31,130 approved citations.
-4. **Smoke-test the running server** (`npm run dev` in `server/`, then hit routes with curl/`Invoke-RestMethod`, remembering `x-device-id` header is required on device-scoped routes — any UUID string works for manual testing).
-5. **Everything client-side is still the stock starter template — none of the plan's client work has started yet**: NativeWind install, font loading, navigation restructure (4 tabs), shared components, the 4 real screens, tablet responsiveness, `app.json` changes. See the full plan above for exact specifics on each.
-6. Final: run `/verify` (or equivalent manual pass) once client screens exist and are wired to the real API.
+### 🚧 Phase 2 (not started)
+
+Native home-screen widgets: iOS (`expo-widgets`) + Android (`react-native-android-widget`). Will read persisted `widget_settings` + `GET /api/widget/citation` rotation logic already on the server.
 
 ### Notes / gotchas hit so far (don't rediscover these)
 

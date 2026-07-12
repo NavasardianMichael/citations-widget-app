@@ -3,7 +3,10 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@expo-google-fonts/hanken-grotesk": "^0.4.3",
+    "@expo-google-fonts/source-serif-4": "^0.4.1",
     "@expo/ui": "~57.0.4",
+    "@expo/vector-icons": "^15.1.1",
     "expo": "~57.0.4",
     "expo-constants": "~57.0.3",
     "expo-dev-client": "~57.0.5",
@@ -13,11 +16,13 @@
     "expo-image": "~57.0.0",
     "expo-linking": "~57.0.2",
     "expo-router": "~57.0.4",
+    "expo-secure-store": "^57.0.0",
     "expo-splash-screen": "~57.0.2",
     "expo-status-bar": "~57.0.0",
     "expo-symbols": "~57.0.0",
     "expo-system-ui": "~57.0.0",
     "expo-web-browser": "~57.0.0",
+    "nativewind": "^4.2.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
@@ -26,16 +31,17 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.10.0"
+    "react-native-worklets": "0.10.0",
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start --dev-client",
+    "start": "powershell -ExecutionPolicy Bypass -File ./run-start.ps1",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
+    "android": "powershell -ExecutionPolicy Bypass -File ./run-android.ps1",
     "android:start": "expo start --android --dev-client",
     "ios": "expo run:ios",
     "web": "expo start --web",

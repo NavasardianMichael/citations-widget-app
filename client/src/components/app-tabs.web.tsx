@@ -1,115 +1,91 @@
-import {
-  Tabs,
-  TabList,
-  TabTrigger,
-  TabSlot,
-  TabTriggerSlotProps,
-  TabListProps,
-} from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
+import { type Href } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Tabs, TabList, TabSlot, TabTrigger, type TabTriggerSlotProps } from "expo-router/ui";
+import { Pressable, Text, View } from "react-native";
 
-import { ExternalLink } from './external-link';
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
+import { useBreakpoint } from "@/hooks/use-breakpoint";
+import { pressableNoRipple } from "@/constants/pressable";
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+const TABS: { name: string; href: Href; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
+  { name: "index", href: "/", label: "Saved", icon: "bookmark" },
+  { name: "submit", href: "/submit", label: "Submit", icon: "edit" },
+  { name: "settings", href: "/settings", label: "Settings", icon: "settings" },
+  { name: "profile", href: "/profile", label: "Profile", icon: "person" },
+];
 
 export default function AppTabs() {
+  const { isMd } = useBreakpoint();
+
+  if (isMd) {
+    return (
+      <Tabs>
+        <View className="min-h-screen flex-1 flex-row bg-background">
+          <TabList asChild>
+            <View className="w-56 shrink-0 border-r border-outline-variant bg-surface px-4 py-8">
+              <Text className="mb-8 px-3 font-headline-md text-headline-md text-primary">Digital Sanctuary</Text>
+              {TABS.map((tab) => (
+                <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
+                  <SidebarTab icon={tab.icon} label={tab.label} />
+                </TabTrigger>
+              ))}
+            </View>
+          </TabList>
+          <View className="flex-1">
+            <TabSlot style={{ flex: 1, height: "100%" }} />
+          </View>
+        </View>
+      </Tabs>
+    );
+  }
+
   return (
     <Tabs>
-      <TabSlot style={{ height: '100%' }} />
+      <TabSlot style={{ flex: 1, paddingBottom: 72 }} />
       <TabList asChild>
-        <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
-          </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
-          </TabTrigger>
-        </CustomTabList>
+        <View className="fixed bottom-0 left-0 right-0 z-50 flex-row items-center justify-between border-t border-outline-variant bg-surface px-margin-mobile py-2">
+          {TABS.map((tab) => (
+            <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
+              <BottomTab icon={tab.icon} label={tab.label} />
+            </TabTrigger>
+          ))}
+        </View>
       </TabList>
     </Tabs>
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+function SidebarTab({
+  icon,
+  label,
+  isFocused,
+  ...props
+}: TabTriggerSlotProps & { icon: keyof typeof MaterialIcons.glyphMap; label: string }) {
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
-          {children}
-        </ThemedText>
-      </ThemedView>
+    <Pressable
+      {...pressableNoRipple}
+      {...props}
+      className={`mb-1 flex-row items-center gap-3 rounded-lg px-3 py-3 ${isFocused ? "bg-primary-fixed" : ""}`}
+      accessibilityRole="tab"
+    >
+      <MaterialIcons name={icon} size={20} color={isFocused ? "#021a35" : "#44474d"} />
+      <Text className={`font-body-md text-body-md ${isFocused ? "text-primary" : "text-on-surface-variant"}`}>{label}</Text>
     </Pressable>
   );
 }
 
-export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
+function BottomTab({
+  icon,
+  label,
+  isFocused,
+  ...props
+}: TabTriggerSlotProps & { icon: keyof typeof MaterialIcons.glyphMap; label: string }) {
+  const color = isFocused ? "#021a35" : "#44474d";
   return (
-    <View {...props} style={styles.tabListContainer}>
-      <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
-        </ThemedText>
-
-        {props.children}
-
-        <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
-            <SymbolView
-              tintColor={colors.text}
-              name={{ ios: 'arrow.up.right.square', web: 'link' }}
-              size={12}
-            />
-          </Pressable>
-        </ExternalLink>
-      </ThemedView>
-    </View>
+    <Pressable {...pressableNoRipple} {...props} className="min-h-11 flex-1 items-center justify-center gap-1" accessibilityRole="tab">
+      <MaterialIcons name={icon} size={22} color={color} />
+      <Text className="font-label-sm text-label-sm" style={{ color }}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  tabListContainer: {
-    position: 'absolute',
-    width: '100%',
-    padding: Spacing.three,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  innerContainer: {
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.five,
-    borderRadius: Spacing.five,
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexGrow: 1,
-    gap: Spacing.two,
-    maxWidth: MaxContentWidth,
-  },
-  brandText: {
-    marginRight: 'auto',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
-  },
-  externalPressable: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.one,
-    marginLeft: Spacing.three,
-  },
-});

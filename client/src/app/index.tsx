@@ -1,132 +1,89 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { fetchCitations, fetchHealth } from '@/services/api';
-import type { Citation } from '@/types/citation';
+import { CitationCard, type CitationCardVariant } from "@/components/citation-card";
+import { TopAppBar } from "@/components/top-app-bar";
+import { useBreakpoint } from "@/hooks/use-breakpoint";
+import { fetchSavedCitations, unsaveCitation } from "@/services/api";
+import type { Citation } from "@/types/citation";
 
-export default function HomeScreen() {
-  const [serverStatus, setServerStatus] = useState<'loading' | 'connected' | 'error'>('loading');
+const VARIANT_CYCLE: CitationCardVariant[] = ["decorative", "minimalist", "featured", "decorative", "minimalist"];
+
+export default function SavedScreen() {
+  const { isMd } = useBreakpoint();
   const [citations, setCitations] = useState<Citation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadData() {
-      try {
-        const [health, items] = await Promise.all([fetchHealth(), fetchCitations()]);
-        if (!isMounted) {
-          return;
-        }
-
-        setServerStatus(health.status === 'ok' ? 'connected' : 'error');
-        setCitations(items);
-      } catch {
-        if (isMounted) {
-          setServerStatus('error');
-        }
-      }
+  const loadSaved = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchSavedCitations();
+      setCitations(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load saved citations");
+    } finally {
+      setLoading(false);
     }
-
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
-  const firstCitation = citations[0];
+  useFocusEffect(
+    useCallback(() => {
+      loadSaved();
+    }, [loadSaved]),
+  );
+
+  async function handleUnsave(id: string) {
+    await unsaveCitation(id);
+    setCitations((prev) => prev.filter((c) => c.id !== id));
+  }
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Citations Widget
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.subtitle}>
-            Expo SDK 57 + Express API
-          </ThemedText>
-        </ThemedView>
+    <View className="flex-1 bg-background">
+      <TopAppBar title="Digital Sanctuary" showBrandIcon />
+      <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
+        <View className="mx-auto w-full max-w-[1200px] px-margin-mobile pt-8 md:px-margin-desktop md:pt-12">
+          <View className={`mb-12 ${isMd ? "items-start" : "items-center"}`}>
+            <Text className={`mb-4 font-display-lg text-display-lg-mobile text-primary md:text-display-lg ${isMd ? "text-left" : "text-center"}`}>
+              Saved Citations
+            </Text>
+            <Text className={`max-w-2xl font-body-lg text-body-lg text-on-surface-variant ${isMd ? "text-left" : "text-center"}`}>
+              A curated collection of your most cherished passages and academic references.
+            </Text>
+          </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="API status"
-            hint={
-              serverStatus === 'loading' ? (
-                <ActivityIndicator />
-              ) : (
-                <ThemedText type="code">
-                  {serverStatus === 'connected' ? 'connected' : 'offline'}
-                </ThemedText>
-              )
-            }
-          />
-          {firstCitation ? (
-            <HintRow
-              title="Sample citation"
-              hint={
-                <ThemedText type="small">
-                  “{firstCitation.text}” — {firstCitation.author}
-                </ThemedText>
-              }
-            />
-          ) : null}
-          <HintRow
-            title="Start server"
-            hint={<ThemedText type="code">cd server && npm run dev</ThemedText>}
-          />
-          <HintRow
-            title="Run on Android"
-            hint={<ThemedText type="code">cd client && npm run android</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          {loading ? (
+            <ActivityIndicator size="large" color="#021a35" className="py-12" />
+          ) : error ? (
+            <Text className="text-center text-error">{error}</Text>
+          ) : citations.length === 0 ? (
+            <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12">
+              <Text className="mb-2 text-center font-headline-md text-headline-md text-primary">No saved citations yet</Text>
+              <Text className="text-center font-body-md text-body-md text-on-surface-variant">
+                Bookmark passages from Settings preview or save your own private submissions.
+              </Text>
+            </View>
+          ) : (
+            <View className="flex-row flex-wrap gap-gutter">
+              {citations.map((citation, index) => {
+                const variant = VARIANT_CYCLE[index % VARIANT_CYCLE.length];
+                const spanClass = variant === "featured" ? "w-full" : variant === "minimalist" ? "w-full md:w-4/12" : "w-full md:w-8/12";
+                return (
+                  <CitationCard
+                    key={citation.id}
+                    citation={citation}
+                    variant={variant}
+                    className={spanClass}
+                    onUnsave={() => handleUnsave(citation.id)}
+                  />
+                );
+              })}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.two,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  subtitle: {
-    textAlign: 'center',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});

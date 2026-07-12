@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { db } from "../db/client.js";
+import { db, runMigrations } from "../db/client.js";
 import { citations } from "../db/schema.js";
+
+runMigrations();
 
 type KjvVerse = {
   id: string;

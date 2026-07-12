@@ -115,6 +115,7 @@ const patchSchema = z.object({
   text: z.string().min(1).max(2000).optional(),
   author: z.string().min(1).max(200).nullable().optional(),
   sourceRef: z.string().min(1).max(200).nullable().optional(),
+  sourceType: z.enum(["bible", "fiction"]).optional(),
   tags: z.array(z.string()).optional(),
   shareProfile: z.boolean().optional(),
 });

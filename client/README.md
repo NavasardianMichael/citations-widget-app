@@ -14,18 +14,15 @@ Expo (SDK 57) app with a **development build** (`expo-dev-client`).
   - [Android Studio](https://developer.android.com/studio) with Android SDK, Platform-Tools, and at least one AVD (emulator)
   - `ANDROID_HOME` set to your SDK path (usually `%LOCALAPPDATA%\Android\Sdk` on Windows)
   - `platform-tools` on your `PATH` (`adb` must work)
-- **Windows:** native Android builds fail if paths exceed 260 characters (`Filename longer than 260 characters`). Use one of:
-  - Move the repo to a short path (e.g. `C:\dev\citations-widget-app`), or
-  - Create a junction and build from it (no move required):
+- **Windows:** native Android builds and Metro fail if paths exceed 260 characters. **Junctions (`C:\cwa`) do not fix this** — Node still resolves to the long Desktop path. This project uses a `subst` drive instead:
 
-    ```powershell
-    cmd /c mklink /J C:\cwa "C:\Users\navas\Desktop\workplace\personal\citations-widget-app"
-    cd C:\cwa\client
-    npx expo run:android
-    ```
+  ```powershell
+  cd client
+  npm run android   # maps W: automatically, builds, installs
+  npm start         # Metro from W:\client
+  ```
 
-    Always run `npx expo run:android` from `C:\cwa\client` on Windows while using this junction.
-  - Or enable [Windows long paths](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation) (admin + restart).
+  Scripts `run-android.ps1` / `run-start.ps1` call `ensure-windows-path.ps1` which runs `subst W: <repo-root>`. All tooling then uses `W:\client` (short paths). Alternatively: move the repo to e.g. `C:\dev\citations-widget-app`, or enable [Windows long paths](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation) (admin + restart).
 
 Optional — API backend (in `../server`):
 
