@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
@@ -8,6 +8,7 @@ import { FilterPill } from "@/components/filter-pill";
 import { FormField } from "@/components/form-field";
 import { SubmissionCard } from "@/components/submission-card";
 import { TopAppBar } from "@/components/top-app-bar";
+import { useAuth } from "@/contexts/auth-context";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { deleteCitation, fetchMyCitations, fetchProfile, updateCitation, updateProfile } from "@/services/api";
 import type { CitationStatus, OwnedCitation, UserProfile } from "@/types/citation";
@@ -22,6 +23,8 @@ const FILTER_OPTIONS: { value: "all" | CitationStatus; label: string }[] = [
 
 export default function ProfileScreen() {
   const { isMd } = useBreakpoint();
+  const { signOut } = useAuth();
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -140,7 +143,18 @@ export default function ProfileScreen() {
         disabled={saving}
         className="mt-2 w-full md:w-auto"
       />
-      {profile ? <Text className="mt-4 text-sm text-on-surface-variant">Device ID: {profile.id.slice(0, 8)}…</Text> : null}
+      {profile && "email" in profile && profile.email ? (
+        <Text className="mt-4 text-sm text-on-surface-variant">Signed in as {String(profile.email)}</Text>
+      ) : null}
+      <Button
+        label="Sign out"
+        variant="secondary"
+        onPress={async () => {
+          await signOut();
+          router.replace("/auth/login");
+        }}
+        className="mt-4 w-full md:w-auto"
+      />
     </View>
   );
 

@@ -1,41 +1,37 @@
+import type { Citation } from "@prisma/client";
 import { Router } from "express";
-import { and, eq, or } from "drizzle-orm";
 
-import { db } from "../db/client.js";
-import { citations, savedCitations } from "../db/schema.js";
-import { resolveUser } from "../middleware/resolve-user.js";
+import { prisma } from "../db/index.js";
+import { requireAuth } from "../middleware/require-auth.js";
 
 export const savedRouter = Router();
-savedRouter.use(resolveUser);
+savedRouter.use(requireAuth);
 
-function toPublicCitation(row: typeof citations.$inferSelect) {
+function toPublicCitation(row: Citation) {
   return {
     id: row.id,
     text: row.text,
     author: row.author,
     sourceRef: row.sourceRef,
     sourceType: row.sourceType,
-    tags: row.tags,
-    createdAt: row.createdAt,
+    tags: row.tags as string[],
+    createdAt: row.createdAt.toISOString(),
   };
 }
 
-// The Saved screen shows the union of: citations the user explicitly bookmarked,
-// plus the user's own "private" (save-to-custom-list) submissions — those never
-// get a redundant separate bookmark row, they just always belong on this screen.
 savedRouter.get("/saved", async (req, res) => {
-  const bookmarked = await db
-    .select({ citation: citations })
-    .from(savedCitations)
-    .innerJoin(citations, eq(savedCitations.citationId, citations.id))
-    .where(eq(savedCitations.userId, req.userId));
+  const userId = req.userId!;
 
-  const ownPrivate = await db
-    .select()
-    .from(citations)
-    .where(and(eq(citations.submittedByUserId, req.userId), eq(citations.status, "private")));
+  const bookmarked = await prisma.savedCitation.findMany({
+    where: { userId },
+    include: { citation: true },
+  });
 
-  const byId = new Map<string, typeof citations.$inferSelect>();
+  const ownPrivate = await prisma.citation.findMany({
+    where: { submittedByUserId: userId, status: "private" },
+  });
+
+  const byId = new Map<string, Citation>();
   for (const { citation } of bookmarked) byId.set(citation.id, citation);
   for (const citation of ownPrivate) byId.set(citation.id, citation);
 
@@ -43,22 +39,28 @@ savedRouter.get("/saved", async (req, res) => {
 });
 
 savedRouter.post("/saved/:citationId", async (req, res) => {
-  const citation = db.select().from(citations).where(eq(citations.id, req.params.citationId)).get();
+  const citationId = String(req.params.citationId);
+  const citation = await prisma.citation.findUnique({ where: { id: citationId } });
   if (!citation) {
     res.status(404).json({ error: "Citation not found" });
     return;
   }
 
-  db.insert(savedCitations)
-    .values({ userId: req.userId, citationId: req.params.citationId })
-    .onConflictDoNothing()
-    .run();
+  await prisma.savedCitation.upsert({
+    where: {
+      userId_citationId: { userId: req.userId!, citationId },
+    },
+    create: { userId: req.userId!, citationId },
+    update: {},
+  });
+
   res.status(201).json({ saved: true });
 });
 
 savedRouter.delete("/saved/:citationId", async (req, res) => {
-  db.delete(savedCitations)
-    .where(and(eq(savedCitations.userId, req.userId), eq(savedCitations.citationId, req.params.citationId)))
-    .run();
+  const citationId = String(req.params.citationId);
+  await prisma.savedCitation.deleteMany({
+    where: { userId: req.userId!, citationId },
+  });
   res.status(204).send();
 });

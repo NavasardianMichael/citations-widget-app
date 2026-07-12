@@ -1,16 +1,15 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "url";
 
-import { db, runMigrations } from "../db/client.js";
-import { citations } from "../db/schema.js";
+import { PrismaClient } from "@prisma/client";
 
-runMigrations();
+const prisma = new PrismaClient();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const seedDir = path.join(__dirname, "..", "data", "seed");
 
 type KjvVerse = {
   id: string;
-  book: string;
-  chapter: number;
-  verse: number;
   sourceRef: string;
   text: string;
 };
@@ -23,25 +22,31 @@ type FictionQuote = {
   tags: string[];
 };
 
-const seedDir = path.join(import.meta.dirname, "..", "..", "data", "seed");
-
 function loadJson<T>(file: string): T {
   return JSON.parse(readFileSync(path.join(seedDir, file), "utf-8"));
 }
 
-function insertBatch(rows: (typeof citations.$inferInsert)[]) {
+async function insertBatch(
+  rows: Array<{
+    id: string;
+    text: string;
+    author: string | null;
+    sourceRef: string | null;
+    sourceType: "bible" | "fiction";
+    tags: string[];
+    status: "approved";
+    submittedByUserId: null;
+    shareProfile: boolean;
+  }>,
+) {
   const BATCH_SIZE = 500;
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
-    db.transaction((tx) => {
-      for (const row of batch) {
-        tx.insert(citations).values(row).onConflictDoNothing().run();
-      }
-    });
+    await prisma.citation.createMany({ data: batch, skipDuplicates: true });
   }
 }
 
-function seedBible() {
+async function seedBible() {
   const verses = loadJson<KjvVerse[]>("kjv.json");
   const rows = verses.map((v) => ({
     id: v.id,
@@ -54,11 +59,11 @@ function seedBible() {
     submittedByUserId: null,
     shareProfile: false,
   }));
-  insertBatch(rows);
+  await insertBatch(rows);
   console.log(`Seeded ${rows.length} Bible verses (KJV).`);
 }
 
-function seedFiction() {
+async function seedFiction() {
   const quotes = loadJson<FictionQuote[]>("fiction-quotes.json");
   const rows = quotes.map((q) => ({
     id: q.id,
@@ -71,10 +76,21 @@ function seedFiction() {
     submittedByUserId: null,
     shareProfile: false,
   }));
-  insertBatch(rows);
+  await insertBatch(rows);
   console.log(`Seeded ${rows.length} fiction/literary quotes.`);
 }
 
-seedBible();
-seedFiction();
-console.log("Seed complete.");
+async function main() {
+  await seedBible();
+  await seedFiction();
+  console.log("Seed complete.");
+}
+
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

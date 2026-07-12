@@ -1,36 +1,34 @@
 import { randomUUID } from "node:crypto";
+import type { Citation } from "@prisma/client";
 import { Router } from "express";
-import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { db } from "../db/client.js";
-import { citations } from "../db/schema.js";
-import { resolveUser } from "../middleware/resolve-user.js";
+import { prisma } from "../db/index.js";
 import { HttpError } from "../middleware/error-handler.js";
+import { requireAuth } from "../middleware/require-auth.js";
 
 export const citationsRouter = Router();
 
-function toPublicCitation(row: typeof citations.$inferSelect) {
+function toPublicCitation(row: Citation) {
   return {
     id: row.id,
     text: row.text,
     author: row.author,
     sourceRef: row.sourceRef,
     sourceType: row.sourceType,
-    tags: row.tags,
-    createdAt: row.createdAt,
+    tags: row.tags as string[],
+    createdAt: row.createdAt.toISOString(),
   };
 }
 
-function toOwnedCitation(row: typeof citations.$inferSelect) {
+function toOwnedCitation(row: Citation) {
   return {
     ...toPublicCitation(row),
     status: row.status,
     shareProfile: row.shareProfile,
     moderatorNote: row.moderatorNote,
     removableOnRequest: row.status === "approved",
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
@@ -42,17 +40,15 @@ const listQuerySchema = z.object({
 
 citationsRouter.get("/citations", async (req, res) => {
   const query = listQuerySchema.parse(req.query);
-  const conditions = [eq(citations.status, "approved")];
-  if (query.sourceType) conditions.push(eq(citations.sourceType, query.sourceType));
-
-  const rows = await db
-    .select()
-    .from(citations)
-    .where(and(...conditions))
-    .orderBy(desc(citations.createdAt))
-    .limit(query.limit)
-    .offset(query.offset);
-
+  const rows = await prisma.citation.findMany({
+    where: {
+      status: "approved",
+      ...(query.sourceType && { sourceType: query.sourceType }),
+    },
+    orderBy: { createdAt: "desc" },
+    take: query.limit,
+    skip: query.offset,
+  });
   res.json(rows.map(toPublicCitation));
 });
 
@@ -60,27 +56,22 @@ const mineQuerySchema = z.object({
   status: z.enum(["all", "pending", "approved", "rejected", "private"]).default("all"),
 });
 
-// Registered before "/citations/:id" so "mine" isn't swallowed as an :id value.
-citationsRouter.get("/citations/mine", resolveUser, async (req, res) => {
+citationsRouter.get("/citations/mine", requireAuth, async (req, res) => {
   const query = mineQuerySchema.parse(req.query);
-  const conditions = [eq(citations.submittedByUserId, req.userId)];
-  if (query.status !== "all") conditions.push(eq(citations.status, query.status));
-
-  const rows = await db
-    .select()
-    .from(citations)
-    .where(and(...conditions))
-    .orderBy(desc(citations.createdAt));
-
+  const rows = await prisma.citation.findMany({
+    where: {
+      submittedByUserId: req.userId!,
+      ...(query.status !== "all" && { status: query.status }),
+    },
+    orderBy: { createdAt: "desc" },
+  });
   res.json(rows.map(toOwnedCitation));
 });
 
 citationsRouter.get("/citations/:id", async (req, res) => {
-  const row = db
-    .select()
-    .from(citations)
-    .where(and(eq(citations.id, req.params.id), eq(citations.status, "approved")))
-    .get();
+  const row = await prisma.citation.findFirst({
+    where: { id: String(req.params.id), status: "approved" },
+  });
   if (!row) throw new HttpError(404, "Citation not found");
   res.json(toPublicCitation(row));
 });
@@ -94,20 +85,21 @@ const createSchema = z.object({
   visibility: z.enum(["private", "pending"]),
 });
 
-citationsRouter.post("/citations", resolveUser, async (req, res) => {
+citationsRouter.post("/citations", requireAuth, async (req, res) => {
   const body = createSchema.parse(req.body);
-  const row = {
-    id: randomUUID(),
-    text: body.text,
-    author: body.author ?? null,
-    sourceRef: body.sourceRef ?? null,
-    sourceType: body.sourceType,
-    status: body.visibility,
-    submittedByUserId: req.userId,
-    shareProfile: body.shareProfile,
-  };
-  db.insert(citations).values(row).run();
-  const created = db.select().from(citations).where(eq(citations.id, row.id)).get()!;
+  const created = await prisma.citation.create({
+    data: {
+      id: randomUUID(),
+      text: body.text,
+      author: body.author ?? null,
+      sourceRef: body.sourceRef ?? null,
+      sourceType: body.sourceType,
+      status: body.visibility,
+      submittedByUserId: req.userId!,
+      shareProfile: body.shareProfile,
+      tags: [],
+    },
+  });
   res.status(201).json(toOwnedCitation(created));
 });
 
@@ -120,31 +112,33 @@ const patchSchema = z.object({
   shareProfile: z.boolean().optional(),
 });
 
-citationsRouter.patch("/citations/:id", resolveUser, async (req, res) => {
-  const id = req.params.id as string;
-  const existing = db.select().from(citations).where(eq(citations.id, id)).get();
+citationsRouter.patch("/citations/:id", requireAuth, async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.citation.findUnique({ where: { id } });
   if (!existing) throw new HttpError(404, "Citation not found");
   if (existing.submittedByUserId !== req.userId) throw new HttpError(403, "You do not own this citation");
 
   const body = patchSchema.parse(req.body);
-  // Content changed on a previously-approved item — it needs re-review.
   const nextStatus = existing.status === "approved" ? "pending" : existing.status;
 
-  db.update(citations)
-    .set({ ...body, status: nextStatus, updatedAt: new Date() })
-    .where(eq(citations.id, id))
-    .run();
+  const updated = await prisma.citation.update({
+    where: { id },
+    data: {
+      ...body,
+      ...(body.tags !== undefined && { tags: body.tags }),
+      status: nextStatus,
+    },
+  });
 
-  const updated = db.select().from(citations).where(eq(citations.id, id)).get()!;
   res.json(toOwnedCitation(updated));
 });
 
-citationsRouter.delete("/citations/:id", resolveUser, async (req, res) => {
-  const id = req.params.id as string;
-  const existing = db.select().from(citations).where(eq(citations.id, id)).get();
+citationsRouter.delete("/citations/:id", requireAuth, async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.citation.findUnique({ where: { id } });
   if (!existing) throw new HttpError(404, "Citation not found");
   if (existing.submittedByUserId !== req.userId) throw new HttpError(403, "You do not own this citation");
 
-  db.delete(citations).where(eq(citations.id, id)).run();
+  await prisma.citation.delete({ where: { id } });
   res.status(204).send();
 });

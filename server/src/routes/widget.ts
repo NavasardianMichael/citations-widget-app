@@ -1,25 +1,36 @@
 import { Router } from "express";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { db } from "../db/client.js";
-import { citations, users, widgetSettings } from "../db/schema.js";
-import { resolveUser } from "../middleware/resolve-user.js";
+import { prisma } from "../db/index.js";
+import { requireAuth } from "../middleware/require-auth.js";
 import { pickCitationForPool } from "../services/widget-citation-picker.js";
 
 export const widgetRouter = Router();
-widgetRouter.use(resolveUser);
+widgetRouter.use(requireAuth);
 
-function getOrCreateSettings(userId: string) {
-  const existing = db.select().from(widgetSettings).where(eq(widgetSettings.userId, userId)).get();
+function serializeWidgetSettings(row: Awaited<ReturnType<typeof getOrCreateSettings>>) {
+  return {
+    userId: row.userId,
+    sourceSelection: row.sourceSelection,
+    refreshRateHours: row.refreshRateHours,
+    fontStyle: row.fontStyle,
+    showAttribution: row.showAttribution,
+    currentCitationId: row.currentCitationId,
+    currentCitationSetAt: row.currentCitationSetAt?.toISOString() ?? null,
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+async function getOrCreateSettings(userId: string) {
+  const existing = await prisma.widgetSettings.findUnique({ where: { userId } });
   if (existing) return existing;
 
-  db.insert(widgetSettings).values({ userId }).run();
-  return db.select().from(widgetSettings).where(eq(widgetSettings.userId, userId)).get()!;
+  return prisma.widgetSettings.create({ data: { userId } });
 }
 
 widgetRouter.get("/widget-settings", async (req, res) => {
-  res.json(getOrCreateSettings(req.userId));
+  const settings = await getOrCreateSettings(req.userId!);
+  res.json(serializeWidgetSettings(settings));
 });
 
 const settingsSchema = z.object({
@@ -31,32 +42,35 @@ const settingsSchema = z.object({
 
 widgetRouter.put("/widget-settings", async (req, res) => {
   const body = settingsSchema.parse(req.body);
-  getOrCreateSettings(req.userId); // ensure the row exists before updating
-  db.update(widgetSettings).set({ ...body, updatedAt: new Date() }).where(eq(widgetSettings.userId, req.userId)).run();
-  res.json(db.select().from(widgetSettings).where(eq(widgetSettings.userId, req.userId)).get());
+  await getOrCreateSettings(req.userId!);
+  const updated = await prisma.widgetSettings.update({
+    where: { userId: req.userId! },
+    data: body,
+  });
+  res.json(serializeWidgetSettings(updated));
 });
 
-function withAttribution(citation: typeof citations.$inferSelect, showAttribution: boolean) {
+async function withAttribution(citation: NonNullable<Awaited<ReturnType<typeof pickCitationForPool>>>, showAttribution: boolean) {
   const base = {
     id: citation.id,
     text: citation.text,
     author: citation.author,
     sourceRef: citation.sourceRef,
     sourceType: citation.sourceType,
-    tags: citation.tags,
+    tags: citation.tags as string[],
   };
 
   if (!showAttribution || !citation.shareProfile || !citation.submittedByUserId) {
     return { ...base, addedBy: null };
   }
 
-  const submitter = db.select().from(users).where(eq(users.id, citation.submittedByUserId)).get();
+  const submitter = await prisma.user.findUnique({ where: { id: citation.submittedByUserId } });
   const name = [submitter?.firstName, submitter?.lastName].filter(Boolean).join(" ");
-  return { ...base, addedBy: name || null };
+  return { ...base, addedBy: name || submitter?.name || null };
 }
 
 widgetRouter.get("/widget/citation", async (req, res) => {
-  const settings = getOrCreateSettings(req.userId);
+  const settings = await getOrCreateSettings(req.userId!);
   const force = req.query.force === "true";
   const rotationElapsed =
     !settings.currentCitationSetAt ||
@@ -64,15 +78,18 @@ widgetRouter.get("/widget/citation", async (req, res) => {
 
   let current =
     settings.currentCitationId && !force && !rotationElapsed
-      ? db.select().from(citations).where(eq(citations.id, settings.currentCitationId)).get()
-      : undefined;
+      ? await prisma.citation.findUnique({ where: { id: settings.currentCitationId } })
+      : null;
 
   if (!current) {
-    current = pickCitationForPool(settings.sourceSelection, req.userId) ?? undefined;
-    db.update(widgetSettings)
-      .set({ currentCitationId: current?.id ?? null, currentCitationSetAt: new Date() })
-      .where(eq(widgetSettings.userId, req.userId))
-      .run();
+    current = await pickCitationForPool(settings.sourceSelection, req.userId!);
+    await prisma.widgetSettings.update({
+      where: { userId: req.userId! },
+      data: {
+        currentCitationId: current?.id ?? null,
+        currentCitationSetAt: new Date(),
+      },
+    });
   }
 
   if (!current) {
@@ -80,7 +97,7 @@ widgetRouter.get("/widget/citation", async (req, res) => {
     return;
   }
 
-  res.json({ citation: withAttribution(current, settings.showAttribution) });
+  res.json({ citation: await withAttribution(current, settings.showAttribution) });
 });
 
 const previewSchema = z.object({
@@ -89,14 +106,12 @@ const previewSchema = z.object({
   showAttribution: z.boolean(),
 });
 
-// Backs the Settings screen's live preview, which reflects in-progress (unsaved)
-// form edits — it must NOT touch persisted rotation state the way /widget/citation does.
 widgetRouter.post("/widget/preview", async (req, res) => {
   const body = previewSchema.parse(req.body);
-  const picked = pickCitationForPool(body.sourceSelection, req.userId);
+  const picked = await pickCitationForPool(body.sourceSelection, req.userId!);
   if (!picked) {
     res.json({ citation: null, reason: "empty_pool" });
     return;
   }
-  res.json({ citation: withAttribution(picked, body.showAttribution) });
+  res.json({ citation: await withAttribution(picked, body.showAttribution) });
 });

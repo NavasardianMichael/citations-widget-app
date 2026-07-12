@@ -1,6 +1,6 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 
-export default function AppTabs() {
+export default function TabsLayout() {
   return (
     <NativeTabs backgroundColor="#fbf9f8" indicatorColor="#d4e3ff" labelStyle={{ selected: { color: "#021a35" } }}>
       <NativeTabs.Trigger name="index">

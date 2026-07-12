@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  local
+  google
+}
+
+enum CitationStatus {
+  approved
+  pending
+  rejected
+  private
+}
+
+enum SourceType {
+  bible
+  fiction
+}
+
+enum SourceSelection {
+  bible
+  fiction
+  mixed
+  saved
+}
+
+enum FontStyle {
+  source_serif_4
+  hanken_grotesk
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  name          String
+  passwordHash  String?      @map("password_hash")
+  avatarUrl     String?      @map("avatar_url")
+  provider      AuthProvider @default(local)
+  googleId      String?      @unique @map("google_id")
+  emailVerified Boolean      @default(false) @map("email_verified")
+  firstName     String?      @map("first_name")
+  lastName      String?      @map("last_name")
+  socialUrl     String?      @map("social_url")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  sessions                Session[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  submittedCitations      Citation[]               @relation("SubmittedCitations")
+  savedCitations          SavedCitation[]
+  widgetSettings          WidgetSettings?
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  userAgent String?  @map("user_agent")
+  ipAddress String?  @map("ip_address")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  userAgent String?   @map("user_agent")
+  ipAddress String?   @map("ip_address")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String    @map("user_id")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String    @map("user_id")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("email_verification_tokens")
+}
+
+model Citation {
+  id                String         @id @default(uuid())
+  text              String
+  author            String?
+  sourceRef         String?        @map("source_ref")
+  sourceType        SourceType     @map("source_type")
+  tags              Json           @default("[]")
+  status            CitationStatus @default(pending)
+  submittedByUserId String?        @map("submitted_by_user_id")
+  shareProfile      Boolean        @default(false) @map("share_profile")
+  moderatorNote     String?        @map("moderator_note")
+  reviewedAt        DateTime?      @map("reviewed_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  submittedBy User?           @relation("SubmittedCitations", fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  savedBy     SavedCitation[]
+  widgetRefs  WidgetSettings[] @relation("CurrentCitation")
+
+  @@index([status, sourceType])
+  @@map("citations")
+}
+
+model SavedCitation {
+  userId     String   @map("user_id")
+  citationId String   @map("citation_id")
+  savedAt    DateTime @default(now()) @map("saved_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  citation Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, citationId])
+  @@map("saved_citations")
+}
+
+model WidgetSettings {
+  userId               String          @id @map("user_id")
+  sourceSelection      SourceSelection @default(mixed) @map("source_selection")
+  refreshRateHours     Int             @default(24) @map("refresh_rate_hours")
+  fontStyle            FontStyle       @default(source_serif_4) @map("font_style")
+  showAttribution      Boolean         @default(true) @map("show_attribution")
+  currentCitationId    String?         @map("current_citation_id")
+  currentCitationSetAt DateTime?       @map("current_citation_set_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentCitation Citation? @relation("CurrentCitation", fields: [currentCitationId], references: [id], onDelete: SetNull)
+
+  @@map("widget_settings")
+}

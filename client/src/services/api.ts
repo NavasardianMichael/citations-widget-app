@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 
-import { getDeviceId } from "@/services/device-id";
+import { refreshRequest } from "@/services/auth-api";
+import { getAccessToken, getRefreshToken, setTokens } from "@/services/auth-storage";
 import type {
   Citation,
   CitationStatus,
@@ -46,38 +47,72 @@ type FetchOptions = Omit<RequestInit, "headers"> & {
   auth?: boolean;
 };
 
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefreshToken(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) return false;
+    try {
+      const data = await refreshRequest(refreshToken);
+      await setTokens(data.accessToken, data.refreshToken);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const { auth = true, headers = {}, ...init } = options;
 
-  const requestHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...headers,
-  };
+  async function doFetch(retryOnUnauthorized: boolean): Promise<T> {
+    const requestHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...headers,
+    };
 
-  if (auth) {
-    requestHeaders["x-device-id"] = await getDeviceId();
-  }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: requestHeaders,
-  });
-
-  if (!response.ok) {
-    let body: unknown;
-    try {
-      body = await response.json();
-    } catch {
-      body = undefined;
+    if (auth) {
+      const accessToken = await getAccessToken();
+      if (accessToken) {
+        requestHeaders.Authorization = `Bearer ${accessToken}`;
+      }
     }
-    throw new ApiError(`Request failed: ${response.status}`, response.status, body);
+
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      headers: requestHeaders,
+    });
+
+    if (response.status === 401 && auth && retryOnUnauthorized) {
+      const refreshed = await tryRefreshToken();
+      if (refreshed) return doFetch(false);
+    }
+
+    if (!response.ok) {
+      let body: unknown;
+      try {
+        body = await response.json();
+      } catch {
+        body = undefined;
+      }
+      throw new ApiError(`Request failed: ${response.status}`, response.status, body);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    return response.json() as Promise<T>;
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json() as Promise<T>;
+  return doFetch(true);
 }
 
 export async function fetchHealth() {

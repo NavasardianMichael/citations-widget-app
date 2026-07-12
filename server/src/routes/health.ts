@@ -1,16 +1,14 @@
 import { Router } from "express";
-import { sql } from "drizzle-orm";
 
-import { db } from "../db/client.js";
+import { prisma } from "../db/index.js";
 
 export const healthRouter = Router();
 
-healthRouter.get("/health", (_req, res) => {
-  let dbStatus: "ok" | "error" = "ok";
+healthRouter.get("/health", async (_req, res) => {
   try {
-    db.get(sql`SELECT 1`);
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", service: "citations-widget-api", db: "ok" });
   } catch {
-    dbStatus = "error";
+    res.status(503).json({ status: "error", service: "citations-widget-api", db: "error" });
   }
-  res.json({ status: "ok", service: "citations-widget-api", db: dbStatus });
 });

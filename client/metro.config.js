@@ -28,7 +28,12 @@ if (process.platform === "win32" && projectRoot === SHORT_WINDOWS_ROOT) {
 const config = getDefaultConfig(projectRoot);
 
 config.projectRoot = projectRoot;
+config.watchFolders = [projectRoot];
 config.resolver.unstable_enablePackageExports = false;
+config.resolver.alias = {
+  ...(config.resolver.alias ?? {}),
+  "@": path.join(projectRoot, "src"),
+};
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules ?? {}),
   "react-native": path.join(projectRoot, "node_modules", "react-native"),

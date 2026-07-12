@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    # Host 5433 avoids clashing with a local Postgres already on 5432
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: citations
+      POSTGRES_PASSWORD: citations
+      POSTGRES_DB: citations
+    volumes:
+      - citations_pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    # Host 6380 avoids clashing with a local Redis already on 6379
+    ports:
+      - "6380:6379"
+
+volumes:
+  citations_pg_data:

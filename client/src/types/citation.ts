@@ -46,6 +46,8 @@ export type WidgetPreviewDraft = Pick<WidgetSettings, "sourceSelection" | "fontS
 
 export type UserProfile = {
   id: string;
+  email?: string;
+  name?: string;
   firstName: string | null;
   lastName: string | null;
   socialUrl: string | null;

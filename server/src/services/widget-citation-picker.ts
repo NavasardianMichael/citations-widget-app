@@ -1,46 +1,38 @@
-import { and, eq, sql } from "drizzle-orm";
+import type { SourceSelection } from "@prisma/client";
 
-import { db } from "../db/client.js";
-import { citations, savedCitations } from "../db/schema.js";
+import { prisma } from "../db/index.js";
 
-export type SourceSelection = "bible" | "fiction" | "mixed" | "saved";
-
-function pickBySourceType(sourceType: "bible" | "fiction") {
-  return db
-    .select()
-    .from(citations)
-    .where(and(eq(citations.status, "approved"), eq(citations.sourceType, sourceType)))
-    .orderBy(sql`RANDOM()`)
-    .limit(1)
-    .get();
+async function pickBySourceType(sourceType: "bible" | "fiction") {
+  const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT id FROM citations
+    WHERE status = 'approved' AND source_type = ${sourceType}::"SourceType"
+    ORDER BY RANDOM()
+    LIMIT 1
+  `;
+  if (!rows[0]) return null;
+  return prisma.citation.findUnique({ where: { id: rows[0].id } });
 }
 
-function pickFromSaved(userId: string) {
-  return db
-    .select({ citation: citations })
-    .from(savedCitations)
-    .innerJoin(citations, eq(savedCitations.citationId, citations.id))
-    .where(eq(savedCitations.userId, userId))
-    .orderBy(sql`RANDOM()`)
-    .limit(1)
-    .get()?.citation;
+async function pickFromSaved(userId: string) {
+  const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT c.id FROM saved_citations sc
+    INNER JOIN citations c ON c.id = sc.citation_id
+    WHERE sc.user_id = ${userId}
+    ORDER BY RANDOM()
+    LIMIT 1
+  `;
+  if (!rows[0]) return null;
+  return prisma.citation.findUnique({ where: { id: rows[0].id } });
 }
 
-/**
- * "Mixed" deliberately does NOT `ORDER BY RANDOM()` over the raw union of
- * bible+fiction rows: with a large seeded KJV set vs. a handful of fiction
- * quotes, a naive union-random would be Bible in practice nearly every time.
- * Coin-flip the pool first, then pick within it, falling back to the other
- * pool if the chosen one happens to be empty.
- */
-export function pickCitationForPool(pool: SourceSelection, userId: string) {
+export async function pickCitationForPool(pool: SourceSelection, userId: string) {
   if (pool === "saved") {
-    return pickFromSaved(userId) ?? null;
+    return (await pickFromSaved(userId)) ?? null;
   }
   if (pool === "mixed") {
     const first = Math.random() < 0.5 ? "bible" : "fiction";
     const second = first === "bible" ? "fiction" : "bible";
-    return pickBySourceType(first) ?? pickBySourceType(second) ?? null;
+    return (await pickBySourceType(first)) ?? (await pickBySourceType(second)) ?? null;
   }
-  return pickBySourceType(pool) ?? null;
+  return (await pickBySourceType(pool)) ?? null;
 }

@@ -3,8 +3,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs, TabList, TabSlot, TabTrigger, type TabTriggerSlotProps } from "expo-router/ui";
 import { Pressable, Text, View } from "react-native";
 
-import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { pressableNoRipple } from "@/constants/pressable";
+import { useBreakpoint } from "@/hooks/use-breakpoint";
 
 const TABS: { name: string; href: Href; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
   { name: "index", href: "/", label: "Saved", icon: "bookmark" },
@@ -13,7 +13,7 @@ const TABS: { name: string; href: Href; label: string; icon: keyof typeof Materi
   { name: "profile", href: "/profile", label: "Profile", icon: "person" },
 ];
 
-export default function AppTabs() {
+export default function TabsLayout() {
   const { isMd } = useBreakpoint();
 
   if (isMd) {
