@@ -2,87 +2,49 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "url";
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type CitationCategory } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const seedDir = path.join(__dirname, "..", "data", "seed");
 
-type KjvVerse = {
+type SeedCitation = {
   id: string;
-  sourceRef: string;
+  category: CitationCategory;
   text: string;
-};
-
-type FictionQuote = {
-  id: string;
-  author: string;
-  sourceRef: string;
-  text: string;
-  tags: string[];
+  author: string | null;
+  source: string | null;
 };
 
 function loadJson<T>(file: string): T {
   return JSON.parse(readFileSync(path.join(seedDir, file), "utf-8"));
 }
 
-async function insertBatch(
-  rows: Array<{
-    id: string;
-    text: string;
-    author: string | null;
-    sourceRef: string | null;
-    sourceType: "bible" | "fiction";
-    tags: string[];
-    status: "approved";
-    submittedByUserId: null;
-    shareProfile: boolean;
-  }>,
-) {
+async function insertBatch(rows: SeedCitation[]) {
   const BATCH_SIZE = 500;
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
-    await prisma.citation.createMany({ data: batch, skipDuplicates: true });
+    await prisma.citation.createMany({
+      data: batch.map((row) => ({
+        ...row,
+        status: "approved" as const,
+        submittedByUserId: null,
+        shareProfile: false,
+      })),
+      skipDuplicates: true,
+    });
   }
 }
 
-async function seedBible() {
-  const verses = loadJson<KjvVerse[]>("kjv.json");
-  const rows = verses.map((v) => ({
-    id: v.id,
-    text: v.text,
-    author: null,
-    sourceRef: v.sourceRef,
-    sourceType: "bible" as const,
-    tags: [],
-    status: "approved" as const,
-    submittedByUserId: null,
-    shareProfile: false,
-  }));
+async function seedFile(file: string) {
+  const rows = loadJson<SeedCitation[]>(file);
   await insertBatch(rows);
-  console.log(`Seeded ${rows.length} Bible verses (KJV).`);
-}
-
-async function seedFiction() {
-  const quotes = loadJson<FictionQuote[]>("fiction-quotes.json");
-  const rows = quotes.map((q) => ({
-    id: q.id,
-    text: q.text,
-    author: q.author,
-    sourceRef: q.sourceRef,
-    sourceType: "fiction" as const,
-    tags: q.tags,
-    status: "approved" as const,
-    submittedByUserId: null,
-    shareProfile: false,
-  }));
-  await insertBatch(rows);
-  console.log(`Seeded ${rows.length} fiction/literary quotes.`);
+  console.log(`Seeded ${rows.length} citations from ${file}.`);
 }
 
 async function main() {
-  await seedBible();
-  await seedFiction();
+  await seedFile("bible-hy.json");
+  await seedFile("fiction-quotes.json");
   console.log("Seed complete.");
 }
 

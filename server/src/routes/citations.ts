@@ -14,9 +14,8 @@ function toPublicCitation(row: Citation) {
     id: row.id,
     text: row.text,
     author: row.author,
-    sourceRef: row.sourceRef,
-    sourceType: row.sourceType,
-    tags: row.tags as string[],
+    source: row.source,
+    category: row.category,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -33,7 +32,7 @@ function toOwnedCitation(row: Citation) {
 }
 
 const listQuerySchema = z.object({
-  sourceType: z.enum(["bible", "fiction"]).optional(),
+  category: z.enum(["bible", "fiction"]).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
@@ -43,7 +42,7 @@ citationsRouter.get("/citations", async (req, res) => {
   const rows = await prisma.citation.findMany({
     where: {
       status: "approved",
-      ...(query.sourceType && { sourceType: query.sourceType }),
+      ...(query.category && { category: query.category }),
     },
     orderBy: { createdAt: "desc" },
     take: query.limit,
@@ -79,8 +78,8 @@ citationsRouter.get("/citations/:id", async (req, res) => {
 const createSchema = z.object({
   text: z.string().min(1).max(2000),
   author: z.string().min(1).max(200).optional(),
-  sourceRef: z.string().min(1).max(200).optional(),
-  sourceType: z.enum(["bible", "fiction"]),
+  source: z.string().min(1).max(200).optional(),
+  category: z.enum(["bible", "fiction"]),
   shareProfile: z.boolean().default(false),
   visibility: z.enum(["private", "pending"]),
 });
@@ -92,12 +91,11 @@ citationsRouter.post("/citations", requireAuth, async (req, res) => {
       id: randomUUID(),
       text: body.text,
       author: body.author ?? null,
-      sourceRef: body.sourceRef ?? null,
-      sourceType: body.sourceType,
+      source: body.source ?? null,
+      category: body.category,
       status: body.visibility,
       submittedByUserId: req.userId!,
       shareProfile: body.shareProfile,
-      tags: [],
     },
   });
   res.status(201).json(toOwnedCitation(created));
@@ -106,9 +104,8 @@ citationsRouter.post("/citations", requireAuth, async (req, res) => {
 const patchSchema = z.object({
   text: z.string().min(1).max(2000).optional(),
   author: z.string().min(1).max(200).nullable().optional(),
-  sourceRef: z.string().min(1).max(200).nullable().optional(),
-  sourceType: z.enum(["bible", "fiction"]).optional(),
-  tags: z.array(z.string()).optional(),
+  source: z.string().min(1).max(200).nullable().optional(),
+  category: z.enum(["bible", "fiction"]).optional(),
   shareProfile: z.boolean().optional(),
 });
 
@@ -125,7 +122,6 @@ citationsRouter.patch("/citations/:id", requireAuth, async (req, res) => {
     where: { id },
     data: {
       ...body,
-      ...(body.tags !== undefined && { tags: body.tags }),
       status: nextStatus,
     },
   });

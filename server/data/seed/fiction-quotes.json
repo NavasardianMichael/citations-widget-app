@@ -1,32 +1,212 @@
 [
-  { "id": "fiction-seed-01", "author": "Socrates", "sourceRef": "Apology, 38a", "text": "The unexamined life is not worth living.", "tags": ["Philosophy"] },
-  { "id": "fiction-seed-02", "author": "Aristotle", "sourceRef": "Nicomachean Ethics", "text": "For the things we have to learn before we can do them, we learn by doing them.", "tags": ["Philosophy"] },
-  { "id": "fiction-seed-03", "author": "Marcus Aurelius", "sourceRef": "Meditations", "text": "You have power over your mind—not outside events. Realize this, and you will find strength.", "tags": ["Philosophy", "Resilience"] },
-  { "id": "fiction-seed-04", "author": "Marcus Aurelius", "sourceRef": "Meditations", "text": "The happiness of your life depends upon the quality of your thoughts.", "tags": ["Philosophy"] },
-  { "id": "fiction-seed-05", "author": "Epictetus", "sourceRef": "Enchiridion", "text": "Men are disturbed not by things, but by the views which they take of things.", "tags": ["Philosophy"] },
-  { "id": "fiction-seed-06", "author": "Confucius", "sourceRef": "The Analects", "text": "Our greatest glory is not in never falling, but in rising every time we fall.", "tags": ["Philosophy", "Resilience"] },
-  { "id": "fiction-seed-07", "author": "Lao Tzu", "sourceRef": "Tao Te Ching", "text": "A journey of a thousand miles begins with a single step.", "tags": ["Philosophy", "Wisdom"] },
-  { "id": "fiction-seed-08", "author": "Plato", "sourceRef": "The Republic", "text": "The beginning is the most important part of the work.", "tags": ["Philosophy"] },
-  { "id": "fiction-seed-09", "author": "Francis Bacon", "sourceRef": "Of Studies", "text": "Read not to contradict and confute; nor to believe and take for granted; nor to find talk and discourse; but to weigh and consider.", "tags": ["Philosophy", "Wisdom"] },
-  { "id": "fiction-seed-10", "author": "Francis Bacon", "sourceRef": "Of Studies", "text": "Some books are to be tasted, others to be swallowed, and some few to be chewed and digested.", "tags": ["Wisdom"] },
-  { "id": "fiction-seed-11", "author": "William Shakespeare", "sourceRef": "Hamlet", "text": "To be, or not to be, that is the question.", "tags": ["Literature"] },
-  { "id": "fiction-seed-12", "author": "William Shakespeare", "sourceRef": "Hamlet", "text": "This above all: to thine own self be true.", "tags": ["Literature", "Wisdom"] },
-  { "id": "fiction-seed-13", "author": "William Shakespeare", "sourceRef": "Hamlet", "text": "We know what we are, but know not what we may be.", "tags": ["Literature"] },
-  { "id": "fiction-seed-14", "author": "Jane Austen", "sourceRef": "Pride and Prejudice", "text": "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.", "tags": ["Literature"] },
-  { "id": "fiction-seed-15", "author": "Charles Dickens", "sourceRef": "A Tale of Two Cities", "text": "It was the best of times, it was the worst of times.", "tags": ["Literature"] },
-  { "id": "fiction-seed-16", "author": "Ralph Waldo Emerson", "sourceRef": "Self-Reliance", "text": "To believe your own thought, to believe that what is true for you in your private heart is true for all men—that is genius.", "tags": ["Philosophy", "Literature"] },
-  { "id": "fiction-seed-17", "author": "Henry David Thoreau", "sourceRef": "Walden", "text": "I went to the woods because I wished to live deliberately, to front only the essential facts of life.", "tags": ["Nature", "Philosophy"] },
-  { "id": "fiction-seed-18", "author": "Leo Tolstoy", "sourceRef": "Anna Karenina", "text": "All happy families are alike; each unhappy family is unhappy in its own way.", "tags": ["Literature"] },
-  { "id": "fiction-seed-19", "author": "Fyodor Dostoevsky", "sourceRef": "The Brothers Karamazov", "text": "The mystery of human existence lies not in just staying alive, but in finding something to live for.", "tags": ["Literature", "Philosophy"] },
-  { "id": "fiction-seed-20", "author": "Victor Hugo", "sourceRef": "Les Misérables", "text": "Even the darkest night will end and the sun will rise.", "tags": ["Literature", "Resilience"] },
-  { "id": "fiction-seed-21", "author": "Oscar Wilde", "sourceRef": "Lady Windermere's Fan", "text": "We are all in the gutter, but some of us are looking at the stars.", "tags": ["Literature"] },
-  { "id": "fiction-seed-22", "author": "Emily Dickinson", "sourceRef": "Poem 254", "text": "Hope is the thing with feathers that perches in the soul.", "tags": ["Poetry"] },
-  { "id": "fiction-seed-23", "author": "Walt Whitman", "sourceRef": "Song of Myself", "text": "Do I contradict myself? Very well then I contradict myself, I am large, I contain multitudes.", "tags": ["Poetry"] },
-  { "id": "fiction-seed-24", "author": "Herman Melville", "sourceRef": "Moby-Dick", "text": "It is not down on any map; true places never are.", "tags": ["Literature"] },
-  { "id": "fiction-seed-25", "author": "Friedrich Nietzsche", "sourceRef": "Twilight of the Idols", "text": "That which does not kill us makes us stronger.", "tags": ["Philosophy", "Resilience"] },
-  { "id": "fiction-seed-26", "author": "Mary Shelley", "sourceRef": "Frankenstein", "text": "Nothing is so painful to the human mind as a great and sudden change.", "tags": ["Literature"] },
-  { "id": "fiction-seed-27", "author": "Louisa May Alcott", "sourceRef": "Little Women", "text": "I am not afraid of storms, for I am learning how to sail my ship.", "tags": ["Literature", "Resilience"] },
-  { "id": "fiction-seed-28", "author": "Charlotte Brontë", "sourceRef": "Jane Eyre", "text": "I am no bird; and no net ensnares me: I am a free human being with an independent will.", "tags": ["Literature"] },
-  { "id": "fiction-seed-29", "author": "Seneca", "sourceRef": "On the Shortness of Life", "text": "It is not that we have a short time to live, but that we waste a lot of it.", "tags": ["Philosophy", "Wisdom"] },
-  { "id": "fiction-seed-30", "author": "Homer", "sourceRef": "The Odyssey", "text": "There is a time for many words, and there is also a time for sleep.", "tags": ["Literature"] }
+  {
+    "id": "fiction-seed-01",
+    "category": "fiction",
+    "text": "Չքննված կյանքը արժանի չէ ապրելու։",
+    "author": "Սոկրատես",
+    "source": "Ապոլոգիա, 38ա"
+  },
+  {
+    "id": "fiction-seed-02",
+    "category": "fiction",
+    "text": "Այն, ինչ անելուց առաջ պետք է սովորենք, սովորում ենք՝ անելով։",
+    "author": "Արիստոտել",
+    "source": "Նիկոմաքեան էթիկա"
+  },
+  {
+    "id": "fiction-seed-03",
+    "category": "fiction",
+    "text": "Դու իշխանություն ունես քո մտքի վրա, ոչ թե արտաքին իրադարձությունների։ Գիտակցիր սա և կգտնես ուժ։",
+    "author": "Մարկոս Ավրելիոս",
+    "source": "Խոհեր"
+  },
+  {
+    "id": "fiction-seed-04",
+    "category": "fiction",
+    "text": "Քո կյանքի երջանկությունը կախված է քո մտքերի որակից։",
+    "author": "Մարկոս Ավրելիոս",
+    "source": "Խոհեր"
+  },
+  {
+    "id": "fiction-seed-05",
+    "category": "fiction",
+    "text": "Մարդկանց խռովում են ոչ թե իրերը, այլ այն տեսակետները, որոնք նրանք ունեն իրերի մասին։",
+    "author": "Էպիկտետոս",
+    "source": "Ձեռնարկ"
+  },
+  {
+    "id": "fiction-seed-06",
+    "category": "fiction",
+    "text": "Մեր ամենամեծ փառքը չի կայանում նրանում, որ երբեք չենք ընկնում, այլ նրանում, որ ամեն անգամ ընկնելով՝ նորից վեր ենք կենում։",
+    "author": "Կոնֆուցիոս",
+    "source": "Զրույցներ"
+  },
+  {
+    "id": "fiction-seed-07",
+    "category": "fiction",
+    "text": "Հազար մղոնանոց ճանապարհը սկսվում է մեկ քայլից։",
+    "author": "Լաո Ցզի",
+    "source": "Դաո Դե Ցзин"
+  },
+  {
+    "id": "fiction-seed-08",
+    "category": "fiction",
+    "text": "Սկիզբը գործի ամենակարևոր մասն է։",
+    "author": "Պլատոն",
+    "source": "Պետություն"
+  },
+  {
+    "id": "fiction-seed-09",
+    "category": "fiction",
+    "text": "Կարդա ոչ թե հերքելու և հակաճառելու համար, ոչ էլ կուրորեն հավատալու կամ խոսք գտնելու համար, այլ՝ կշռադատելու և խորհելու համար։",
+    "author": "Ֆրենսիս Բեկոն",
+    "source": "Ուսումնասիրությունների մասին"
+  },
+  {
+    "id": "fiction-seed-10",
+    "category": "fiction",
+    "text": "Որոշ գրքեր պետք է ճաշակել, մյուսները՝ կուլ տալ, իսկ մի քանիսը՝ ծամել ու մարսել։",
+    "author": "Ֆրենսիս Բեկոն",
+    "source": "Ուսումնասիրությունների մասին"
+  },
+  {
+    "id": "fiction-seed-11",
+    "category": "fiction",
+    "text": "Լինել, թե չլինել՝ ահա հարցը։",
+    "author": "Ուիլյամ Շեքսպիր",
+    "source": "Համլետ"
+  },
+  {
+    "id": "fiction-seed-12",
+    "category": "fiction",
+    "text": "Ամենից վեր՝ քո իսկ ինքդ քո նկատմամբ եղիր անկեղծ։",
+    "author": "Ուիլյամ Շեքսպիր",
+    "source": "Համլետ"
+  },
+  {
+    "id": "fiction-seed-13",
+    "category": "fiction",
+    "text": "Մենք գիտենք, թե ինչ ենք, բայց չգիտենք, թե ինչ կարող ենք դառնալ։",
+    "author": "Ուիլյամ Շեքսպիր",
+    "source": "Համլետ"
+  },
+  {
+    "id": "fiction-seed-14",
+    "category": "fiction",
+    "text": "Համընդհանուր ճանաչված ճշմարտություն է, որ բախտավոր և ամուրի երիտասարդը պարտավոր է կին ունենալ։",
+    "author": "Ջեյն Օսթին",
+    "source": "Հպարտություն և նախապաշարմունք"
+  },
+  {
+    "id": "fiction-seed-15",
+    "category": "fiction",
+    "text": "Դա լավագույն ժամանակներն էին, դա վատագույն ժամանակներն էին։",
+    "author": "Չարլզ Դիքենս",
+    "source": "Երկու քաղաքի պատմություն"
+  },
+  {
+    "id": "fiction-seed-16",
+    "category": "fiction",
+    "text": "Հավատալ սեփական մտքին, հավատալ, որ այն, ինչ ճշմարիտ է քո սրտում, ճշմարիտ է բոլոր մարդկանց համար՝ ահա իսկական հանճարը։",
+    "author": "Ռալֆ Ուոլդո Էմերսոն",
+    "source": "Ինքնավստահություն"
+  },
+  {
+    "id": "fiction-seed-17",
+    "category": "fiction",
+    "text": "Ես գնացի անտառ, որովհետև կամենում էի ապրել գիտակցաբար և դիմակայել կյանքի միայն էական փաստերին։",
+    "author": "Հենրի Դեյվիդ Թորո",
+    "source": "Ուոլդեն"
+  },
+  {
+    "id": "fiction-seed-18",
+    "category": "fiction",
+    "text": "Բոլոր երջանիկ ընտանիքները նման են միմյանց. յուրաքանչյուր դժբախտ ընտանիք դժբախտ է իր ձևով։",
+    "author": "Լև Տոլստոյ",
+    "source": "Աննա Կարենինա"
+  },
+  {
+    "id": "fiction-seed-19",
+    "category": "fiction",
+    "text": "Մարդկային գոյության գաղտնիքը ոչ թե պարզապես ապրելն է, այլ՝ գտնել ինչ-որ բան, որի համար արժե ապրել։",
+    "author": "Ֆյոդոր Դոստոևսկի",
+    "source": "Կարամազով եղբայրներ"
+  },
+  {
+    "id": "fiction-seed-20",
+    "category": "fiction",
+    "text": "Նույնիսկ ամենամութ գիշերը կվերջանա, և արևը կծագի։",
+    "author": "Վիկտոր Հյուգո",
+    "source": "Թշվառները"
+  },
+  {
+    "id": "fiction-seed-21",
+    "category": "fiction",
+    "text": "Մենք բոլորս ձորում ենք, բայց ոմանք մեզնից նայում են աստղերին։",
+    "author": "Օսկար Ուայլդ",
+    "source": "Լեդի Ուինդերմիրի հովհարը"
+  },
+  {
+    "id": "fiction-seed-22",
+    "category": "fiction",
+    "text": "Հույսը փետուրներով բան է, որ նստում է հոգու վրա։",
+    "author": "Էմիլի Դիքինսոն",
+    "source": "Բանաստեղծություն 254"
+  },
+  {
+    "id": "fiction-seed-23",
+    "category": "fiction",
+    "text": "Միթե ինքս ինձ հակասո՞ւմ եմ։ Լավ, հակասում եմ. ես մեծ եմ, ես բազմություններ եմ պարունակում։",
+    "author": "Ուոլթ Ուիթմեն",
+    "source": "Իմ երգը"
+  },
+  {
+    "id": "fiction-seed-24",
+    "category": "fiction",
+    "text": "Դա որևէ քարտեզի վրա նշված չէ. իսկական վայրերը երբեք չեն նշվում։",
+    "author": "Հերման Մելվիլ",
+    "source": "Մոբի Դիկ"
+  },
+  {
+    "id": "fiction-seed-25",
+    "category": "fiction",
+    "text": "Այն, ինչ մեզ չի սպանում, մեզ ավելի ուժեղ է դարձնում։",
+    "author": "Ֆրիդրիխ Նիցշե",
+    "source": "Կուռքերի մթնշաղը"
+  },
+  {
+    "id": "fiction-seed-26",
+    "category": "fiction",
+    "text": "Մարդու մտքի համար ոչինչ այնքան ցավալի չէ, որքան մեծ և հանկարծակի փոփոխությունը։",
+    "author": "Մերի Շելլի",
+    "source": "Ֆրանկենշտեյն"
+  },
+  {
+    "id": "fiction-seed-27",
+    "category": "fiction",
+    "text": "Ես չեմ վախենում փոթորիկներից, որովհետև սովորում եմ ղեկավարել իմ նավը։",
+    "author": "Լուիզա Մեյ Ալկոտ",
+    "source": "Փոքրիկ կանայք"
+  },
+  {
+    "id": "fiction-seed-28",
+    "category": "fiction",
+    "text": "Ես թռչուն չեմ, և ոչ մի ցանց ինձ չի բռնում. ես ազատ մարդ եմ՝ անկախ կամքով։",
+    "author": "Շարլոթ Բրոնտե",
+    "source": "Ջեյն Էյր"
+  },
+  {
+    "id": "fiction-seed-29",
+    "category": "fiction",
+    "text": "Խնդիրը ոչ այն է, որ կարճ ժամանակ ունենք ապրելու, այլ այն, որ դրա մեծ մասը վատնում ենք։",
+    "author": "Սենեկա",
+    "source": "Կյանքի կարճության մասին"
+  },
+  {
+    "id": "fiction-seed-30",
+    "category": "fiction",
+    "text": "Կա ժամանակ բազմախոսության համար, և կա նաև ժամանակ քնի համար։",
+    "author": "Հոմերոս",
+    "source": "Ոդիսական"
+  }
 ]

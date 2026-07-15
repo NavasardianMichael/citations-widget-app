@@ -10,15 +10,16 @@ import { SubmissionCard } from "@/components/submission-card";
 import { TopAppBar } from "@/components/top-app-bar";
 import { useAuth } from "@/contexts/auth-context";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
+import { t } from "@/i18n";
 import { deleteCitation, fetchMyCitations, fetchProfile, updateCitation, updateProfile } from "@/services/api";
 import type { CitationStatus, OwnedCitation, UserProfile } from "@/types/citation";
 
-const FILTER_OPTIONS: { value: "all" | CitationStatus; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "pending", label: "Pending" },
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
-  { value: "private", label: "Private" },
+const FILTER_OPTIONS: { value: "all" | CitationStatus; labelKey: "profile.filterAll" | "profile.filterPending" | "profile.filterApproved" | "profile.filterRejected" | "profile.filterPrivate" }[] = [
+  { value: "all", labelKey: "profile.filterAll" },
+  { value: "pending", labelKey: "profile.filterPending" },
+  { value: "approved", labelKey: "profile.filterApproved" },
+  { value: "rejected", labelKey: "profile.filterRejected" },
+  { value: "private", labelKey: "profile.filterPrivate" },
 ];
 
 export default function ProfileScreen() {
@@ -47,7 +48,7 @@ export default function ProfileScreen() {
       setSocialUrl(user.socialUrl ?? "");
       setSubmissions(mine);
     } catch (e) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed to load profile");
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -68,19 +69,19 @@ export default function ProfileScreen() {
         socialUrl: socialUrl.trim() || null,
       });
       setProfile(updated);
-      Alert.alert("Saved", "Profile updated.");
+      Alert.alert(t("common.save"), t("profile.updated"));
     } catch (e) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed to update profile");
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.updateFailed"));
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: string) {
-    Alert.alert("Delete citation", "This cannot be undone.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("profile.deleteTitle"), t("profile.deleteBody"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("profile.deleteAction"),
         style: "destructive",
         onPress: async () => {
           await deleteCitation(id);
@@ -102,7 +103,7 @@ export default function ProfileScreen() {
 
   async function handleSaveEdit(id: string) {
     if (!editValues?.text.trim()) {
-      Alert.alert("Missing text", "Please enter citation text.");
+      Alert.alert(t("submit.missingTextTitle"), t("submit.missingTextBody"));
       return;
     }
 
@@ -111,14 +112,18 @@ export default function ProfileScreen() {
       const updated = await updateCitation(id, {
         text: editValues.text.trim(),
         author: editValues.author.trim() || null,
-        sourceType: editValues.sourceType,
+        source: editValues.source.trim() || null,
+        category: editValues.category,
         shareProfile: editValues.shareProfile,
       });
       setSubmissions((prev) => prev.map((c) => (c.id === id ? updated : c)));
       cancelEdit();
-      Alert.alert("Saved", updated.status === "pending" ? "Changes saved. This citation is pending re-review." : "Citation updated.");
+      Alert.alert(
+        t("common.save"),
+        updated.status === "pending" ? t("profile.citationPendingReview") : t("profile.citationUpdated"),
+      );
     } catch (e) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed to update citation");
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.updateCitationFailed"));
     } finally {
       setSavingEdit(false);
     }
@@ -133,21 +138,27 @@ export default function ProfileScreen() {
       style={{ boxShadow: "0 4px 20px -2px rgba(2, 26, 53, 0.05)" }}
     >
       <View className="absolute bottom-0 left-0 top-0 w-1 bg-secondary" />
-      <Text className="mb-6 font-headline-md text-headline-md text-primary">Scholar Profile</Text>
-      <FormField label="First Name" value={firstName} onChangeText={setFirstName} variant="academic" />
-      <FormField label="Last Name" value={lastName} onChangeText={setLastName} variant="academic" />
-      <FormField label="Social / URL" value={socialUrl} onChangeText={setSocialUrl} placeholder="https://…" variant="academic" />
+      <Text className="mb-6 font-headline-md text-headline-md text-primary">{t("profile.scholarTitle")}</Text>
+      <FormField label={t("profile.firstName")} value={firstName} onChangeText={setFirstName} variant="academic" />
+      <FormField label={t("profile.lastName")} value={lastName} onChangeText={setLastName} variant="academic" />
+      <FormField
+        label={t("profile.socialUrl")}
+        value={socialUrl}
+        onChangeText={setSocialUrl}
+        placeholder="https://…"
+        variant="academic"
+      />
       <Button
-        label={saving ? "Saving…" : "Save Changes"}
+        label={saving ? t("common.saving") : t("profile.saveChanges")}
         onPress={handleSaveProfile}
         disabled={saving}
         className="mt-2 w-full md:w-auto"
       />
       {profile && "email" in profile && profile.email ? (
-        <Text className="mt-4 text-sm text-on-surface-variant">Signed in as {String(profile.email)}</Text>
+        <Text className="mt-4 text-sm text-on-surface-variant">{t("profile.signedInAs", { email: String(profile.email) })}</Text>
       ) : null}
       <Button
-        label="Sign out"
+        label={t("profile.signOut")}
         variant="secondary"
         onPress={async () => {
           await signOut();
@@ -161,12 +172,12 @@ export default function ProfileScreen() {
   const submissionsColumn = (
     <View>
       <View className="mb-8 gap-4 border-b border-outline-variant pb-4">
-        <Text className="font-headline-md text-headline-md text-primary">My Submissions</Text>
+        <Text className="font-headline-md text-headline-md text-primary">{t("profile.mySubmissions")}</Text>
         <View className="flex-row flex-wrap gap-2">
           {FILTER_OPTIONS.map((option) => (
             <FilterPill
               key={option.value}
-              label={option.label}
+              label={t(option.labelKey)}
               selected={statusFilter === option.value}
               onPress={() => setStatusFilter(option.value)}
             />
@@ -175,7 +186,7 @@ export default function ProfileScreen() {
       </View>
 
       {filteredSubmissions.length === 0 ? (
-        <Text className="font-body-md text-body-md text-on-surface-variant">No submissions in this filter.</Text>
+        <Text className="font-body-md text-body-md text-on-surface-variant">{t("profile.noSubmissions")}</Text>
       ) : (
         filteredSubmissions.map((citation) =>
           editingId === citation.id && editValues ? (
@@ -186,9 +197,9 @@ export default function ProfileScreen() {
                 disabled={savingEdit}
                 footer={
                   <View className="flex-row justify-end gap-3">
-                    <Button label="Cancel" variant="secondary" onPress={cancelEdit} disabled={savingEdit} />
+                    <Button label={t("common.cancel")} variant="secondary" onPress={cancelEdit} disabled={savingEdit} />
                     <Button
-                      label={savingEdit ? "Saving…" : "Save Changes"}
+                      label={savingEdit ? t("common.saving") : t("profile.saveChanges")}
                       onPress={() => handleSaveEdit(citation.id)}
                       disabled={savingEdit}
                     />
@@ -219,7 +230,7 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Digital Sanctuary" showBrandIcon />
+      <TopAppBar title={t("common.brand")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-[1200px] px-margin-mobile py-8 md:px-margin-desktop md:py-12">
           {isMd ? (

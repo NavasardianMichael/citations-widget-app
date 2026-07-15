@@ -119,9 +119,9 @@ export async function fetchHealth() {
   return apiFetch<{ status: string; service: string; db: string }>("/api/health", { auth: false });
 }
 
-export async function fetchCitations(params?: { sourceType?: "bible" | "fiction"; limit?: number; offset?: number }) {
+export async function fetchCitations(params?: { category?: "bible" | "fiction"; limit?: number; offset?: number }) {
   const search = new URLSearchParams();
-  if (params?.sourceType) search.set("sourceType", params.sourceType);
+  if (params?.category) search.set("category", params.category);
   if (params?.limit) search.set("limit", String(params.limit));
   if (params?.offset) search.set("offset", String(params.offset));
   const qs = search.toString();

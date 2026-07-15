@@ -2,6 +2,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { t } from "@/i18n";
+
 type TopAppBarProps = {
   title: string;
   leftAction?: ReactNode;
@@ -15,7 +17,7 @@ export function TopAppBar({ title, leftAction, rightAction, showBrandIcon = fals
       <View className="min-w-10 flex-1 flex-row items-center">
         {leftAction ??
           (showBrandIcon ? (
-            <MaterialIcons name="menu-book" size={24} color="#021a35" accessibilityLabel="Digital Sanctuary" />
+            <MaterialIcons name="menu-book" size={24} color="#021a35" accessibilityLabel={t("common.brand")} />
           ) : null)}
       </View>
       <Text className="flex-2 text-center font-headline-md text-headline-md text-primary" numberOfLines={1}>

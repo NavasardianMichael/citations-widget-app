@@ -2,7 +2,7 @@ import { env, isDev } from "../config/env.js";
 import { logger } from "../lib/logger.js";
 
 const APP_ID = "citations-widget";
-const APP_NAME = "Digital Sanctuary";
+const APP_NAME = "Թվային սրբարան";
 
 const COLORS = {
   primary: "#18294d",
@@ -20,7 +20,7 @@ function emailLayout(content: string, preheader?: string): string {
 
   return `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background-color:${COLORS.background};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   ${preheaderHtml}
@@ -47,61 +47,61 @@ function buildDeepLink(path: string, token: string): string {
 
 export const emailTemplates = {
   welcome(name: string) {
-    const subject = `Welcome to ${APP_NAME}!`;
-    const text = `Welcome to ${APP_NAME}, ${name}! Your email is verified. Open the app to get started.`;
+    const subject = `Բարի գալուստ «${APP_NAME}»`;
+    const text = `Բարի գալուստ, ${name}։ Ձեր էլ․ փոստը հաստատված է։ Բացեք հավելվածը՝ սկսելու համար։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Welcome, ${name}</h2><p style="color:${COLORS.textLight};">Your email is verified. Open the app to get started.</p>`,
-      `Welcome to ${APP_NAME}`,
+      `<h2 style="color:${COLORS.textDark};">Բարի գալուստ, ${name}</h2><p style="color:${COLORS.textLight};">Ձեր էլ․ փոստը հաստատված է։ Բացեք հավելվածը՝ շարունակելու համար։</p>`,
+      `Բարի գալուստ «${APP_NAME}»`,
     );
     return { subject, text, html };
   },
 
   passwordReset(name: string, resetUrl: string, expiresInMinutes: number) {
-    const subject = `Reset Your ${APP_NAME} Password`;
-    const text = `Hi ${name},\n\nReset your password: ${resetUrl}\n\nExpires in ${expiresInMinutes} minutes.`;
+    const subject = `Վերականգնել «${APP_NAME}» գաղտնաբառը`;
+    const text = `Ողջույն, ${name},\n\nՎերականգնեք գաղտնաբառը՝ ${resetUrl}\n\nՀղումը գործում է ${expiresInMinutes} րոպե։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Reset your password</h2><p style="color:${COLORS.textLight};">Hi ${name}, click below to set a new password.</p>${emailButton("Reset Password", resetUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Expires in ${expiresInMinutes} minutes.</p>`,
-      `Reset your ${APP_NAME} password`,
+      `<h2 style="color:${COLORS.textDark};">Գաղտնաբառի վերականգնում</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Սեղմեք ստորև՝ նոր գաղտնաբառ սահմանելու համար։</p>${emailButton("Վերականգնել գաղտնաբառը", resetUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Հղումը գործում է ${expiresInMinutes} րոպե։</p>`,
+      `Վերականգնել «${APP_NAME}» գաղտնաբառը`,
     );
     return { subject, text, html };
   },
 
   passwordResetOAuthOnly(name: string, loginUrl: string) {
-    const subject = `How to sign in to ${APP_NAME}`;
-    const text = `Hi ${name}, your account uses Google sign-in. Open: ${loginUrl}`;
+    const subject = `Ինչպես մուտք գործել «${APP_NAME}»`;
+    const text = `Ողջույն, ${name}, Ձեր հաշիվը կապված է Google մուտքի հետ։ Բացեք՝ ${loginUrl}`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Sign in with Google</h2><p style="color:${COLORS.textLight};">Hi ${name}, this account uses Google sign-in — no password is stored.</p>${emailButton("Open app", loginUrl)}`,
-      `Sign in with Google`,
+      `<h2 style="color:${COLORS.textDark};">Մուտք Google-ով</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Այս հաշիվը օգտագործում է Google մուտք՝ գաղտնաբառ չի պահվում։</p>${emailButton("Բացել հավելվածը", loginUrl)}`,
+      `Մուտք Google-ով`,
     );
     return { subject, text, html };
   },
 
   passwordChanged(name: string) {
-    const subject = `Your ${APP_NAME} Password Was Changed`;
-    const text = `Hi ${name}, your password was changed.`;
+    const subject = `«${APP_NAME}» գաղտնաբառը փոխվել է`;
+    const text = `Ողջույն, ${name}, Ձեր գաղտնաբառը հաջողությամբ փոխվել է։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Password changed</h2><p style="color:${COLORS.textLight};">Hi ${name}, your password was updated.</p>`,
-      "Password changed",
+      `<h2 style="color:${COLORS.textDark};">Գաղտնաբառը փոխված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր գաղտնաբառը թարմացվել է։</p>`,
+      "Գաղտնաբառը փոխված է",
     );
     return { subject, text, html };
   },
 
   accountDeleted(name: string) {
-    const subject = `Your ${APP_NAME} Account Has Been Deleted`;
-    const text = `Hi ${name}, your account has been deleted.`;
+    const subject = `«${APP_NAME}» հաշիվը ջնջված է`;
+    const text = `Ողջույն, ${name}, Ձեր հաշիվը ջնջվել է։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Account deleted</h2><p style="color:${COLORS.textLight};">Hi ${name}, your account and data have been removed.</p>`,
-      "Account deleted",
+      `<h2 style="color:${COLORS.textDark};">Հաշիվը ջնջված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր հաշիվը և տվյալները հեռացվել են։</p>`,
+      "Հաշիվը ջնջված է",
     );
     return { subject, text, html };
   },
 
   verifyEmail(name: string, verifyUrl: string, expiresInHours: number) {
-    const subject = `Verify your ${APP_NAME} email`;
-    const text = `Hi ${name},\n\nVerify: ${verifyUrl}\n\nExpires in ${expiresInHours} hours.`;
+    const subject = `Հաստատեք «${APP_NAME}» էլ․ փոստը`;
+    const text = `Ողջույն, ${name},\n\nՀաստատեք՝ ${verifyUrl}\n\nՀղումը գործում է ${expiresInHours} ժամ։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Verify your email</h2><p style="color:${COLORS.textLight};">Hi ${name}, click below to verify.</p>${emailButton("Verify Email", verifyUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Expires in ${expiresInHours} hours.</p>`,
-      "Verify your email",
+      `<h2 style="color:${COLORS.textDark};">Հաստատեք էլ․ փոստը</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Սեղմեք ստորև՝ գրանցումն ավարտելու համար։</p>${emailButton("Հաստատել էլ․ փոստը", verifyUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Հղումը գործում է ${expiresInHours} ժամ։</p>`,
+      "Հաստատեք էլ․ փոստը",
     );
     return { subject, text, html };
   },

@@ -1,5 +1,7 @@
 import { Text, TextInput, View } from "react-native";
 
+import { t } from "@/i18n";
+
 type FormFieldVariant = "default" | "paper" | "academic";
 
 type FormFieldProps = {
@@ -39,7 +41,7 @@ export function FormField({
     <View className="mb-6">
       <Text className={labelClass}>
         {label}
-        {optional ? " (optional)" : ""}
+        {optional ? ` (${t("common.optional")})` : ""}
       </Text>
       <TextInput
         value={value}

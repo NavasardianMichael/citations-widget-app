@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/button";
 import { FormField } from "@/components/form-field";
 import { pressableNoRipple } from "@/constants/pressable";
+import { t } from "@/i18n";
 import { forgotPasswordRequest } from "@/services/auth-api";
 
 export default function ForgotPasswordScreen() {
@@ -23,7 +24,7 @@ export default function ForgotPasswordScreen() {
       const result = await forgotPasswordRequest(email.trim());
       setMessage(result.message);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed");
+      setError(e instanceof Error ? e.message : t("auth.forgot.failed"));
     } finally {
       setLoading(false);
     }
@@ -34,17 +35,21 @@ export default function ForgotPasswordScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
           <View className="mx-auto w-full max-w-md">
-            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">Reset password</Text>
-            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">Enter your email and we will send a reset link to the app.</Text>
+            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">{t("auth.forgot.title")}</Text>
+            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">{t("auth.forgot.subtitle")}</Text>
 
             {error ? <Text className="mb-4 text-error">{error}</Text> : null}
             {message ? <Text className="mb-4 text-primary">{message}</Text> : null}
 
-            <FormField label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
-            <Button label={loading ? "Sending..." : "Send reset link"} onPress={handleSubmit} disabled={loading} />
+            <FormField label={t("auth.login.email")} value={email} onChangeText={setEmail} placeholder="you@example.com" />
+            <Button
+              label={loading ? t("auth.forgot.submitting") : t("auth.forgot.submit")}
+              onPress={handleSubmit}
+              disabled={loading}
+            />
 
             <Pressable {...pressableNoRipple} onPress={() => router.replace("/auth/login")} className="mt-6">
-              <Text className="text-center font-body-md text-body-md text-primary">Back to sign in</Text>
+              <Text className="text-center font-body-md text-body-md text-primary">{t("auth.forgot.back")}</Text>
             </Pressable>
           </View>
         </ScrollView>

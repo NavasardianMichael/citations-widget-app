@@ -30,6 +30,7 @@ function toPublicUser(user: User): UserPublic {
     firstName: user.firstName,
     lastName: user.lastName,
     socialUrl: user.socialUrl,
+    locale: user.locale ?? "hy",
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -40,20 +41,20 @@ export const authService = {
   async resendVerification(email: string): Promise<{ message: string }> {
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      return { message: "If an account exists with this email, a verification email has been sent." };
+      return { message: "Եթե այս էլ․ փոստով հաշիվ կա, հաստատման նամակ ուղարկվել է։" };
     }
     if (user.emailVerified) {
-      return { message: "Email is already verified." };
+      return { message: "Էլ․ փոստն արդեն հաստատված է։" };
     }
     const verificationToken = await emailVerificationRepository.create(user.id);
     await emailService.sendVerifyEmail(user.email, user.name, verificationToken.token);
-    return { message: "Verification email sent. Please check your inbox." };
+    return { message: "Հաստատման նամակն ուղարկված է։ Ստուգեք Ձեր փոստարկղը։" };
   },
 
   async register(input: RegisterInput): Promise<RegisterResponse> {
     const exists = await userRepository.existsByEmail(input.email);
     if (exists) {
-      throw new AppError(HttpStatus.CONFLICT, ErrorCode.EMAIL_ALREADY_EXISTS, "An account with this email already exists");
+      throw new AppError(HttpStatus.CONFLICT, ErrorCode.EMAIL_ALREADY_EXISTS, "Այս էլ․ փոստով հաշիվ արդեն գոյություն ունի");
     }
 
     const passwordHash = await hashPassword(input.password);
@@ -62,6 +63,7 @@ export const authService = {
       name: input.name,
       passwordHash,
       provider: "local",
+      locale: "hy",
     });
 
     const verificationToken = await emailVerificationRepository.create(user.id);
@@ -69,27 +71,27 @@ export const authService = {
       logger.error({ error, userId: user.id }, "Failed to send verification email");
     });
 
-    return { message: "Registration successful. Please check your email to verify your account." };
+    return { message: "Գրանցումն հաջողվեց։ Խնդրում ենք ստուգել էլ․ փոստը՝ հաշիվը հաստատելու համար։" };
   },
 
   async login(input: LoginInput): Promise<Omit<AuthResponse, "accessToken" | "refreshToken">> {
     const user = await userRepository.findByEmail(input.email);
 
     if (!user || !user.passwordHash) {
-      throw new AppError(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "Invalid email or password");
+      throw new AppError(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "Սխալ էլ․ փոստ կամ գաղտնաբառ");
     }
 
     if (user.provider === "local" && !user.emailVerified) {
       throw new AppError(
         HttpStatus.FORBIDDEN,
         ErrorCode.EMAIL_NOT_VERIFIED,
-        "Please verify your email address before logging in.",
+        "Մուտք գործելուց առաջ հաստատեք Ձեր էլ․ փոստը։",
       );
     }
 
     const isValid = await verifyPassword(user.passwordHash, input.password);
     if (!isValid) {
-      throw new AppError(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "Invalid email or password");
+      throw new AppError(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "Սխալ էլ․ փոստ կամ գաղտնաբառ");
     }
 
     if (needsRehash(user.passwordHash)) {
@@ -97,7 +99,7 @@ export const authService = {
       await userRepository.update(user.id, { passwordHash: newHash });
     }
 
-    return { user: toPublicUser(user), message: "Login successful" };
+    return { user: toPublicUser(user), message: "Մուտքն հաջողվեց" };
   },
 
   async findOrCreateGoogleUser(profile: {
@@ -126,6 +128,7 @@ export const authService = {
       provider: "google",
       googleId: profile.googleId,
       emailVerified: true,
+      locale: "hy",
     });
 
     return toPublicUser(user);
@@ -139,7 +142,7 @@ export const authService = {
   async updateProfile(userId: string, input: UpdateAuthProfileInput): Promise<UserPublic> {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "User not found");
+      throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Օգտատերը չի գտնվել");
     }
 
     const updated = await userRepository.update(userId, {
@@ -150,7 +153,7 @@ export const authService = {
     });
 
     if (!updated) {
-      throw new AppError(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "Failed to update profile");
+      throw new AppError(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "Չհաջողվեց թարմացնել պրոֆիլը");
     }
 
     return toPublicUser(updated);
@@ -159,19 +162,19 @@ export const authService = {
   async changePassword(userId: string, input: ChangePasswordInput): Promise<{ message: string }> {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "User not found");
+      throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Օգտատերը չի գտնվել");
     }
     if (user.provider !== "local" || !user.passwordHash) {
       throw new AppError(
         HttpStatus.BAD_REQUEST,
         ErrorCode.VALIDATION_ERROR,
-        "Password change is only available for email/password accounts",
+        "Գաղտնաբառի փոփոխությունը հասանելի է միայն էլ․ փոստով գրանցված հաշիվների համար",
       );
     }
 
     const valid = await verifyPassword(user.passwordHash, input.currentPassword);
     if (!valid) {
-      throw new AppError(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "Current password is incorrect");
+      throw new AppError(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "Ընթացիկ գաղտնաբառը սխալ է");
     }
 
     const passwordHash = await hashPassword(input.newPassword);
@@ -180,18 +183,18 @@ export const authService = {
       logger.error({ error, userId }, "Failed to send password changed email");
     });
 
-    return { message: "Password updated successfully" };
+    return { message: "Գաղտնաբառը հաջողությամբ թարմացվել է" };
   },
 
   async deleteAccount(userId: string): Promise<void> {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "User not found");
+      throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Օգտատերը չի գտնվել");
     }
 
     const deleted = await userRepository.delete(userId);
     if (!deleted) {
-      throw new AppError(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "Failed to delete account");
+      throw new AppError(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "Չհաջողվեց ջնջել հաշիվը");
     }
 
     emailService.sendAccountDeleted(user.email, user.name).catch((error) => {
@@ -201,7 +204,7 @@ export const authService = {
 
   async forgotPassword(input: ForgotPasswordInput): Promise<{ message: string }> {
     const user = await userRepository.findByEmail(input.email);
-    const successMessage = "If an account exists with this email, you will receive a password reset link";
+    const successMessage = "Եթե այս էլ․ փոստով հաշիվ կա, կստանաք գաղտնաբառի վերականգնման հղում";
 
     if (!user) {
       return { message: successMessage };
@@ -229,7 +232,7 @@ export const authService = {
   async resetPassword(input: ResetPasswordInput): Promise<{ message: string }> {
     const tokenRecord = await passwordResetRepository.findValidToken(input.token);
     if (!tokenRecord) {
-      throw new AppError(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_TOKEN, "Invalid or expired reset token");
+      throw new AppError(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_TOKEN, "Անվավեր կամ ժամկետանց վերականգնման հղում");
     }
 
     const passwordHash = await hashPassword(input.password);
@@ -240,7 +243,7 @@ export const authService = {
       logger.error({ error, userId: tokenRecord.userId }, "Failed to send password changed email");
     });
 
-    return { message: "Password reset successfully" };
+    return { message: "Գաղտնաբառը հաջողությամբ վերականգնվել է" };
   },
 
   async verifyEmail(input: VerifyEmailInput): Promise<{ message: string }> {
@@ -252,14 +255,14 @@ export const authService = {
       emailService.sendWelcome(tokenRecord.user.email, tokenRecord.user.name).catch((error) => {
         logger.error({ error, userId: tokenRecord.userId }, "Failed to send welcome email");
       });
-      return { message: "Email verified successfully. You can now log in." };
+      return { message: "Էլ․ փոստը հաստատված է։ Այժմ կարող եք մուտք գործել։" };
     }
 
     const usedRecord = await emailVerificationRepository.findByTokenWithUser(input.token);
     if (usedRecord?.user.emailVerified) {
-      return { message: "Email already verified. You can log in." };
+      return { message: "Էլ․ փոստն արդեն հաստատված է։ Կարող եք մուտք գործել։" };
     }
 
-    throw new AppError(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_TOKEN, "Invalid or expired verification link.");
+    throw new AppError(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_TOKEN, "Անվավեր կամ ժամկետանց հաստատման հղում։");
   },
 };

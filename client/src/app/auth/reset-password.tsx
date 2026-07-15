@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
 import { FormField } from "@/components/form-field";
+import { t } from "@/i18n";
 import { resetPasswordRequest } from "@/services/auth-api";
 
 export default function ResetPasswordScreen() {
@@ -16,7 +17,7 @@ export default function ResetPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!token) setError("Invalid reset link. Request a new one from the app.");
+    if (!token) setError(t("auth.reset.invalidLink"));
   }, [token]);
 
   async function handleSubmit() {
@@ -29,7 +30,7 @@ export default function ResetPasswordScreen() {
       setMessage(result.message);
       setTimeout(() => router.replace("/auth/login"), 1500);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Reset failed");
+      setError(e instanceof Error ? e.message : t("auth.reset.failed"));
     } finally {
       setLoading(false);
     }
@@ -40,14 +41,23 @@ export default function ResetPasswordScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
           <View className="mx-auto w-full max-w-md">
-            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">Set new password</Text>
-            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">Choose a strong password for your account.</Text>
+            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">{t("auth.reset.title")}</Text>
+            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">{t("auth.reset.subtitle")}</Text>
 
             {error ? <Text className="mb-4 text-error">{error}</Text> : null}
             {message ? <Text className="mb-4 text-primary">{message}</Text> : null}
 
-            <FormField label="New password" value={password} onChangeText={setPassword} placeholder="At least 8 characters" />
-            <Button label={loading ? "Saving..." : "Update password"} onPress={handleSubmit} disabled={loading || !token} />
+            <FormField
+              label={t("auth.reset.newPassword")}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={t("auth.register.passwordPlaceholder")}
+            />
+            <Button
+              label={loading ? t("auth.reset.submitting") : t("auth.reset.submit")}
+              onPress={handleSubmit}
+              disabled={loading || !token}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

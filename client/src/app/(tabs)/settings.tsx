@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 
 import { Button } from "@/components/button";
 import { RadioListRow } from "@/components/radio-list-row";
@@ -10,6 +10,7 @@ import { ToggleRow } from "@/components/toggle-row";
 import { TopAppBar } from "@/components/top-app-bar";
 import { WidgetPreview } from "@/components/widget-preview";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
+import { t } from "@/i18n";
 import { getWidgetSettings, previewWidgetCitation, saveWidgetSettings } from "@/services/widget-settings";
 import type {
   FontStyle,
@@ -19,22 +20,22 @@ import type {
   WidgetSettingsDraft,
 } from "@/types/citation";
 
-const SOURCE_OPTIONS: { value: SourceSelection; label: string; icon: "church" | "auto-stories" | "all-inclusive" | "bookmark" }[] = [
-  { value: "bible", label: "Bible", icon: "church" },
-  { value: "fiction", label: "Fiction", icon: "auto-stories" },
-  { value: "mixed", label: "Mixed", icon: "all-inclusive" },
-  { value: "saved", label: "Saved", icon: "bookmark" },
+const SOURCE_OPTIONS: { value: SourceSelection; labelKey: "settings.poolBible" | "settings.poolFiction" | "settings.poolMixed" | "settings.poolSaved"; icon: "church" | "auto-stories" | "all-inclusive" | "bookmark" }[] = [
+  { value: "bible", labelKey: "settings.poolBible", icon: "church" },
+  { value: "fiction", labelKey: "settings.poolFiction", icon: "auto-stories" },
+  { value: "mixed", labelKey: "settings.poolMixed", icon: "all-inclusive" },
+  { value: "saved", labelKey: "settings.poolSaved", icon: "bookmark" },
 ];
 
-const REFRESH_OPTIONS: { value: RefreshRateHours; label: string }[] = [
-  { value: 6, label: "Every 6 hours" },
-  { value: 12, label: "Every 12 hours" },
-  { value: 24, label: "Daily" },
+const REFRESH_OPTIONS: { value: RefreshRateHours; labelKey: "settings.refresh6" | "settings.refresh12" | "settings.refresh24" }[] = [
+  { value: 6, labelKey: "settings.refresh6" },
+  { value: 12, labelKey: "settings.refresh12" },
+  { value: 24, labelKey: "settings.refresh24" },
 ];
 
-const FONT_OPTIONS: { value: FontStyle; label: string }[] = [
-  { value: "source_serif_4", label: "Source Serif 4 (Classic)" },
-  { value: "hanken_grotesk", label: "Hanken Grotesk (Modern)" },
+const FONT_OPTIONS: { value: FontStyle; labelKey: "settings.fontClassic" | "settings.fontModern" }[] = [
+  { value: "source_serif_4", labelKey: "settings.fontClassic" },
+  { value: "hanken_grotesk", labelKey: "settings.fontModern" },
 ];
 
 export default function SettingsScreen() {
@@ -105,9 +106,9 @@ export default function SettingsScreen() {
       };
       setSaved(next);
       setDraft(next);
-      Alert.alert("Saved", "Widget settings have been saved.");
+      Alert.alert(t("common.save"), t("settings.saved"));
     } catch (e) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed to save settings");
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("settings.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -119,12 +120,12 @@ export default function SettingsScreen() {
 
   const settingsColumn = (
     <View className="gap-8">
-      <SettingsSection title="Source Selection" icon="menu-book">
+      <SettingsSection title={t("settings.sourcePool")} icon="menu-book">
         <View className="flex-row flex-wrap gap-4">
           {SOURCE_OPTIONS.map((option) => (
             <RadioOptionCard
               key={option.value}
-              label={option.label}
+              label={t(option.labelKey)}
               icon={option.icon}
               selected={draft.sourceSelection === option.value}
               onPress={() => updateDraft("sourceSelection", option.value)}
@@ -133,12 +134,12 @@ export default function SettingsScreen() {
         </View>
       </SettingsSection>
 
-      <SettingsSection title="Refresh Rate" icon="update">
+      <SettingsSection title={t("settings.refreshRate")} icon="update">
         <View className="gap-3">
           {REFRESH_OPTIONS.map((option) => (
             <RadioListRow
               key={option.value}
-              label={option.label}
+              label={t(option.labelKey)}
               selected={draft.refreshRateHours === option.value}
               onPress={() => updateDraft("refreshRateHours", option.value)}
             />
@@ -146,19 +147,19 @@ export default function SettingsScreen() {
         </View>
       </SettingsSection>
 
-      <SettingsSection title="Typography" icon="format-size">
+      <SettingsSection title={t("settings.typography")} icon="format-size">
         <SelectField
-          label="Font Style"
-          options={FONT_OPTIONS}
+          label={t("settings.font")}
+          options={FONT_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
           value={draft.fontStyle}
           onChange={(v) => updateDraft("fontStyle", v)}
         />
       </SettingsSection>
 
-      <SettingsSection title="Display Options" icon="visibility">
+      <SettingsSection title={t("settings.displayOptions")} icon="visibility">
         <ToggleRow
-          title="Show attribution for community submissions"
-          description='Displays "Added by [Name]" on the bottom of widgets'
+          title={t("settings.attribution")}
+          description={t("settings.attributionDesc")}
           value={draft.showAttribution}
           onValueChange={(v) => updateDraft("showAttribution", v)}
         />
@@ -170,9 +171,9 @@ export default function SettingsScreen() {
     <View>
       <WidgetPreview citation={preview} fontStyle={draft.fontStyle} loading={previewLoading} />
       <View className="mt-8 flex-row justify-end gap-4">
-        <Button label="Discard" variant="secondary" secondaryBorder="secondary" onPress={handleDiscard} />
+        <Button label={t("common.discard")} variant="secondary" secondaryBorder="secondary" onPress={handleDiscard} />
         <Button
-          label={saving ? "Saving…" : "Save Widget"}
+          label={saving ? t("common.saving") : t("settings.save")}
           icon="save"
           onPress={handleSave}
           disabled={saving}
@@ -183,7 +184,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Configure Widget" />
+      <TopAppBar title={t("settings.title")} />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-[1200px] px-margin-mobile py-8 md:px-margin-desktop md:py-12">
           {isLg ? (

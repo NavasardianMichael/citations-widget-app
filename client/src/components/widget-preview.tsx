@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Text, View } from "react-native";
 
 import { shadowLevel1 } from "@/constants/colors";
+import { t } from "@/i18n";
 import type { FontStyle, WidgetCitation } from "@/types/citation";
 
 type WidgetPreviewProps = {
@@ -14,13 +15,6 @@ const fontFamilyMap: Record<FontStyle, string> = {
   source_serif_4: "SourceSerif4_400Regular_Italic",
   hanken_grotesk: "HankenGrotesk_400Regular",
 };
-
-const PREVIEW_ACTIONS: { icon: keyof typeof MaterialIcons.glyphMap; label: string }[] = [
-  { icon: "refresh", label: "Refresh" },
-  { icon: "settings", label: "Settings" },
-  { icon: "bookmark", label: "Bookmark" },
-  { icon: "share", label: "Share" },
-];
 
 function PreviewActionIcon({ icon, label }: { icon: keyof typeof MaterialIcons.glyphMap; label: string }) {
   return (
@@ -36,13 +30,20 @@ function PreviewActionIcon({ icon, label }: { icon: keyof typeof MaterialIcons.g
 }
 
 export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPreviewProps) {
+  const previewActions: { icon: keyof typeof MaterialIcons.glyphMap; label: string }[] = [
+    { icon: "refresh", label: t("settings.actionRefresh") },
+    { icon: "settings", label: t("settings.actionSettings") },
+    { icon: "bookmark", label: t("settings.actionBookmark") },
+    { icon: "share", label: t("settings.actionShare") },
+  ];
+
   return (
     <View className="rounded-xl border border-outline-variant/50 bg-surface-container-low p-6">
       <View
         className="absolute -top-3 left-6 rounded-full bg-secondary-container px-3 py-1"
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
       >
-        <Text className="font-label-sm text-label-sm text-on-secondary-container">Live Preview</Text>
+        <Text className="font-label-sm text-label-sm text-on-secondary-container">{t("settings.livePreview")}</Text>
       </View>
 
       <View className="relative mt-4 rounded-lg border-l-2 border-secondary bg-surface-container-lowest p-8" style={shadowLevel1}>
@@ -51,7 +52,7 @@ export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPr
         </View>
 
         {loading ? (
-          <Text className="font-body-md text-body-md text-on-surface-variant">Loading preview…</Text>
+          <Text className="font-body-md text-body-md text-on-surface-variant">{t("settings.previewLoading")}</Text>
         ) : citation ? (
           <>
             <Text
@@ -62,20 +63,20 @@ export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPr
             </Text>
             <View className="flex-row items-center justify-between">
               <Text className="font-label-sm text-label-sm uppercase tracking-wider text-primary">
-                {citation.sourceRef ?? citation.author ?? citation.sourceType}
+                {citation.source ?? citation.author ?? citation.category}
               </Text>
               <View className="flex-row gap-2">
-                {PREVIEW_ACTIONS.map((action) => (
+                {previewActions.map((action) => (
                   <PreviewActionIcon key={action.icon} icon={action.icon} label={action.label} />
                 ))}
               </View>
             </View>
             {citation.addedBy ? (
-              <Text className="mt-3 text-sm text-on-surface-variant">Added by {citation.addedBy}</Text>
+              <Text className="mt-3 text-sm text-on-surface-variant">{t("settings.addedBy", { name: citation.addedBy })}</Text>
             ) : null}
           </>
         ) : (
-          <Text className="font-body-md text-body-md text-on-surface-variant">No citations available for this selection.</Text>
+          <Text className="font-body-md text-body-md text-on-surface-variant">{t("settings.previewEmpty")}</Text>
         )}
       </View>
     </View>

@@ -1,5 +1,5 @@
-export type SourceType = "bible" | "fiction";
-export type SourceSelection = SourceType | "mixed" | "saved";
+export type CitationCategory = "bible" | "fiction";
+export type SourceSelection = CitationCategory | "mixed" | "saved";
 export type CitationStatus = "approved" | "pending" | "rejected" | "private";
 export type FontStyle = "source_serif_4" | "hanken_grotesk";
 export type RefreshRateHours = 6 | 12 | 24;
@@ -8,9 +8,8 @@ export type Citation = {
   id: string;
   text: string;
   author: string | null;
-  sourceRef: string | null;
-  sourceType: SourceType;
-  tags: string[];
+  source: string | null;
+  category: CitationCategory;
   createdAt?: string;
 };
 
@@ -58,8 +57,8 @@ export type UserProfile = {
 export type CreateCitationInput = {
   text: string;
   author?: string;
-  sourceRef?: string;
-  sourceType: SourceType;
+  source?: string;
+  category: CitationCategory;
   shareProfile: boolean;
   visibility: "private" | "pending";
 };
@@ -67,9 +66,8 @@ export type CreateCitationInput = {
 export type UpdateCitationInput = {
   text?: string;
   author?: string | null;
-  sourceRef?: string | null;
-  sourceType?: SourceType;
-  tags?: string[];
+  source?: string | null;
+  category?: CitationCategory;
   shareProfile?: boolean;
 };
 

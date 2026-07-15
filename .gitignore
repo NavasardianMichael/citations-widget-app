@@ -7,3 +7,5 @@ android/
 ios/
 *.log
 .DS_Store
+server/data/seed/_armeastern*
+client/.tmp-nativewind-test.css

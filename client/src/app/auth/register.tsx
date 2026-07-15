@@ -7,6 +7,7 @@ import { Button } from "@/components/button";
 import { FormField } from "@/components/form-field";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
+import { t } from "@/i18n";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function RegisterScreen() {
       const result = await signUp(email.trim(), password, name.trim());
       setMessage(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Registration failed");
+      setError(e instanceof Error ? e.message : t("auth.register.failed"));
     } finally {
       setLoading(false);
     }
@@ -37,21 +38,35 @@ export default function RegisterScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
           <View className="mx-auto w-full max-w-md">
-            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">Create account</Text>
-            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">Register to save citations and sync your widget.</Text>
+            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">{t("auth.register.title")}</Text>
+            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">{t("auth.register.subtitle")}</Text>
 
             {error ? <Text className="mb-4 text-error">{error}</Text> : null}
             {message ? <Text className="mb-4 text-primary">{message}</Text> : null}
 
-            <FormField label="Name" value={name} onChangeText={setName} placeholder="Your name" />
-            <FormField label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
-            <FormField label="Password" value={password} onChangeText={setPassword} placeholder="At least 8 characters" />
+            <FormField
+              label={t("auth.register.name")}
+              value={name}
+              onChangeText={setName}
+              placeholder={t("auth.register.namePlaceholder")}
+            />
+            <FormField label={t("auth.login.email")} value={email} onChangeText={setEmail} placeholder="you@example.com" />
+            <FormField
+              label={t("auth.login.password")}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={t("auth.register.passwordPlaceholder")}
+            />
 
-            <Button label={loading ? "Creating..." : "Create account"} onPress={handleRegister} disabled={loading} />
+            <Button
+              label={loading ? t("auth.register.submitting") : t("auth.register.submit")}
+              onPress={handleRegister}
+              disabled={loading}
+            />
 
             <Pressable {...pressableNoRipple} onPress={() => router.replace("/auth/login")} className="mt-6">
               <Text className="text-center font-body-md text-body-md text-on-surface-variant">
-                Already have an account? <Text className="text-primary">Sign in</Text>
+                {t("auth.register.hasAccount")} <Text className="text-primary">{t("auth.register.signIn")}</Text>
               </Text>
             </Pressable>
           </View>

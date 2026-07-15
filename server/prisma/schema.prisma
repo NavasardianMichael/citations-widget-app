@@ -19,7 +19,7 @@ enum CitationStatus {
   private
 }
 
-enum SourceType {
+enum CitationCategory {
   bible
   fiction
 }
@@ -45,6 +45,7 @@ model User {
   provider      AuthProvider @default(local)
   googleId      String?      @unique @map("google_id")
   emailVerified Boolean      @default(false) @map("email_verified")
+  locale        String       @default("hy") @db.VarChar(5)
   firstName     String?      @map("first_name")
   lastName      String?      @map("last_name")
   socialUrl     String?      @map("social_url")
@@ -123,25 +124,24 @@ model EmailVerificationToken {
 }
 
 model Citation {
-  id                String         @id @default(uuid())
+  id                String           @id @default(uuid())
   text              String
   author            String?
-  sourceRef         String?        @map("source_ref")
-  sourceType        SourceType     @map("source_type")
-  tags              Json           @default("[]")
-  status            CitationStatus @default(pending)
-  submittedByUserId String?        @map("submitted_by_user_id")
-  shareProfile      Boolean        @default(false) @map("share_profile")
-  moderatorNote     String?        @map("moderator_note")
-  reviewedAt        DateTime?      @map("reviewed_at")
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
+  source            String?
+  category          CitationCategory
+  status            CitationStatus   @default(pending)
+  submittedByUserId String?          @map("submitted_by_user_id")
+  shareProfile      Boolean          @default(false) @map("share_profile")
+  moderatorNote     String?          @map("moderator_note")
+  reviewedAt        DateTime?        @map("reviewed_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
 
   submittedBy User?           @relation("SubmittedCitations", fields: [submittedByUserId], references: [id], onDelete: SetNull)
   savedBy     SavedCitation[]
   widgetRefs  WidgetSettings[] @relation("CurrentCitation")
 
-  @@index([status, sourceType])
+  @@index([status, category])
   @@map("citations")
 }
 

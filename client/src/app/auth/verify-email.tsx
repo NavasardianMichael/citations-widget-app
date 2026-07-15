@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
+import { t } from "@/i18n";
 import { verifyEmailRequest } from "@/services/auth-api";
 
 export default function VerifyEmailScreen() {
@@ -16,7 +17,7 @@ export default function VerifyEmailScreen() {
   useEffect(() => {
     async function verify() {
       if (!token) {
-        setError("Invalid verification link.");
+        setError(t("auth.verify.invalidLink"));
         setLoading(false);
         return;
       }
@@ -24,7 +25,7 @@ export default function VerifyEmailScreen() {
         const result = await verifyEmailRequest(token);
         setMessage(result.message);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Verification failed");
+        setError(e instanceof Error ? e.message : t("auth.verify.failed"));
       } finally {
         setLoading(false);
       }
@@ -36,7 +37,7 @@ export default function VerifyEmailScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
         <View className="mx-auto w-full max-w-md items-center">
-          <Text className="mb-4 font-display-lg text-display-lg-mobile text-primary">Email verification</Text>
+          <Text className="mb-4 font-display-lg text-display-lg-mobile text-primary">{t("auth.verify.title")}</Text>
           {loading ? (
             <ActivityIndicator size="large" color="#021a35" />
           ) : error ? (
@@ -44,7 +45,7 @@ export default function VerifyEmailScreen() {
           ) : (
             <Text className="mb-6 text-center font-body-md text-body-md text-primary">{message}</Text>
           )}
-          <Button label="Go to sign in" onPress={() => router.replace("/auth/login")} />
+          <Button label={t("auth.verify.goLogin")} onPress={() => router.replace("/auth/login")} />
         </View>
       </ScrollView>
     </SafeAreaView>

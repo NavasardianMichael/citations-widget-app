@@ -7,6 +7,7 @@ import { Button } from "@/components/button";
 import { FormField } from "@/components/form-field";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
+import { t } from "@/i18n";
 import { AuthApiError } from "@/services/auth-api";
 import { useGoogleSignIn } from "@/services/google-auth";
 
@@ -17,19 +18,22 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [sessionLimitReached, setSessionLimitReached] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleLogin(forceLogin = false) {
     setError(null);
+    setSessionLimitReached(false);
     setLoading(true);
     try {
       await signIn(email.trim(), password, forceLogin);
       router.replace("/(tabs)");
     } catch (e) {
       if (e instanceof AuthApiError && e.code === "SESSION_LIMIT_REACHED" && !forceLogin) {
-        setError("Account active on too many devices. Tap below to sign out other devices.");
+        setSessionLimitReached(true);
+        setError(t("auth.login.sessionLimit"));
       } else {
-        setError(e instanceof Error ? e.message : "Login failed");
+        setError(e instanceof Error ? e.message : t("auth.login.failed"));
       }
     } finally {
       setLoading(false);
@@ -38,6 +42,7 @@ export default function LoginScreen() {
 
   async function handleGoogleLogin(forceLogin = false) {
     setError(null);
+    setSessionLimitReached(false);
     setLoading(true);
     try {
       const data = await signInWithGoogle(forceLogin);
@@ -46,9 +51,10 @@ export default function LoginScreen() {
       router.replace("/(tabs)");
     } catch (e) {
       if (e instanceof AuthApiError && e.code === "SESSION_LIMIT_REACHED" && !forceLogin) {
-        setError("Account active on too many devices. Try Google sign-in again to replace other sessions.");
+        setSessionLimitReached(true);
+        setError(t("auth.login.sessionLimitGoogle"));
       } else {
-        setError(e instanceof Error ? e.message : "Google sign-in failed");
+        setError(e instanceof Error ? e.message : t("auth.login.googleFailed"));
       }
     } finally {
       setLoading(false);
@@ -60,23 +66,32 @@ export default function LoginScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
           <View className="mx-auto w-full max-w-md">
-            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">Welcome back</Text>
-            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">Sign in to access your citations and widget settings.</Text>
+            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">{t("auth.login.title")}</Text>
+            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">{t("auth.login.subtitle")}</Text>
 
             {error ? <Text className="mb-4 text-error">{error}</Text> : null}
 
-            <FormField label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
-            <FormField label="Password" value={password} onChangeText={setPassword} placeholder="Your password" />
+            <FormField label={t("auth.login.email")} value={email} onChangeText={setEmail} placeholder="you@example.com" />
+            <FormField
+              label={t("auth.login.password")}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={t("auth.login.passwordPlaceholder")}
+            />
 
             <Pressable {...pressableNoRipple} onPress={() => router.push("/auth/forgot-password")} className="mb-6">
-              <Text className="text-right font-label-md text-label-md text-primary">Forgot password?</Text>
+              <Text className="text-right font-label-md text-label-md text-primary">{t("auth.login.forgot")}</Text>
             </Pressable>
 
-            <Button label={loading ? "Signing in..." : "Sign in"} onPress={() => handleLogin()} disabled={loading} />
+            <Button
+              label={loading ? t("auth.login.submitting") : t("auth.login.submit")}
+              onPress={() => handleLogin()}
+              disabled={loading}
+            />
 
             {isConfigured ? (
               <Button
-                label="Continue with Google"
+                label={t("auth.login.google")}
                 variant="secondary"
                 onPress={() => handleGoogleLogin()}
                 disabled={loading || !request}
@@ -84,9 +99,9 @@ export default function LoginScreen() {
               />
             ) : null}
 
-            {error?.includes("too many devices") ? (
+            {sessionLimitReached ? (
               <Button
-                label="Sign out other devices and continue"
+                label={t("auth.login.forceDevices")}
                 variant="ghost"
                 onPress={() => handleLogin(true)}
                 disabled={loading}
@@ -96,7 +111,7 @@ export default function LoginScreen() {
 
             <Pressable {...pressableNoRipple} onPress={() => router.push("/auth/register")} className="mt-6">
               <Text className="text-center font-body-md text-body-md text-on-surface-variant">
-                No account? <Text className="text-primary">Create one</Text>
+                {t("auth.login.noAccount")} <Text className="text-primary">{t("auth.login.createOne")}</Text>
               </Text>
             </Pressable>
           </View>

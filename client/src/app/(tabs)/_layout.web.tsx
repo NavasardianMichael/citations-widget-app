@@ -5,12 +5,13 @@ import { Pressable, Text, View } from "react-native";
 
 import { pressableNoRipple } from "@/constants/pressable";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
+import { t } from "@/i18n";
 
-const TABS: { name: string; href: Href; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
-  { name: "index", href: "/", label: "Saved", icon: "bookmark" },
-  { name: "submit", href: "/submit", label: "Submit", icon: "edit" },
-  { name: "settings", href: "/settings", label: "Settings", icon: "settings" },
-  { name: "profile", href: "/profile", label: "Profile", icon: "person" },
+const TABS: { name: string; href: Href; labelKey: "tabs.saved" | "tabs.submit" | "tabs.settings" | "tabs.profile"; icon: keyof typeof MaterialIcons.glyphMap }[] = [
+  { name: "index", href: "/", labelKey: "tabs.saved", icon: "bookmark" },
+  { name: "submit", href: "/submit", labelKey: "tabs.submit", icon: "edit" },
+  { name: "settings", href: "/settings", labelKey: "tabs.settings", icon: "settings" },
+  { name: "profile", href: "/profile", labelKey: "tabs.profile", icon: "person" },
 ];
 
 export default function TabsLayout() {
@@ -22,10 +23,10 @@ export default function TabsLayout() {
         <View className="min-h-screen flex-1 flex-row bg-background">
           <TabList asChild>
             <View className="w-56 shrink-0 border-r border-outline-variant bg-surface px-4 py-8">
-              <Text className="mb-8 px-3 font-headline-md text-headline-md text-primary">Digital Sanctuary</Text>
+              <Text className="mb-8 px-3 font-headline-md text-headline-md text-primary">{t("common.brand")}</Text>
               {TABS.map((tab) => (
                 <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
-                  <SidebarTab icon={tab.icon} label={tab.label} />
+                  <SidebarTab icon={tab.icon} label={t(tab.labelKey)} />
                 </TabTrigger>
               ))}
             </View>
@@ -45,7 +46,7 @@ export default function TabsLayout() {
         <View className="fixed bottom-0 left-0 right-0 z-50 flex-row items-center justify-between border-t border-outline-variant bg-surface px-margin-mobile py-2">
           {TABS.map((tab) => (
             <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
-              <BottomTab icon={tab.icon} label={tab.label} />
+              <BottomTab icon={tab.icon} label={t(tab.labelKey)} />
             </TabTrigger>
           ))}
         </View>

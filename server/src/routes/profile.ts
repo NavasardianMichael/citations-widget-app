@@ -16,6 +16,7 @@ function serializeProfile(user: NonNullable<Awaited<ReturnType<typeof prisma.use
     lastName: user.lastName,
     socialUrl: user.socialUrl,
     avatarUrl: user.avatarUrl,
+    locale: user.locale ?? "hy",
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
   };

@@ -12,9 +12,8 @@ function toPublicCitation(row: Citation) {
     id: row.id,
     text: row.text,
     author: row.author,
-    sourceRef: row.sourceRef,
-    sourceType: row.sourceType,
-    tags: row.tags as string[],
+    source: row.source,
+    category: row.category,
     createdAt: row.createdAt.toISOString(),
   };
 }

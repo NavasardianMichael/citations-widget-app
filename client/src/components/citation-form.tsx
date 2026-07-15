@@ -1,115 +1,118 @@
-import type { ReactNode } from 'react'
-import { Text, View } from 'react-native'
+import type { ReactNode } from "react";
+import { Text, View } from "react-native";
 
-import { FormField } from '@/components/form-field'
-import { TogglePill } from '@/components/toggle-pill'
-import { ToggleRow } from '@/components/toggle-row'
-import type { SourceType } from '@/types/citation'
+import { FormField } from "@/components/form-field";
+import { TogglePill } from "@/components/toggle-pill";
+import { ToggleRow } from "@/components/toggle-row";
+import { t } from "@/i18n";
+import type { CitationCategory } from "@/types/citation";
 
 export type CitationFormValues = {
-  text: string
-  author: string
-  sourceType: SourceType
-  shareProfile: boolean
-}
+  text: string;
+  author: string;
+  source: string;
+  category: CitationCategory;
+  shareProfile: boolean;
+};
 
 export const emptyCitationFormValues = (): CitationFormValues => ({
-  text: '',
-  author: '',
-  sourceType: 'bible',
+  text: "",
+  author: "",
+  source: "",
+  category: "bible",
   shareProfile: true,
-})
+});
 
 export const citationToFormValues = (citation: {
-  text: string
-  author: string | null
-  sourceRef: string | null
-  sourceType: SourceType
-  shareProfile: boolean
+  text: string;
+  author: string | null;
+  source: string | null;
+  category: CitationCategory;
+  shareProfile: boolean;
 }): CitationFormValues => ({
   text: citation.text,
-  author: citation.author ?? citation.sourceRef ?? '',
-  sourceType: citation.sourceType,
+  author: citation.author ?? "",
+  source: citation.source ?? "",
+  category: citation.category,
   shareProfile: citation.shareProfile,
-})
+});
 
 type CitationFormProps = {
-  values: CitationFormValues
-  onChange: (values: CitationFormValues) => void
-  footer?: ReactNode
-  disabled?: boolean
-}
+  values: CitationFormValues;
+  onChange: (values: CitationFormValues) => void;
+  footer?: ReactNode;
+  disabled?: boolean;
+};
 
-export function CitationForm({
-  values,
-  onChange,
-  footer,
-  disabled = false,
-}: CitationFormProps) {
-  function patch<K extends keyof CitationFormValues>(
-    key: K,
-    value: CitationFormValues[K],
-  ) {
-    onChange({ ...values, [key]: value })
+export function CitationForm({ values, onChange, footer, disabled = false }: CitationFormProps) {
+  function patch<K extends keyof CitationFormValues>(key: K, value: CitationFormValues[K]) {
+    onChange({ ...values, [key]: value });
   }
 
   return (
     <View
-      className='rounded-xl bg-surface-container-low p-6 md:p-10'
-      style={{ boxShadow: '0 4px 20px rgba(2, 26, 53, 0.15)' }}
+      className="rounded-xl bg-surface-container-low p-6 md:p-10"
+      style={{ boxShadow: "0 4px 20px rgba(2, 26, 53, 0.15)" }}
     >
       <FormField
-        label='Citation Text'
+        label={t("form.citationText")}
         value={values.text}
-        onChangeText={(text) => patch('text', text)}
-        placeholder='Enter the text to be preserved...'
+        onChangeText={(text) => patch("text", text)}
+        placeholder={t("form.citationPlaceholder")}
         multiline
-        variant='paper'
+        variant="paper"
         editable={!disabled}
       />
 
-      <View className='mb-8 flex-col gap-8 md:flex-row'>
-        <View className='flex-1'>
+      <View className="mb-8 flex-col gap-8 md:flex-row">
+        <View className="flex-1">
           <FormField
-            label='Author / Source'
+            label={t("form.author")}
             value={values.author}
-            onChangeText={(author) => patch('author', author)}
-            placeholder='e.g., C.S. Lewis'
-            variant='paper'
+            onChangeText={(author) => patch("author", author)}
+            placeholder={t("form.authorPlaceholder")}
+            variant="paper"
             editable={!disabled}
+            optional
           />
         </View>
-        <View className='flex-1'>
-          <Text className='mb-3 font-label-sm text-label-sm text-primary'>
-            Category
-          </Text>
-          <TogglePill
-            variant='category'
-            options={[
-              { value: 'bible' as const, label: 'Theology' },
-              { value: 'fiction' as const, label: 'Literature' },
-            ]}
-            value={values.sourceType}
-            onChange={(sourceType) => patch('sourceType', sourceType)}
-            disabled={disabled}
+        <View className="flex-1">
+          <FormField
+            label={t("form.source")}
+            value={values.source}
+            onChangeText={(source) => patch("source", source)}
+            placeholder={t("form.sourcePlaceholder")}
+            variant="paper"
+            editable={!disabled}
+            optional
           />
         </View>
       </View>
 
-      <View className={footer ? 'mb-10' : ''}>
-        <ToggleRow
-          title="Share my profile on other users' widgets if approved"
-          value={values.shareProfile}
-          onValueChange={(shareProfile) => patch('shareProfile', shareProfile)}
+      <View className="mb-8">
+        <Text className="mb-3 font-label-sm text-label-sm text-primary">{t("form.category")}</Text>
+        <TogglePill
+          variant="category"
+          options={[
+            { value: "bible" as const, label: t("form.categoryBible") },
+            { value: "fiction" as const, label: t("form.categoryFiction") },
+          ]}
+          value={values.category}
+          onChange={(category) => patch("category", category)}
           disabled={disabled}
         />
       </View>
 
-      {footer ? (
-        <View className='border-t border-outline-variant/30 pt-6'>
-          {footer}
-        </View>
-      ) : null}
+      <View className={footer ? "mb-10" : ""}>
+        <ToggleRow
+          title={t("form.shareProfile")}
+          value={values.shareProfile}
+          onValueChange={(shareProfile) => patch("shareProfile", shareProfile)}
+          disabled={disabled}
+        />
+      </View>
+
+      {footer ? <View className="border-t border-outline-variant/30 pt-6">{footer}</View> : null}
     </View>
-  )
+  );
 }

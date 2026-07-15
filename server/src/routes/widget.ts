@@ -55,9 +55,8 @@ async function withAttribution(citation: NonNullable<Awaited<ReturnType<typeof p
     id: citation.id,
     text: citation.text,
     author: citation.author,
-    sourceRef: citation.sourceRef,
-    sourceType: citation.sourceType,
-    tags: citation.tags as string[],
+    source: citation.source,
+    category: citation.category,
   };
 
   if (!showAttribution || !citation.shareProfile || !citation.submittedByUserId) {

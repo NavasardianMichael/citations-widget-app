@@ -10,6 +10,7 @@ export type UserPublic = {
   firstName: string | null;
   lastName: string | null;
   socialUrl: string | null;
+  locale: string;
   createdAt: string;
 };
 

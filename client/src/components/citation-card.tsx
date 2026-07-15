@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import { CategoryTag } from "@/components/category-tag";
 import { shadowLevel1 } from "@/constants/colors";
 import { pressableNoRipple } from "@/constants/pressable";
+import { t } from "@/i18n";
 import type { Citation } from "@/types/citation";
 
 export type CitationCardVariant = "decorative" | "minimalist" | "featured";
@@ -43,18 +44,18 @@ export function CitationCard({
               "{citation.text}"
             </Text>
             <Text className="mb-6 font-label-sm text-label-sm uppercase tracking-widest text-secondary-fixed">
-              — {citation.author ?? "Unknown"}
-              {citation.sourceRef ? `, ${citation.sourceRef}` : ""}
+              — {citation.author ?? t("card.unknownAuthor")}
+              {citation.source ? `, ${citation.source}` : ""}
             </Text>
             {onUnsave ? (
               <Pressable
                 {...pressableNoRipple}
                 onPress={onUnsave}
-                accessibilityLabel="Remove from saved"
+                accessibilityLabel={t("card.removeSaved")}
                 className="flex-row items-center gap-2 rounded-lg border border-secondary px-4 py-2"
               >
                 <MaterialIcons name="bookmark-remove" size={16} color="#ffffff" />
-                <Text className="font-label-sm text-label-sm text-white">REMOVE</Text>
+                <Text className="font-label-sm text-label-sm text-white">{t("card.remove")}</Text>
               </Pressable>
             ) : null}
           </View>
@@ -76,16 +77,6 @@ export function CitationCard({
           </View>
         ) : null}
 
-        {variant === "minimalist" && citation.tags.length > 0 ? (
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            {citation.tags.map((tag) => (
-              <View key={tag} className="rounded bg-secondary-container px-3 py-1">
-                <Text className="font-label-sm text-label-sm text-on-secondary-container">#{tag}</Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
         <Text className={`relative z-10 mb-6 ${quoteClass} text-primary`}>"{citation.text}"</Text>
 
         <View className={`${variant === "minimalist" ? "mt-auto border-t border-outline-variant pt-4" : ""} flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`}>
@@ -99,19 +90,19 @@ export function CitationCard({
               {citation.author ? (
                 <Text className="font-body-md text-body-md font-semibold text-primary">{citation.author}</Text>
               ) : null}
-              {citation.sourceRef ? (
-                <Text className="font-label-sm text-label-sm text-on-surface-variant">{citation.sourceRef}</Text>
+              {citation.source ? (
+                <Text className="font-label-sm text-label-sm text-on-surface-variant">{citation.source}</Text>
               ) : null}
             </View>
           </View>
 
           <View className="flex-row items-center gap-2">
-            {variant === "decorative" ? <CategoryTag sourceType={citation.sourceType} /> : null}
+            {variant === "decorative" ? <CategoryTag category={citation.category} /> : null}
             {isSaved && onUnsave ? (
               <Pressable
                 {...pressableNoRipple}
                 onPress={onUnsave}
-                accessibilityLabel="Remove from saved"
+                accessibilityLabel={t("card.removeSaved")}
                 className="h-10 w-10 items-center justify-center rounded-full"
               >
                 <MaterialIcons
@@ -125,7 +116,7 @@ export function CitationCard({
               <Pressable
                 {...pressableNoRipple}
                 onPress={onSave}
-                accessibilityLabel="Save citation"
+                accessibilityLabel={t("card.saveCitation")}
                 className="h-10 w-10 items-center justify-center rounded-full bg-surface-container"
               >
                 <MaterialIcons name="bookmark-border" size={18} color="#44474d" />
