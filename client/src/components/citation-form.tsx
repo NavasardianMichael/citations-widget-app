@@ -42,9 +42,10 @@ type CitationFormProps = {
   onChange: (values: CitationFormValues) => void;
   footer?: ReactNode;
   disabled?: boolean;
+  errors?: Partial<Record<"text" | "author" | "source", string>>;
 };
 
-export function CitationForm({ values, onChange, footer, disabled = false }: CitationFormProps) {
+export function CitationForm({ values, onChange, footer, disabled = false, errors }: CitationFormProps) {
   function patch<K extends keyof CitationFormValues>(key: K, value: CitationFormValues[K]) {
     onChange({ ...values, [key]: value });
   }
@@ -62,6 +63,7 @@ export function CitationForm({ values, onChange, footer, disabled = false }: Cit
         multiline
         variant="paper"
         editable={!disabled}
+        error={errors?.text}
       />
 
       <View className="mb-8 flex-col gap-8 md:flex-row">
@@ -74,6 +76,7 @@ export function CitationForm({ values, onChange, footer, disabled = false }: Cit
             variant="paper"
             editable={!disabled}
             optional
+            error={errors?.author}
           />
         </View>
         <View className="flex-1">
@@ -85,6 +88,7 @@ export function CitationForm({ values, onChange, footer, disabled = false }: Cit
             variant="paper"
             editable={!disabled}
             optional
+            error={errors?.source}
           />
         </View>
       </View>

@@ -7,11 +7,13 @@ import { Button } from "@/components/button";
 import { FormField } from "@/components/form-field";
 import { pressableNoRipple } from "@/constants/pressable";
 import { t } from "@/i18n";
+import { hasErrors, validateForgotPassword, type FieldErrors } from "@/lib/validation";
 import { forgotPasswordRequest } from "@/services/auth-api";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"email">>({});
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,10 @@ export default function ForgotPasswordScreen() {
   async function handleSubmit() {
     setError(null);
     setMessage(null);
+    const nextErrors = validateForgotPassword({ email });
+    setFieldErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
+
     setLoading(true);
     try {
       const result = await forgotPasswordRequest(email.trim());
@@ -41,7 +47,21 @@ export default function ForgotPasswordScreen() {
             {error ? <Text className="mb-4 text-error">{error}</Text> : null}
             {message ? <Text className="mb-4 text-primary">{message}</Text> : null}
 
-            <FormField label={t("auth.login.email")} value={email} onChangeText={setEmail} placeholder="you@example.com" />
+            <FormField
+              label={t("auth.login.email")}
+              value={email}
+              onChangeText={(v) => {
+                setEmail(v);
+                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+              }}
+              placeholder="you@example.com"
+              error={fieldErrors.email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+            />
             <Button
               label={loading ? t("auth.forgot.submitting") : t("auth.forgot.submit")}
               onPress={handleSubmit}

@@ -7,6 +7,7 @@ import { Button } from "@/components/button";
 import { CitationForm, emptyCitationFormValues, type CitationFormValues } from "@/components/citation-form";
 import { TopAppBar } from "@/components/top-app-bar";
 import { t } from "@/i18n";
+import { hasErrors, validateCitationForm, type FieldErrors } from "@/lib/validation";
 import { createCitation } from "@/services/api";
 
 export default function SubmitScreen() {
@@ -14,13 +15,13 @@ export default function SubmitScreen() {
   const isMd = width >= 768;
 
   const [values, setValues] = useState<CitationFormValues>(emptyCitationFormValues);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"text" | "author" | "source">>({});
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(visibility: "private" | "pending") {
-    if (!values.text.trim()) {
-      Alert.alert(t("submit.missingTextTitle"), t("submit.missingTextBody"));
-      return;
-    }
+    const nextErrors = validateCitationForm(values);
+    setFieldErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
 
     setSubmitting(true);
     try {
@@ -36,11 +37,12 @@ export default function SubmitScreen() {
         visibility === "private" ? t("submit.savedTitle") : t("submit.submittedTitle"),
         visibility === "private" ? t("submit.savedBody") : t("submit.submittedBody"),
         [
-          { text: t("submit.viewProfile"), onPress: () => router.push("/profile") },
+          { text: t("tabs.profile"), onPress: () => router.push("/profile") },
           { text: t("common.ok") },
         ],
       );
       setValues(emptyCitationFormValues());
+      setFieldErrors({});
     } catch (e) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("submit.failed"));
     } finally {
@@ -68,7 +70,19 @@ export default function SubmitScreen() {
 
           <CitationForm
             values={values}
-            onChange={setValues}
+            onChange={(next) => {
+              setValues(next);
+              if (fieldErrors.text || fieldErrors.author || fieldErrors.source) {
+                setFieldErrors((prev) => {
+                  const cleared = { ...prev };
+                  if (next.text !== values.text) delete cleared.text;
+                  if (next.author !== values.author) delete cleared.author;
+                  if (next.source !== values.source) delete cleared.source;
+                  return cleared;
+                });
+              }
+            }}
+            errors={fieldErrors}
             disabled={submitting}
             footer={
               <View className="flex-col gap-4 md:flex-row md:items-center md:justify-end">

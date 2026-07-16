@@ -8,6 +8,7 @@ import { FormField } from "@/components/form-field";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
+import { hasErrors, validateLogin, type FieldErrors } from "@/lib/validation";
 import { AuthApiError } from "@/services/auth-api";
 import { useGoogleSignIn } from "@/services/google-auth";
 
@@ -17,6 +18,7 @@ export default function LoginScreen() {
   const { signInWithGoogle, request, isConfigured } = useGoogleSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"email" | "password">>({});
   const [error, setError] = useState<string | null>(null);
   const [sessionLimitReached, setSessionLimitReached] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,10 @@ export default function LoginScreen() {
   async function handleLogin(forceLogin = false) {
     setError(null);
     setSessionLimitReached(false);
+    const nextErrors = validateLogin({ email, password });
+    setFieldErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
+
     setLoading(true);
     try {
       await signIn(email.trim(), password, forceLogin);
@@ -42,6 +48,7 @@ export default function LoginScreen() {
 
   async function handleGoogleLogin(forceLogin = false) {
     setError(null);
+    setFieldErrors({});
     setSessionLimitReached(false);
     setLoading(true);
     try {
@@ -71,12 +78,34 @@ export default function LoginScreen() {
 
             {error ? <Text className="mb-4 text-error">{error}</Text> : null}
 
-            <FormField label={t("auth.login.email")} value={email} onChangeText={setEmail} placeholder="you@example.com" />
+            <FormField
+              label={t("auth.login.email")}
+              value={email}
+              onChangeText={(v) => {
+                setEmail(v);
+                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+              }}
+              placeholder="you@example.com"
+              error={fieldErrors.email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+            />
             <FormField
               label={t("auth.login.password")}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(v) => {
+                setPassword(v);
+                if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              }}
               placeholder={t("auth.login.passwordPlaceholder")}
+              error={fieldErrors.password}
+              secureTextEntry
+              autoCapitalize="none"
+              autoComplete="password"
+              textContentType="password"
             />
 
             <Pressable {...pressableNoRipple} onPress={() => router.push("/auth/forgot-password")} className="mb-6">

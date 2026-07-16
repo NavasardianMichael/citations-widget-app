@@ -32,6 +32,8 @@ config.watchFolders = [projectRoot];
 config.resolver.unstable_enablePackageExports = false;
 config.resolver.alias = {
   ...(config.resolver.alias ?? {}),
+  // More specific than "@" — assets live at projectRoot/assets, not src/assets.
+  "@/assets": path.join(projectRoot, "assets"),
   "@": path.join(projectRoot, "src"),
 };
 config.resolver.extraNodeModules = {

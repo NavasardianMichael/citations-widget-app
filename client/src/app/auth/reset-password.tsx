@@ -6,12 +6,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/button";
 import { FormField } from "@/components/form-field";
 import { t } from "@/i18n";
+import { hasErrors, validateResetPassword, type FieldErrors } from "@/lib/validation";
 import { resetPasswordRequest } from "@/services/auth-api";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"password">>({});
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,10 @@ export default function ResetPasswordScreen() {
     if (!token) return;
     setError(null);
     setMessage(null);
+    const nextErrors = validateResetPassword({ password });
+    setFieldErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
+
     setLoading(true);
     try {
       const result = await resetPasswordRequest(token, password);
@@ -50,8 +56,16 @@ export default function ResetPasswordScreen() {
             <FormField
               label={t("auth.reset.newPassword")}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(v) => {
+                setPassword(v);
+                if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              }}
               placeholder={t("auth.register.passwordPlaceholder")}
+              error={fieldErrors.password}
+              secureTextEntry
+              autoCapitalize="none"
+              autoComplete="new-password"
+              textContentType="newPassword"
             />
             <Button
               label={loading ? t("auth.reset.submitting") : t("auth.reset.submit")}

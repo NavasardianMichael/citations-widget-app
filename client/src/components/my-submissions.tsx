@@ -7,6 +7,7 @@ import { CitationForm, citationToFormValues, type CitationFormValues } from "@/c
 import { FilterPill } from "@/components/filter-pill";
 import { SubmissionCard } from "@/components/submission-card";
 import { t } from "@/i18n";
+import { hasErrors, validateCitationForm, type FieldErrors } from "@/lib/validation";
 import { deleteCitation, fetchMyCitations, updateCitation } from "@/services/api";
 import type { CitationStatus, OwnedCitation } from "@/types/citation";
 
@@ -27,6 +28,7 @@ export function MySubmissions() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<CitationFormValues | null>(null);
+  const [editErrors, setEditErrors] = useState<FieldErrors<"text" | "author" | "source">>({});
   const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async () => {
@@ -64,18 +66,20 @@ export function MySubmissions() {
   function startEdit(citation: OwnedCitation) {
     setEditingId(citation.id);
     setEditValues(citationToFormValues(citation));
+    setEditErrors({});
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditValues(null);
+    setEditErrors({});
   }
 
   async function handleSaveEdit(id: string) {
-    if (!editValues?.text.trim()) {
-      Alert.alert(t("submit.missingTextTitle"), t("submit.missingTextBody"));
-      return;
-    }
+    if (!editValues) return;
+    const nextErrors = validateCitationForm(editValues);
+    setEditErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
 
     setSavingEdit(true);
     try {
@@ -128,7 +132,19 @@ export function MySubmissions() {
             <View key={citation.id} className="mb-6">
               <CitationForm
                 values={editValues}
-                onChange={setEditValues}
+                onChange={(next) => {
+                  setEditValues(next);
+                  if (editErrors.text || editErrors.author || editErrors.source) {
+                    setEditErrors((prev) => {
+                      const cleared = { ...prev };
+                      if (next.text !== editValues.text) delete cleared.text;
+                      if (next.author !== editValues.author) delete cleared.author;
+                      if (next.source !== editValues.source) delete cleared.source;
+                      return cleared;
+                    });
+                  }
+                }}
+                errors={editErrors}
                 disabled={savingEdit}
                 footer={
                   <View className="flex-row justify-end gap-3">

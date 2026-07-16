@@ -2,8 +2,8 @@ export const AUTH_VALIDATION = {
   email: {
     maxLength: 255,
     messages: {
-      required: "Please enter your email",
-      invalid: "Please enter a valid email",
+      required: "Մուտքագրեք էլ․ փոստը",
+      invalid: "Մուտքագրեք վավեր էլ․ փոստ",
     },
   },
   password: {
@@ -15,28 +15,29 @@ export const AUTH_VALIDATION = {
       number: /[0-9]/,
     },
     messages: {
-      required: "Please enter your password",
-      minLength: "Password must be at least 8 characters",
-      maxLength: "Password must be at most 128 characters",
-      lowercase: "Password must contain at least one lowercase letter",
-      uppercase: "Password must contain at least one uppercase letter",
-      number: "Password must contain at least one number",
+      required: "Մուտքագրեք գաղտնաբառը",
+      minLength: "Գաղտնաբառը պետք է լինի առնվազն 8 նիշ",
+      maxLength: "Գաղտնաբառը չի կարող գերազանցել 128 նիշը",
+      lowercase: "Գաղտնաբառը պետք է պարունակի առնվազն մեկ փոքրատառ լատինատառ",
+      uppercase: "Գաղտնաբառը պետք է պարունակի առնվազն մեկ մեծատառ լատինատառ",
+      number: "Գաղտնաբառը պետք է պարունակի առնվազն մեկ թիվ",
     },
   },
   name: {
     minLength: 2,
     maxLength: 100,
-    pattern: /^[a-zA-Z\s'-]+$/,
+    /** Unicode letters (incl. Armenian), spaces, hyphens, apostrophes */
+    pattern: /^[\p{L}\s'-]+$/u,
     messages: {
-      required: "Please enter your name",
-      minLength: "Name must be at least 2 characters",
-      maxLength: "Name must be at most 100 characters",
-      pattern: "Name can only contain letters, spaces, hyphens, and apostrophes",
+      required: "Մուտքագրեք անունը",
+      minLength: "Անունը պետք է լինի առնվազն 2 նիշ",
+      maxLength: "Անունը չի կարող գերազանցել 100 նիշը",
+      pattern: "Անունը կարող է պարունակել միայն տառեր, բացատներ, գծիկներ և ապաթարցեր",
     },
   },
   token: {
     messages: {
-      required: "Token is required",
+      required: "Թոքենը պարտադիր է",
     },
   },
 } as const;

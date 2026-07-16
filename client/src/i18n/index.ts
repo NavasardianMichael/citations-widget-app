@@ -1,6 +1,9 @@
 import { hy } from "./locales/hy";
 import { DEFAULT_LOCALE, type AppLocale, type MessageKey } from "./types";
 
+export type { AppLocale, MessageKey } from "./types";
+export { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "./types";
+
 const catalogs: Record<AppLocale, Record<string, string>> = {
   hy,
 };

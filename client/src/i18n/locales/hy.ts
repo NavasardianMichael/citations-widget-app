@@ -174,6 +174,23 @@ export const hy = {
   "card.removableNote": "Հնարավոր է հեռացնել հանրային շտեմարանից՝ ըստ խնդրանքի",
   "card.editSubmission": "Խմբագրել ուղարկումը",
   "card.deleteSubmission": "Ջնջել ուղարկումը",
+
+  "validation.emailRequired": "Մուտքագրեք էլ․ փոստը",
+  "validation.emailInvalid": "Մուտքագրեք վավեր էլ․ փոստ",
+  "validation.passwordRequired": "Մուտքագրեք գաղտնաբառը",
+  "validation.passwordMin": "Գաղտնաբառը պետք է լինի առնվազն 8 նիշ",
+  "validation.passwordMax": "Գաղտնաբառը չի կարող գերազանցել 128 նիշը",
+  "validation.passwordLower": "Գաղտնաբառը պետք է պարունակի առնվազն մեկ փոքրատառ լատինատառ",
+  "validation.passwordUpper": "Գաղտնաբառը պետք է պարունակի առնվազն մեկ մեծատառ լատինատառ",
+  "validation.passwordNumber": "Գաղտնաբառը պետք է պարունակի առնվազն մեկ թիվ",
+  "validation.nameRequired": "Մուտքագրեք անունը",
+  "validation.nameMin": "Անունը պետք է լինի առնվազն 2 նիշ",
+  "validation.nameMax": "Անունը չի կարող գերազանցել 100 նիշը",
+  "validation.namePattern": "Անունը կարող է պարունակել միայն տառեր, բացատներ, գծիկներ և ապաթարցեր",
+  "validation.citationTextRequired": "Մուտքագրեք մեջբերման տեքստը",
+  "validation.citationTextMax": "Մեջբերումը չի կարող գերազանցել 2000 նիշը",
+  "validation.authorMax": "Հեղինակի անունը չի կարող գերազանցել 200 նիշը",
+  "validation.sourceMax": "Աղբյուրը չի կարող գերազանցել 200 նիշը",
 } as const;
 
 export type HyMessages = typeof hy;
