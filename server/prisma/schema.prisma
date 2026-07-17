@@ -176,6 +176,7 @@ model WidgetSettings {
   refreshRateHours     Int             @default(24) @map("refresh_rate_hours")
   fontStyle            FontStyle       @default(mardoto) @map("font_style")
   showAttribution      Boolean         @default(true) @map("show_attribution")
+  showActions          Boolean         @default(true) @map("show_actions")
   currentCitationId    String?         @map("current_citation_id")
   currentCitationSetAt DateTime?       @map("current_citation_set_at")
   updatedAt            DateTime        @updatedAt @map("updated_at")

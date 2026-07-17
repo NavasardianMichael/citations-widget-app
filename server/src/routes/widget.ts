@@ -15,6 +15,7 @@ function serializeWidgetSettings(row: Awaited<ReturnType<typeof getOrCreateSetti
     refreshRateHours: row.refreshRateHours,
     fontStyle: row.fontStyle,
     showAttribution: row.showAttribution,
+    showActions: row.showActions,
     currentCitationId: row.currentCitationId,
     currentCitationSetAt: row.currentCitationSetAt?.toISOString() ?? null,
     updatedAt: row.updatedAt.toISOString(),
@@ -56,6 +57,7 @@ const settingsSchema = z.object({
   refreshRateHours: z.union([z.literal(6), z.literal(12), z.literal(24)]),
   fontStyle: z.enum(FONT_STYLES),
   showAttribution: z.boolean(),
+  showActions: z.boolean(),
 });
 
 widgetRouter.put("/widget-settings", async (req, res) => {
