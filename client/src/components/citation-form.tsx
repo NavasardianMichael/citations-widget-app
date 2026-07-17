@@ -110,6 +110,7 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
       <View className={footer ? "mb-10" : ""}>
         <ToggleRow
           title={t("form.shareProfile")}
+          description={t("form.shareProfileDetail")}
           value={values.shareProfile}
           onValueChange={(shareProfile) => patch("shareProfile", shareProfile)}
           disabled={disabled}

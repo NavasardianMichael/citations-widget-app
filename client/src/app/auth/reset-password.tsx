@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
+import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { t } from "@/i18n";
 import { hasErrors, validateResetPassword, type FieldErrors } from "@/lib/validation";
 import { resetPasswordRequest } from "@/services/auth-api";
@@ -72,6 +73,8 @@ export default function ResetPasswordScreen() {
               onPress={handleSubmit}
               disabled={loading || !token}
             />
+
+            <SkipAuthLink />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

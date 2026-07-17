@@ -15,7 +15,7 @@ import { APP_FONT_SOURCES } from '@/fonts/registry'
 SplashScreen.preventAutoHideAsync()
 
 function useProtectedRoute() {
-  const { user, isLoading } = useAuth()
+  const { user, isGuest, isLoading } = useAuth()
   const segments = useSegments()
   const router = useRouter()
 
@@ -24,12 +24,12 @@ function useProtectedRoute() {
 
     const inAuthGroup = segments[0] === 'auth'
 
-    if (!user && !inAuthGroup) {
+    if (!user && !isGuest && !inAuthGroup) {
       router.replace('/auth/login')
-    } else if (user && inAuthGroup) {
+    } else if ((user || isGuest) && inAuthGroup) {
       router.replace('/(tabs)')
     }
-  }, [user, isLoading, segments, router])
+  }, [user, isGuest, isLoading, segments, router])
 }
 
 function RootNavigator() {

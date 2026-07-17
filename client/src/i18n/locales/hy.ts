@@ -46,7 +46,7 @@ export const hy = {
   'auth.register.passwordPlaceholder': 'Մուտքագրեք Ձեր գաղտնաբառը',
   'auth.register.submit': 'Ստեղծել հաշիվ',
   'auth.register.submitting': 'Ստեղծվում է…',
-  'auth.register.hasAccount': 'Արդեն ունե՞ք հաշիվ',
+  'auth.register.hasAccount': 'Ունե՞ք հաշիվ',
   'auth.register.signIn': 'Մուտք',
   'auth.register.failed': 'Գրանցումը ձախողվեց',
 
@@ -55,26 +55,31 @@ export const hy = {
     'Մուտքագրեք էլ․ փոստը, և մենք կուղարկենք վերականգնման հղումը:',
   'auth.forgot.submit': 'Ուղարկել հղումը',
   'auth.forgot.submitting': 'Ուղարկվում է…',
-  'auth.forgot.back': 'Վերադառնալ մուտքին',
+  'auth.forgot.back': 'Վերադառնալ',
   'auth.forgot.failed': 'Հարցումը ձախողվեց',
 
   'auth.reset.title': 'Նոր գաղտնաբառ',
-  'auth.reset.subtitle': 'Ընտրեք ամուր գաղտնաբառ Ձեր հաշվի համար։',
+  'auth.reset.subtitle': 'Մուտքագրեք նոր գաղտնաբառը Ձեր հաշվի համար',
   'auth.reset.newPassword': 'Նոր գաղտնաբառ',
   'auth.reset.submit': 'Թարմացնել գաղտնաբառը',
   'auth.reset.submitting': 'Պահպանվում է…',
   'auth.reset.invalidLink':
-    'Անվավեր վերականգնման հղում։ Խնդրեք նորը հավելվածից։',
+    'Անվավեր վերականգնման հղում։ Հավելվածից կատարեք նոր հղման հարցում։',
   'auth.reset.failed': 'Վերականգնումը ձախողվեց',
 
   'auth.verify.title': 'Էլ․ փոստի հաստատում',
   'auth.verify.invalidLink': 'Անվավեր հաստատման հղում։',
   'auth.verify.failed': 'Հաստատումը ձախողվեց',
   'auth.verify.goLogin': 'Անցնել մուտքին',
+  'auth.skip': 'Առայժմ բաց թողնել',
+
+  'guest.signInRequiredTitle': 'Անհրաժեշտ է մուտք գործել համակարգ',
+  'guest.signInRequiredBody':
+    'Այս բաժինն օգտագործելու համար խնդրում ենք գրանցվել կամ մուտք գործել Ձեր հաշիվ։',
+  'guest.signIn': 'Մուտք գործել',
 
   'saved.title': 'Պահված մեջբերումներ',
-  'saved.subtitle':
-    'Ձեր ամենաթանկ հատվածների և ակադեմիական հղումների հավաքածուն։',
+  'saved.subtitle': 'Այստեղ ցւոցադրված են Ձեր նախընտրած հղումների հավաքածուն։',
   'saved.emptyTitle': 'Դեռ պահված մեջբերումներ չկան',
   'saved.emptyBody':
     'Նշեք հատվածներ Կարգավորումների նախադիտումից կամ պահեք Ձեր սեփական մասնավոր ուղարկումները։',
@@ -86,8 +91,8 @@ export const hy = {
   'submit.addNew': 'Ավելացնել մեջբերում',
   'submit.heroTitle': 'Ավելացնել մեջբերում',
   'submit.heroBody':
-    'Նվիրաբերեք սրբարանին։ Ուղարկումները վերանայվում են մինչև հանրային հավաքածուին միանալը։',
-  'submit.pendingHint': 'Ուղարկումները սպասում են վերանայման',
+    'Նվիրաբերեք սրբարանին։ Ուղարկված հարցումները վերանայվում են մինչև հանրային հավաքածուին միանալը։',
+  'submit.pendingHint': 'Հարցումները սպասում են վերանայման',
   'submit.missingTextTitle': 'Բացակայում է տեքստը',
   'submit.missingTextBody': 'Խնդրում ենք մուտքագրել մեջբերման տեքստը։',
   'submit.savedTitle': 'Պահված է',
@@ -95,7 +100,8 @@ export const hy = {
   'submit.savedBody': 'Պահված է Ձեր անձնական ցուցակում։',
   'submit.submittedBody': 'Ուղարկված է վերանայման։',
   'submit.viewSubmissions': 'Դիտել իմ ուղարկումները',
-  'submit.failed': 'Չհաջողվեց ուղարկել մեջբերումը',
+  'submit.failed':
+    'Չհաջողվեց ուղարկել մեջբերումը․ խնդրում ենք փորձել ևս մեկ անգամ կամ կապվեք մեզ հետ։',
   'submit.savePrivate': 'Պահել իմ ցուցակում',
   'submit.forReview': 'Ուղարկել վերանայման',
   'submit.submitting': 'Ուղարկվում է…',
@@ -116,9 +122,9 @@ export const hy = {
   'submit.updateCitationFailed': 'Չհաջողվեց թարմացնել մեջբերումը',
 
   'form.citationText': 'Մեջբերման տեքստ',
-  'form.citationPlaceholder': 'Մուտքագրեք պահպանման ենթակա տեքստը…',
+  'form.citationPlaceholder': 'Մուտքագրեք տեքստը',
   'form.author': 'Հեղինակ',
-  'form.authorPlaceholder': 'օր․՝ Ավ. Իսահակյան',
+  'form.authorPlaceholder': 'օր․՝ Ավետիք Իսահակյան',
   'form.source': 'Աղբյուր',
   'form.sourcePlaceholder': 'օր․՝ Ծննդոց 1:1',
   'form.category': 'Կատեգորիա',
@@ -126,6 +132,8 @@ export const hy = {
   'form.categoryFiction': 'Գրականություն',
   'form.shareProfile':
     'Հաստատվելուց հետո ցույց տալ իմ պրոֆիլը այլ օգտատերերի վիջեթներում',
+  'form.shareProfileDetail':
+    '* Այլ օգտատերերի վիջեթներում ցուցադրվող Ձեր տվյալները կարող եք խմբագրել Ձեր պրոֆիլի էջում',
 
   'category.bible': 'Աստվածաշունչ',
   'category.fiction': 'Գրականություն',
@@ -137,6 +145,13 @@ export const hy = {
   'profile.saveChanges': 'Պահպանել փոփոխությունները',
   'profile.signedInAs': 'Մուտք գործած՝ {email}',
   'profile.signOut': 'Դուրս գալ',
+  'profile.signOutConfirmTitle': 'Դուրս գա՞լ հաշվից',
+  'profile.signOutConfirmBody': 'Դուք կդուրս գաք Ձեր հաշվից այս սարքում։',
+  'profile.removeAccount': 'Ջնջել հաշիվը',
+  'profile.removeAccountConfirmTitle': 'Ջնջե՞լ հաշիվը',
+  'profile.removeAccountConfirmBody':
+    'Այս գործողությունը անդառնալի է։ Ձեր հաշիվը և բոլոր տվյալները վերջնականապես կջնջվեն։',
+  'profile.removeAccountFailed': 'Չհաջողվեց ջնջել հաշիվը',
   'profile.updated': 'Պրոֆիլը թարմացված է։',
   'profile.loadFailed': 'Չհաջողվեց բեռնել պրոֆիլը',
   'profile.updateFailed': 'Չհաջողվեց թարմացնել պրոֆիլը',
@@ -148,6 +163,11 @@ export const hy = {
   'settings.font': 'Տառատեսակ',
   'settings.displayOptions': 'Ցուցադրման ընտրանքներ',
   'settings.attribution': 'Ցույց տալ վերագրումը համայնքի ուղարկումների համար',
+  'settings.showActions': 'Ցույց տալ գործողությունները վիջեթի վրա',
+  'settings.showActionsDesc':
+    'Ցույց տալ թարմացման, կարգավորումների, պահպանման և կիսվելու կոճակները վիջեթի նախադիտման վրա։',
+  'settings.actionSaveSuccess': 'Մեջբերումը պահպանվեց',
+  'settings.actionSaveFailed': 'Չհաջողվեց պահպանել մեջբերումը',
   'settings.attributionDesc':
     'Վիջեթի ներքևում ցույց է տալիս «Ավելացրել է [Անունը]»',
   'settings.refresh6': 'Ամեն 6 ժամը մեկ',
@@ -205,6 +225,6 @@ export const hy = {
   'validation.citationTextMax': 'Մեջբերումը չի կարող գերազանցել 2000 նիշը',
   'validation.authorMax': 'Հեղինակի անունը չի կարող գերազանցել 200 նիշը',
   'validation.sourceMax': 'Աղբյուրը չի կարող գերազանցել 200 նիշը',
-} as const
+} as const;
 
-export type HyMessages = typeof hy
+export type HyMessages = typeof hy;

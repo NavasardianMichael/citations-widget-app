@@ -4,14 +4,17 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { CitationCard, type CitationCardVariant } from "@/components/citation-card";
 import { TopAppBar } from "@/components/ui/top-app-bar";
+import { useAuth } from "@/contexts/auth-context";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { t } from "@/i18n";
 import { fetchSavedCitations, unsaveCitation } from "@/services/api";
+import { getGuestSavedCitations, removeGuestSavedCitation } from "@/services/local-storage";
 import type { Citation } from "@/types/citation";
 
 const VARIANT_CYCLE: CitationCardVariant[] = ["decorative", "minimalist", "featured", "decorative", "minimalist"];
 
 export default function SavedScreen() {
+  const { isGuest } = useAuth();
   const { isMd } = useBreakpoint();
   const [citations, setCitations] = useState<Citation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,14 +24,14 @@ export default function SavedScreen() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchSavedCitations();
+      const data = isGuest ? await getGuestSavedCitations() : await fetchSavedCitations();
       setCitations(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("saved.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isGuest]);
 
   useFocusEffect(
     useCallback(() => {
@@ -37,7 +40,11 @@ export default function SavedScreen() {
   );
 
   async function handleUnsave(id: string) {
-    await unsaveCitation(id);
+    if (isGuest) {
+      await removeGuestSavedCitation(id);
+    } else {
+      await unsaveCitation(id);
+    }
     setCitations((prev) => prev.filter((c) => c.id !== id));
   }
 

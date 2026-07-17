@@ -112,6 +112,13 @@ export async function resendVerificationRequest(email: string) {
   });
 }
 
+export async function deleteAccountRequest(accessToken: string) {
+  return authFetch<{ message: string }>("/api/auth/account", {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
 export async function googleMobileRequest(idToken: string, forceLogin = false) {
   return authFetch<AuthSession & { message: string }>("/api/auth/google/mobile", {
     method: "POST",

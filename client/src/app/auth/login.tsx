@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
+import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { TextLink } from "@/components/ui/text-link";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
@@ -15,7 +16,7 @@ import { useGoogleSignIn } from "@/services/google-auth";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, setUser } = useAuth();
+  const { signIn, setUser, completeGuestSignIn } = useAuth();
   const { signInWithGoogle, request, isConfigured } = useGoogleSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,6 +57,7 @@ export default function LoginScreen() {
       const data = await signInWithGoogle(forceLogin);
       if (!data) return;
       setUser(data.user);
+      await completeGuestSignIn();
       router.replace("/(tabs)");
     } catch (e) {
       if (e instanceof AuthApiError && e.code === "SESSION_LIMIT_REACHED" && !forceLogin) {
@@ -147,6 +149,8 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
             </Link>
+
+            <SkipAuthLink />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -5,12 +5,15 @@ import { Alert, ScrollView, Text, useWindowDimensions, View } from "react-native
 
 import { Button } from "@/components/ui/button";
 import { CitationForm, emptyCitationFormValues, type CitationFormValues } from "@/components/citation-form";
+import { SignInRequired } from "@/components/sign-in-required";
 import { TopAppBar } from "@/components/ui/top-app-bar";
+import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
 import { hasErrors, validateCitationForm, type FieldErrors } from "@/lib/validation";
 import { createCitation } from "@/services/api";
 
 export default function SubmitScreen() {
+  const { user, isGuest } = useAuth();
   const { width } = useWindowDimensions();
   const isMd = width >= 768;
 
@@ -48,6 +51,15 @@ export default function SubmitScreen() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (!user && isGuest) {
+    return (
+      <View className="flex-1 bg-background">
+        <TopAppBar title={t("common.brand")} showBrandIcon />
+        <SignInRequired />
+      </View>
+    );
   }
 
   return (

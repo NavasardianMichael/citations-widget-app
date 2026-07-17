@@ -1,5 +1,5 @@
-﻿import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, ScrollView, Share, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { RadioListRow } from "@/components/ui/radio-list-row";
@@ -9,10 +9,20 @@ import { SettingsSection } from "@/components/ui/settings-section";
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { TopAppBar } from "@/components/ui/top-app-bar";
 import { WidgetPreview } from "@/components/widget-preview";
+import { useAuth } from "@/contexts/auth-context";
 import { DEFAULT_WIDGET_FONT, WIDGET_FONT_OPTIONS } from "@/fonts/registry";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { t } from "@/i18n";
-import { getWidgetSettings, previewWidgetCitation, saveWidgetSettings } from "@/services/widget-settings";
+import { fetchWidgetCitation, saveCitation } from "@/services/api";
+import { pickGuestWidgetCitation } from "@/services/guest-citation-picker";
+import {
+  getCachedWidgetCitation,
+  getGuestWidgetSettings,
+  saveGuestSavedCitation,
+  saveGuestWidgetSettings,
+  setCachedWidgetCitation,
+} from "@/services/local-storage";
+import { getWidgetSettings, saveWidgetSettings } from "@/services/widget-settings";
 import type {
   RefreshRateHours,
   SourceSelection,
@@ -38,57 +48,78 @@ const FONT_OPTIONS = WIDGET_FONT_OPTIONS.map((font) => ({
   label: font.label,
 }));
 
+const DEFAULT_DRAFT: WidgetSettingsDraft = {
+  sourceSelection: "bible",
+  refreshRateHours: 24,
+  fontStyle: DEFAULT_WIDGET_FONT,
+  showAttribution: true,
+  showActions: true,
+};
+
 export default function SettingsScreen() {
+  const { isGuest } = useAuth();
   const { isLg } = useBreakpoint();
   const [saved, setSaved] = useState<WidgetSettingsDraft | null>(null);
-  const [draft, setDraft] = useState<WidgetSettingsDraft>({
-    sourceSelection: "bible",
-    refreshRateHours: 24,
-    fontStyle: DEFAULT_WIDGET_FONT,
-    showAttribution: true,
-  });
+  const [draft, setDraft] = useState<WidgetSettingsDraft>(DEFAULT_DRAFT);
   const [preview, setPreview] = useState<WidgetCitation | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const isFirstSourceRender = useRef(true);
+
+  const loadWidgetCitation = useCallback(
+    async (source: SourceSelection, refreshRateHours: RefreshRateHours, forceFresh = false) => {
+      setPreviewLoading(true);
+      try {
+        if (!forceFresh) {
+          const cached = await getCachedWidgetCitation();
+          if (cached && cached.sourceSelection === source) {
+            const rotationMs = refreshRateHours * 60 * 60 * 1000;
+            if (Date.now() - cached.fetchedAt < rotationMs) {
+              setPreview(cached.citation);
+              return;
+            }
+          }
+        }
+
+        const result = isGuest ? await pickGuestWidgetCitation(source) : await fetchWidgetCitation(forceFresh);
+        setPreview(result.citation);
+        await setCachedWidgetCitation({ citation: result.citation, fetchedAt: Date.now(), sourceSelection: source });
+      } catch {
+        setPreview(null);
+      } finally {
+        setPreviewLoading(false);
+      }
+    },
+    [isGuest],
+  );
 
   const loadSettings = useCallback(async () => {
-    const settings = await getWidgetSettings();
+    const settings = isGuest ? await getGuestWidgetSettings() : await getWidgetSettings();
     const next: WidgetSettingsDraft = {
       sourceSelection: settings.sourceSelection,
       refreshRateHours: settings.refreshRateHours,
       fontStyle: settings.fontStyle,
       showAttribution: settings.showAttribution,
+      showActions: settings.showActions,
     };
     setSaved(next);
     setDraft(next);
-  }, []);
+    isFirstSourceRender.current = true;
+    await loadWidgetCitation(next.sourceSelection, next.refreshRateHours);
+  }, [isGuest, loadWidgetCitation]);
 
   useEffect(() => {
     loadSettings().catch(() => undefined);
   }, [loadSettings]);
 
-  const refreshPreview = useCallback(async (nextDraft: WidgetSettingsDraft) => {
-    setPreviewLoading(true);
-    try {
-      const result = await previewWidgetCitation({
-        sourceSelection: nextDraft.sourceSelection,
-        fontStyle: nextDraft.fontStyle,
-        showAttribution: nextDraft.showAttribution,
-      });
-      setPreview(result.citation);
-    } catch {
-      setPreview(null);
-    } finally {
-      setPreviewLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      refreshPreview(draft);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [draft, refreshPreview]);
+    if (isFirstSourceRender.current) {
+      isFirstSourceRender.current = false;
+      return;
+    }
+    loadWidgetCitation(draft.sourceSelection, draft.refreshRateHours, true).catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.sourceSelection]);
 
   function updateDraft<K extends keyof WidgetSettingsDraft>(key: K, value: WidgetSettingsDraft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -97,12 +128,13 @@ export default function SettingsScreen() {
   async function handleSave() {
     setSaving(true);
     try {
-      const updated = await saveWidgetSettings(draft);
+      const updated = isGuest ? await saveGuestWidgetSettings(draft).then(() => draft) : await saveWidgetSettings(draft);
       const next: WidgetSettingsDraft = {
         sourceSelection: updated.sourceSelection,
         refreshRateHours: updated.refreshRateHours,
         fontStyle: updated.fontStyle,
         showAttribution: updated.showAttribution,
+        showActions: updated.showActions,
       };
       setSaved(next);
       setDraft(next);
@@ -116,6 +148,39 @@ export default function SettingsScreen() {
 
   function handleDiscard() {
     if (saved) setDraft(saved);
+  }
+
+  function handleRefreshWidget() {
+    loadWidgetCitation(draft.sourceSelection, draft.refreshRateHours, true).catch(() => undefined);
+  }
+
+  async function handleSaveWidgetCitation() {
+    if (!preview) return;
+    try {
+      if (isGuest) {
+        await saveGuestSavedCitation({
+          id: preview.id,
+          text: preview.text,
+          author: preview.author,
+          source: preview.source,
+          category: preview.category,
+        });
+      } else {
+        await saveCitation(preview.id);
+      }
+      Alert.alert(t("common.save"), t("settings.actionSaveSuccess"));
+    } catch (e) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("settings.actionSaveFailed"));
+    }
+  }
+
+  async function handleShareWidgetCitation() {
+    if (!preview) return;
+    try {
+      await Share.share({ message: preview.text });
+    } catch {
+      // user dismissed the share sheet
+    }
   }
 
   const settingsColumn = (
@@ -157,19 +222,35 @@ export default function SettingsScreen() {
       </SettingsSection>
 
       <SettingsSection title={t("settings.displayOptions")} icon="visibility">
-        <ToggleRow
-          title={t("settings.attribution")}
-          description={t("settings.attributionDesc")}
-          value={draft.showAttribution}
-          onValueChange={(v) => updateDraft("showAttribution", v)}
-        />
+        <View className="gap-4">
+          <ToggleRow
+            title={t("settings.attribution")}
+            description={t("settings.attributionDesc")}
+            value={draft.showAttribution}
+            onValueChange={(v) => updateDraft("showAttribution", v)}
+          />
+          <ToggleRow
+            title={t("settings.showActions")}
+            description={t("settings.showActionsDesc")}
+            value={draft.showActions}
+            onValueChange={(v) => updateDraft("showActions", v)}
+          />
+        </View>
       </SettingsSection>
     </View>
   );
 
   const previewColumn = (
     <View>
-      <WidgetPreview citation={preview} fontStyle={draft.fontStyle} loading={previewLoading} />
+      <WidgetPreview
+        citation={preview}
+        fontStyle={draft.fontStyle}
+        loading={previewLoading}
+        showActions={draft.showActions}
+        onRefresh={handleRefreshWidget}
+        onSave={handleSaveWidgetCitation}
+        onShare={handleShareWidgetCitation}
+      />
       <View className="mt-8 flex-row justify-end gap-4">
         <Button label={t("common.discard")} variant="secondary" secondaryBorder="secondary" onPress={handleDiscard} />
         <Button

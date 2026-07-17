@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
+import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { TextLink } from "@/components/ui/text-link";
 import { t } from "@/i18n";
 import { hasErrors, validateForgotPassword, type FieldErrors } from "@/lib/validation";
@@ -69,6 +70,8 @@ export default function ForgotPasswordScreen() {
             <TextLink href="/auth/login" replace variant="underline" align="center" className="mt-6">
               {t("auth.forgot.back")}
             </TextLink>
+
+            <SkipAuthLink />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

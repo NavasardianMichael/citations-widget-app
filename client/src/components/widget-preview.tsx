@@ -1,7 +1,8 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { shadowLevel1 } from "@/constants/colors";
+import { pressableNoRipple } from "@/constants/pressable";
 import { getWidgetFontFamily } from "@/fonts/registry";
 import { useWidgetFont } from "@/fonts/use-widget-font";
 import { t } from "@/i18n";
@@ -11,28 +12,62 @@ type WidgetPreviewProps = {
   citation: WidgetCitation | null;
   fontStyle: FontStyle;
   loading?: boolean;
+  showActions?: boolean;
+  onRefresh?: () => void;
+  onSave?: () => void;
+  onShare?: () => void;
 };
 
-function PreviewActionIcon({ icon, label }: { icon: keyof typeof MaterialIcons.glyphMap; label: string }) {
+function PreviewActionIcon({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  label: string;
+  onPress?: () => void;
+}) {
+  if (!onPress) {
+    return (
+      <View
+        accessibilityLabel={label}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        className="h-8 w-8 items-center justify-center rounded-full bg-surface-container"
+      >
+        <MaterialIcons name={icon} size={18} color="#44474d" />
+      </View>
+    );
+  }
+
   return (
-    <View
+    <Pressable
+      {...pressableNoRipple}
+      onPress={onPress}
+      accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
       className="h-8 w-8 items-center justify-center rounded-full bg-surface-container"
     >
       <MaterialIcons name={icon} size={18} color="#44474d" />
-    </View>
+    </Pressable>
   );
 }
 
-export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPreviewProps) {
+export function WidgetPreview({
+  citation,
+  fontStyle,
+  loading = false,
+  showActions = true,
+  onRefresh,
+  onSave,
+  onShare,
+}: WidgetPreviewProps) {
   const fontReady = useWidgetFont(fontStyle);
-  const previewActions: { icon: keyof typeof MaterialIcons.glyphMap; label: string }[] = [
-    { icon: "refresh", label: t("settings.actionRefresh") },
+  const previewActions: { icon: keyof typeof MaterialIcons.glyphMap; label: string; onPress?: () => void }[] = [
+    { icon: "refresh", label: t("settings.actionRefresh"), onPress: onRefresh },
     { icon: "settings", label: t("settings.actionSettings") },
-    { icon: "bookmark", label: t("settings.actionBookmark") },
-    { icon: "share", label: t("settings.actionShare") },
+    { icon: "bookmark", label: t("settings.actionBookmark"), onPress: onSave },
+    { icon: "share", label: t("settings.actionShare"), onPress: onShare },
   ];
 
   const showLoading = loading || (!!citation && !fontReady);
@@ -65,11 +100,13 @@ export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPr
               <Text className="font-label-sm text-label-sm uppercase tracking-wider text-primary">
                 {citation.source ?? citation.author ?? citation.category}
               </Text>
-              <View className="flex-row gap-2">
-                {previewActions.map((action) => (
-                  <PreviewActionIcon key={action.icon} icon={action.icon} label={action.label} />
-                ))}
-              </View>
+              {showActions ? (
+                <View className="flex-row gap-2">
+                  {previewActions.map((action) => (
+                    <PreviewActionIcon key={action.icon} icon={action.icon} label={action.label} onPress={action.onPress} />
+                  ))}
+                </View>
+              ) : null}
             </View>
             {citation.addedBy ? (
               <Text className="mt-3 text-sm text-on-surface-variant">{t("settings.addedBy", { name: citation.addedBy })}</Text>

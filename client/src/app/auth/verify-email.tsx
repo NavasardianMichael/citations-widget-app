@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
+import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { t } from "@/i18n";
 import { verifyEmailRequest } from "@/services/auth-api";
 
@@ -46,6 +47,8 @@ export default function VerifyEmailScreen() {
             <Text className="mb-6 text-center font-body-md text-body-md text-primary">{message}</Text>
           )}
           <Button label={t("auth.verify.goLogin")} onPress={() => router.replace("/auth/login")} />
+
+          <SkipAuthLink />
         </View>
       </ScrollView>
     </SafeAreaView>

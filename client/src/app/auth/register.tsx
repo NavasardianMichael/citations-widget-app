@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
+import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
@@ -106,6 +107,8 @@ export default function RegisterScreen() {
                 </Text>
               </Pressable>
             </Link>
+
+            <SkipAuthLink />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

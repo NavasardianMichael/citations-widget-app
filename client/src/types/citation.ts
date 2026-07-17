@@ -33,6 +33,7 @@ export type WidgetSettings = {
   refreshRateHours: RefreshRateHours;
   fontStyle: FontStyle;
   showAttribution: boolean;
+  showActions: boolean;
   currentCitationId: string | null;
   currentCitationSetAt: string | null;
   updatedAt: string;
@@ -40,7 +41,7 @@ export type WidgetSettings = {
 
 export type WidgetSettingsDraft = Pick<
   WidgetSettings,
-  "sourceSelection" | "refreshRateHours" | "fontStyle" | "showAttribution"
+  "sourceSelection" | "refreshRateHours" | "fontStyle" | "showAttribution" | "showActions"
 >;
 
 export type WidgetPreviewDraft = Pick<WidgetSettings, "sourceSelection" | "fontStyle" | "showAttribution">;

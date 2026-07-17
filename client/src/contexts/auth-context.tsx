@@ -8,16 +8,21 @@ import {
   registerRequest,
 } from "@/services/auth-api";
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from "@/services/auth-storage";
+import { migrateGuestDataToAccount } from "@/services/guest-migration";
+import { isGuestMode, setGuestMode } from "@/services/local-storage";
 import type { UserPublic } from "@/types/auth";
 
 type AuthContextValue = {
   user: UserPublic | null;
+  isGuest: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string, forceLogin?: boolean) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<string>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
   setUser: (user: UserPublic | null) => void;
+  continueAsGuest: () => Promise<void>;
+  completeGuestSignIn: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -28,6 +33,7 @@ async function persistSession(data: { user: UserPublic; accessToken: string; ref
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserPublic | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshSession = useCallback(async () => {
@@ -61,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         setUser(null);
+        setIsGuest(await isGuestMode());
       } finally {
         setIsLoading(false);
       }
@@ -69,11 +76,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bootstrap();
   }, [refreshSession]);
 
+  const completeGuestSignIn = useCallback(async () => {
+    await migrateGuestDataToAccount();
+    setIsGuest(false);
+  }, []);
+
+  const continueAsGuest = useCallback(async () => {
+    await setGuestMode(true);
+    setIsGuest(true);
+  }, []);
+
   const signIn = useCallback(async (email: string, password: string, forceLogin = false) => {
     const data = await loginRequest(email, password, forceLogin);
     await persistSession(data);
     setUser(data.user);
-  }, []);
+    await completeGuestSignIn();
+  }, [completeGuestSignIn]);
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
     const data = await registerRequest(email, password, name);
@@ -92,8 +110,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, isLoading, signIn, signUp, signOut, refreshSession, setUser }),
-    [user, isLoading, signIn, signUp, signOut, refreshSession],
+    () => ({
+      user,
+      isGuest,
+      isLoading,
+      signIn,
+      signUp,
+      signOut,
+      refreshSession,
+      setUser,
+      continueAsGuest,
+      completeGuestSignIn,
+    }),
+    [user, isGuest, isLoading, signIn, signUp, signOut, refreshSession, continueAsGuest, completeGuestSignIn],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,13 +5,16 @@ import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { TopAppBar } from "@/components/ui/top-app-bar";
+import { SignInRequired } from "@/components/sign-in-required";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
 import { fetchProfile, updateProfile } from "@/services/api";
+import { deleteAccountRequest } from "@/services/auth-api";
+import { getAccessToken } from "@/services/auth-storage";
 import type { UserProfile } from "@/types/citation";
 
 export default function ProfileScreen() {
-  const { signOut } = useAuth();
+  const { user, isGuest, signOut } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [firstName, setFirstName] = useState("");
@@ -19,15 +22,16 @@ export default function ProfileScreen() {
   const [socialUrl, setSocialUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const user = await fetchProfile();
-      setProfile(user);
-      setFirstName(user.firstName ?? "");
-      setLastName(user.lastName ?? "");
-      setSocialUrl(user.socialUrl ?? "");
+      const fetched = await fetchProfile();
+      setProfile(fetched);
+      setFirstName(fetched.firstName ?? "");
+      setLastName(fetched.lastName ?? "");
+      setSocialUrl(fetched.socialUrl ?? "");
     } catch (e) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.loadFailed"));
     } finally {
@@ -37,9 +41,18 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load]),
+      if (user) load();
+    }, [user, load]),
   );
+
+  if (!user && isGuest) {
+    return (
+      <View className="flex-1 bg-background">
+        <TopAppBar title={t("common.brand")} showBrandIcon />
+        <SignInRequired />
+      </View>
+    );
+  }
 
   async function handleSaveProfile() {
     setSaving(true);
@@ -56,6 +69,41 @@ export default function ProfileScreen() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function confirmSignOut() {
+    Alert.alert(t("profile.signOutConfirmTitle"), t("profile.signOutConfirmBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("profile.signOut"),
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      const accessToken = await getAccessToken();
+      if (accessToken) await deleteAccountRequest(accessToken);
+      await signOut();
+      router.replace("/auth/login");
+    } catch (e) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.removeAccountFailed"));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(t("profile.removeAccountConfirmTitle"), t("profile.removeAccountConfirmBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("profile.removeAccount"), style: "destructive", onPress: handleDeleteAccount },
+    ]);
   }
 
   if (loading) {
@@ -100,10 +148,15 @@ export default function ProfileScreen() {
             <Button
               label={t("profile.signOut")}
               variant="secondary"
-              onPress={async () => {
-                await signOut();
-                router.replace("/auth/login");
-              }}
+              onPress={confirmSignOut}
+              className="mt-4 w-full md:w-auto"
+            />
+            <Button
+              label={deleting ? t("common.saving") : t("profile.removeAccount")}
+              variant="secondary"
+              icon="delete-forever"
+              disabled={deleting}
+              onPress={confirmDeleteAccount}
               className="mt-4 w-full md:w-auto"
             />
           </View>
