@@ -1,90 +1,76 @@
-import {
-  HankenGrotesk_400Regular,
-  HankenGrotesk_600SemiBold,
-} from "@expo-google-fonts/hanken-grotesk";
-import {
-  SourceSerif4_400Regular_Italic,
-  SourceSerif4_600SemiBold,
-  SourceSerif4_700Bold,
-  useFonts,
-} from "@expo-google-fonts/source-serif-4";
-import { DefaultTheme, ThemeProvider } from "expo-router";
-import { Stack, useRouter, useSegments } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-import { View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useFonts } from 'expo-font'
+import { DefaultTheme, ThemeProvider } from 'expo-router'
+import { Stack, useRouter, useSegments } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
+import { useEffect } from 'react'
+import { View } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
-import "../global.css";
+import '../global.css'
 
-import { AnimatedSplashOverlay } from "@/components/animated-icon";
-import { AuthProvider, useAuth } from "@/contexts/auth-context";
+import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { AuthProvider, useAuth } from '@/contexts/auth-context'
+import { APP_FONT_SOURCES } from '@/fonts/registry'
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync()
 
 function useProtectedRoute() {
-  const { user, isLoading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
+  const { user, isLoading } = useAuth()
+  const segments = useSegments()
+  const router = useRouter()
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) return
 
-    const inAuthGroup = segments[0] === "auth";
+    const inAuthGroup = segments[0] === 'auth'
 
     if (!user && !inAuthGroup) {
-      router.replace("/auth/login");
+      router.replace('/auth/login')
     } else if (user && inAuthGroup) {
-      router.replace("/(tabs)");
+      router.replace('/(tabs)')
     }
-  }, [user, isLoading, segments, router]);
+  }, [user, isLoading, segments, router])
 }
 
 function RootNavigator() {
-  const { isLoading } = useAuth();
-  useProtectedRoute();
+  const { isLoading } = useAuth()
+  useProtectedRoute()
 
-  if (isLoading) return null;
+  if (isLoading) return null
 
   return (
     <>
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="auth" />
+        <Stack.Screen name='(tabs)' />
+        <Stack.Screen name='auth' />
       </Stack>
     </>
-  );
+  )
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    HankenGrotesk_400Regular,
-    HankenGrotesk_600SemiBold,
-    SourceSerif4_400Regular_Italic,
-    SourceSerif4_600SemiBold,
-    SourceSerif4_700Bold,
-  });
+  const [fontsLoaded, fontError] = useFonts(APP_FONT_SOURCES)
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync()
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError])
 
   if (!fontsLoaded && !fontError) {
-    return null;
+    return null
   }
 
   return (
     <SafeAreaProvider>
       <ThemeProvider value={DefaultTheme}>
         <AuthProvider>
-          <View style={{ flex: 1, backgroundColor: "#fbf9f8" }}>
+          <View style={{ flex: 1, backgroundColor: '#fbf9f8' }}>
             <RootNavigator />
           </View>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+﻿import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Pressable, Text, View } from "react-native";
 
-import { CategoryTag } from "@/components/category-tag";
+import { CategoryTag } from "@/components/ui/category-tag";
 import { shadowLevel1 } from "@/constants/colors";
 import { pressableNoRipple } from "@/constants/pressable";
 import { t } from "@/i18n";

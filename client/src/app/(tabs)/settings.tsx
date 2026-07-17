@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 
-import { Button } from "@/components/button";
-import { RadioListRow } from "@/components/radio-list-row";
-import { RadioOptionCard } from "@/components/radio-option-card";
-import { SelectField } from "@/components/select-field";
-import { SettingsSection } from "@/components/settings-section";
-import { ToggleRow } from "@/components/toggle-row";
-import { TopAppBar } from "@/components/top-app-bar";
+import { Button } from "@/components/ui/button";
+import { RadioListRow } from "@/components/ui/radio-list-row";
+import { RadioOptionCard } from "@/components/ui/radio-option-card";
+import { SelectField } from "@/components/ui/select-field";
+import { SettingsSection } from "@/components/ui/settings-section";
+import { ToggleRow } from "@/components/ui/toggle-row";
+import { TopAppBar } from "@/components/ui/top-app-bar";
 import { WidgetPreview } from "@/components/widget-preview";
+import { DEFAULT_WIDGET_FONT, WIDGET_FONT_OPTIONS } from "@/fonts/registry";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { t } from "@/i18n";
 import { getWidgetSettings, previewWidgetCitation, saveWidgetSettings } from "@/services/widget-settings";
 import type {
-  FontStyle,
   RefreshRateHours,
   SourceSelection,
   WidgetCitation,
@@ -33,10 +33,10 @@ const REFRESH_OPTIONS: { value: RefreshRateHours; labelKey: "settings.refresh6" 
   { value: 24, labelKey: "settings.refresh24" },
 ];
 
-const FONT_OPTIONS: { value: FontStyle; labelKey: "settings.fontClassic" | "settings.fontModern" }[] = [
-  { value: "source_serif_4", labelKey: "settings.fontClassic" },
-  { value: "hanken_grotesk", labelKey: "settings.fontModern" },
-];
+const FONT_OPTIONS = WIDGET_FONT_OPTIONS.map((font) => ({
+  value: font.id,
+  label: font.label,
+}));
 
 export default function SettingsScreen() {
   const { isLg } = useBreakpoint();
@@ -44,7 +44,7 @@ export default function SettingsScreen() {
   const [draft, setDraft] = useState<WidgetSettingsDraft>({
     sourceSelection: "bible",
     refreshRateHours: 24,
-    fontStyle: "source_serif_4",
+    fontStyle: DEFAULT_WIDGET_FONT,
     showAttribution: true,
   });
   const [preview, setPreview] = useState<WidgetCitation | null>(null);
@@ -150,7 +150,7 @@ export default function SettingsScreen() {
       <SettingsSection title={t("settings.typography")} icon="format-size">
         <SelectField
           label={t("settings.font")}
-          options={FONT_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
+          options={FONT_OPTIONS}
           value={draft.fontStyle}
           onChange={(v) => updateDraft("fontStyle", v)}
         />

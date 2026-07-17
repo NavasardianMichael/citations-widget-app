@@ -33,10 +33,28 @@ widgetRouter.get("/widget-settings", async (req, res) => {
   res.json(serializeWidgetSettings(settings));
 });
 
+const FONT_STYLES = [
+  "vrdznagir",
+  "braind_amanor",
+  "artsakh",
+  "davel_aghvor",
+  "mardoto",
+  "arti",
+  "arian_grqi",
+  "braind_zbans",
+  "nortar_body",
+  "arm_hmks_script",
+  "noyemi",
+  "armeniapedia_garun",
+  "armeniapedia_geghagrutyun",
+  "sasuntsi",
+  "armeniapedia_jhapaven",
+] as const;
+
 const settingsSchema = z.object({
   sourceSelection: z.enum(["bible", "fiction", "mixed", "saved"]),
   refreshRateHours: z.union([z.literal(6), z.literal(12), z.literal(24)]),
-  fontStyle: z.enum(["source_serif_4", "hanken_grotesk"]),
+  fontStyle: z.enum(FONT_STYLES),
   showAttribution: z.boolean(),
 });
 
@@ -101,7 +119,7 @@ widgetRouter.get("/widget/citation", async (req, res) => {
 
 const previewSchema = z.object({
   sourceSelection: z.enum(["bible", "fiction", "mixed", "saved"]),
-  fontStyle: z.enum(["source_serif_4", "hanken_grotesk"]),
+  fontStyle: z.enum(FONT_STYLES),
   showAttribution: z.boolean(),
 });
 

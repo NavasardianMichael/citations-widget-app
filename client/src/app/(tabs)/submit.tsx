@@ -3,9 +3,9 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, useWindowDimensions, View } from "react-native";
 
-import { Button } from "@/components/button";
+import { Button } from "@/components/ui/button";
 import { CitationForm, emptyCitationFormValues, type CitationFormValues } from "@/components/citation-form";
-import { TopAppBar } from "@/components/top-app-bar";
+import { TopAppBar } from "@/components/ui/top-app-bar";
 import { t } from "@/i18n";
 import { hasErrors, validateCitationForm, type FieldErrors } from "@/lib/validation";
 import { createCitation } from "@/services/api";
@@ -14,7 +14,7 @@ export default function SubmitScreen() {
   const { width } = useWindowDimensions();
   const isMd = width >= 768;
 
-  const [values, setValues] = useState<CitationFormValues>(emptyCitationFormValues);
+  const [values, setValues] = useState<CitationFormValues>(() => emptyCitationFormValues());
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<"text" | "author" | "source">>({});
   const [submitting, setSubmitting] = useState(false);
 

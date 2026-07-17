@@ -62,8 +62,7 @@ export function Button({
   icon,
 }: ButtonProps) {
   const borderClass = variant === "secondary" ? secondaryBorderClasses[secondaryBorder] : "";
-  const labelClass =
-    variant === "primary" ? primaryTextClasses[primaryTone] : textClasses[variant];
+  const labelClass = variant === "primary" ? primaryTextClasses[primaryTone] : textClasses[variant];
   const iconColor = variant === "primary" ? primaryIconColors[primaryTone] : iconColors[variant];
 
   return (

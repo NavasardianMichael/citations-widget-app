@@ -6,6 +6,7 @@ const { withNativeWind } = require("nativewind/metro");
 // subst W: -> repo root (see ensure-windows-path.ps1).
 // Junctions (C:\cwa) fail because Node still resolves to the long Desktop path.
 const SHORT_WINDOWS_ROOT = "W:\\client";
+const LONG_PATH_MARKER = path.normalize("Desktop\\workplace\\personal\\citations-widget-app\\client");
 
 // Metro uses forward slashes; path.relative on Windows uses backslashes.
 // That breaks react-native-css-interop's injectData path check on Windows.
@@ -20,6 +21,26 @@ function resolveProjectRoot() {
 }
 
 const projectRoot = resolveProjectRoot();
+
+// Starting Expo from the long Desktop path while W: is mapped loads react-native
+// twice (Desktop + W:) → Hermes "TypeError: property is not writable".
+if (
+  process.platform === "win32" &&
+  projectRoot === SHORT_WINDOWS_ROOT &&
+  path.normalize(__dirname).includes(LONG_PATH_MARKER)
+) {
+  console.error(`
+╔════════════════════════════════════════════════════════════════╗
+║  Start Metro via npm start (uses W:\\client).                   ║
+║  Do not run npx expo start from the Desktop path.              ║
+║                                                                ║
+║  Ctrl+C, then:                                                 ║
+║    cd ...\\citations-widget-app\\client                          ║
+║    npm start                                                   ║
+╚════════════════════════════════════════════════════════════════╝
+`);
+  process.exit(1);
+}
 
 if (process.platform === "win32" && projectRoot === SHORT_WINDOWS_ROOT) {
   process.chdir(projectRoot);

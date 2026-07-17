@@ -1,17 +1,15 @@
-import { useRouter } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "@/components/button";
-import { FormField } from "@/components/form-field";
-import { pressableNoRipple } from "@/constants/pressable";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
+import { TextLink } from "@/components/ui/text-link";
 import { t } from "@/i18n";
 import { hasErrors, validateForgotPassword, type FieldErrors } from "@/lib/validation";
 import { forgotPasswordRequest } from "@/services/auth-api";
 
 export default function ForgotPasswordScreen() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<"email">>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -68,9 +66,9 @@ export default function ForgotPasswordScreen() {
               disabled={loading}
             />
 
-            <Pressable {...pressableNoRipple} onPress={() => router.replace("/auth/login")} className="mt-6">
-              <Text className="text-center font-body-md text-body-md text-primary">{t("auth.forgot.back")}</Text>
-            </Pressable>
+            <TextLink href="/auth/login" replace variant="underline" align="center" className="mt-6">
+              {t("auth.forgot.back")}
+            </TextLink>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

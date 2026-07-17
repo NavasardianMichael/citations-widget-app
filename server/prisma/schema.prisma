@@ -32,8 +32,21 @@ enum SourceSelection {
 }
 
 enum FontStyle {
-  source_serif_4
-  hanken_grotesk
+  vrdznagir
+  braind_amanor
+  artsakh
+  davel_aghvor
+  mardoto
+  arti
+  arian_grqi
+  braind_zbans
+  nortar_body
+  arm_hmks_script
+  noyemi
+  armeniapedia_garun
+  armeniapedia_geghagrutyun
+  sasuntsi
+  armeniapedia_jhapaven
 }
 
 model User {
@@ -161,7 +174,7 @@ model WidgetSettings {
   userId               String          @id @map("user_id")
   sourceSelection      SourceSelection @default(mixed) @map("source_selection")
   refreshRateHours     Int             @default(24) @map("refresh_rate_hours")
-  fontStyle            FontStyle       @default(source_serif_4) @map("font_style")
+  fontStyle            FontStyle       @default(mardoto) @map("font_style")
   showAttribution      Boolean         @default(true) @map("show_attribution")
   currentCitationId    String?         @map("current_citation_id")
   currentCitationSetAt DateTime?       @map("current_citation_set_at")

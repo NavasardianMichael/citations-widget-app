@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 
-import { FormField } from "@/components/form-field";
-import { TogglePill } from "@/components/toggle-pill";
-import { ToggleRow } from "@/components/toggle-row";
+import { FormField } from "@/components/ui/form-field";
+import { TogglePill } from "@/components/ui/toggle-pill";
+import { ToggleRow } from "@/components/ui/toggle-row";
 import { t } from "@/i18n";
 import type { CitationCategory } from "@/types/citation";
 

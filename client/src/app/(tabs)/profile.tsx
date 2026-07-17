@@ -1,10 +1,10 @@
-import { useFocusEffect, useRouter } from "expo-router";
+﻿import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
-import { Button } from "@/components/button";
-import { FormField } from "@/components/form-field";
-import { TopAppBar } from "@/components/top-app-bar";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
+import { TopAppBar } from "@/components/ui/top-app-bar";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
 import { fetchProfile, updateProfile } from "@/services/api";

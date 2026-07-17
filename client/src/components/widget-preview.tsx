@@ -2,6 +2,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Text, View } from "react-native";
 
 import { shadowLevel1 } from "@/constants/colors";
+import { getWidgetFontFamily } from "@/fonts/registry";
+import { useWidgetFont } from "@/fonts/use-widget-font";
 import { t } from "@/i18n";
 import type { FontStyle, WidgetCitation } from "@/types/citation";
 
@@ -9,11 +11,6 @@ type WidgetPreviewProps = {
   citation: WidgetCitation | null;
   fontStyle: FontStyle;
   loading?: boolean;
-};
-
-const fontFamilyMap: Record<FontStyle, string> = {
-  source_serif_4: "SourceSerif4_400Regular_Italic",
-  hanken_grotesk: "HankenGrotesk_400Regular",
 };
 
 function PreviewActionIcon({ icon, label }: { icon: keyof typeof MaterialIcons.glyphMap; label: string }) {
@@ -30,12 +27,15 @@ function PreviewActionIcon({ icon, label }: { icon: keyof typeof MaterialIcons.g
 }
 
 export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPreviewProps) {
+  const fontReady = useWidgetFont(fontStyle);
   const previewActions: { icon: keyof typeof MaterialIcons.glyphMap; label: string }[] = [
     { icon: "refresh", label: t("settings.actionRefresh") },
     { icon: "settings", label: t("settings.actionSettings") },
     { icon: "bookmark", label: t("settings.actionBookmark") },
     { icon: "share", label: t("settings.actionShare") },
   ];
+
+  const showLoading = loading || (!!citation && !fontReady);
 
   return (
     <View className="rounded-xl border border-outline-variant/50 bg-surface-container-low p-6">
@@ -51,13 +51,13 @@ export function WidgetPreview({ citation, fontStyle, loading = false }: WidgetPr
           <MaterialIcons name="flare" size={20} color="#735c00" />
         </View>
 
-        {loading ? (
+        {showLoading ? (
           <Text className="font-body-md text-body-md text-on-surface-variant">{t("settings.previewLoading")}</Text>
         ) : citation ? (
           <>
             <Text
               className="mb-6 text-citation-xl leading-relaxed text-on-background"
-              style={{ fontFamily: fontFamilyMap[fontStyle], fontStyle: fontStyle === "source_serif_4" ? "italic" : "normal" }}
+              style={{ fontFamily: getWidgetFontFamily(fontStyle) }}
             >
               "{citation.text}"
             </Text>

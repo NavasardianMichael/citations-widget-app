@@ -1,10 +1,10 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+﻿import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "@/components/button";
-import { FormField } from "@/components/form-field";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { t } from "@/i18n";
 import { hasErrors, validateResetPassword, type FieldErrors } from "@/lib/validation";
 import { resetPasswordRequest } from "@/services/auth-api";

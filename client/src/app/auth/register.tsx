@@ -1,17 +1,16 @@
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "@/components/button";
-import { FormField } from "@/components/form-field";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
 import { hasErrors, validateRegister, type FieldErrors } from "@/lib/validation";
 
 export default function RegisterScreen() {
-  const router = useRouter();
   const { signUp } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -99,11 +98,14 @@ export default function RegisterScreen() {
               disabled={loading}
             />
 
-            <Pressable {...pressableNoRipple} onPress={() => router.replace("/auth/login")} className="mt-6">
-              <Text className="text-center font-body-md text-body-md text-on-surface-variant">
-                {t("auth.register.hasAccount")} <Text className="text-primary">{t("auth.register.signIn")}</Text>
-              </Text>
-            </Pressable>
+            <Link href="/auth/login" replace asChild>
+              <Pressable {...pressableNoRipple} accessibilityRole="link" className="mt-6">
+                <Text className="text-center font-body-md text-body-md text-on-surface-variant">
+                  {t("auth.register.hasAccount")}{" "}
+                  <Text className="text-primary underline">{t("auth.register.signIn")}</Text>
+                </Text>
+              </Pressable>
+            </Link>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

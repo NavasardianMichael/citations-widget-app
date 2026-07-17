@@ -1,10 +1,11 @@
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "@/components/button";
-import { FormField } from "@/components/form-field";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
+import { TextLink } from "@/components/ui/text-link";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
@@ -108,9 +109,9 @@ export default function LoginScreen() {
               textContentType="password"
             />
 
-            <Pressable {...pressableNoRipple} onPress={() => router.push("/auth/forgot-password")} className="mb-6">
-              <Text className="text-right font-label-md text-label-md text-primary">{t("auth.login.forgot")}</Text>
-            </Pressable>
+            <TextLink href="/auth/forgot-password" variant="underline" align="right" className="mb-6">
+              {t("auth.login.forgot")}
+            </TextLink>
 
             <Button
               label={loading ? t("auth.login.submitting") : t("auth.login.submit")}
@@ -138,11 +139,14 @@ export default function LoginScreen() {
               />
             ) : null}
 
-            <Pressable {...pressableNoRipple} onPress={() => router.push("/auth/register")} className="mt-6">
-              <Text className="text-center font-body-md text-body-md text-on-surface-variant">
-                {t("auth.login.noAccount")} <Text className="text-primary">{t("auth.login.createOne")}</Text>
-              </Text>
-            </Pressable>
+            <Link href="/auth/register" asChild>
+              <Pressable {...pressableNoRipple} accessibilityRole="link" className="mt-6">
+                <Text className="text-center font-body-md text-body-md text-on-surface-variant">
+                  {t("auth.login.noAccount")}{" "}
+                  <Text className="text-primary underline">{t("auth.login.createOne")}</Text>
+                </Text>
+              </Pressable>
+            </Link>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

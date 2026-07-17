@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "@/components/button";
+import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { verifyEmailRequest } from "@/services/auth-api";
 

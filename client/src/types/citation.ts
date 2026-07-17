@@ -1,7 +1,9 @@
 export type CitationCategory = "bible" | "fiction";
 export type SourceSelection = CitationCategory | "mixed" | "saved";
 export type CitationStatus = "approved" | "pending" | "rejected" | "private";
-export type FontStyle = "source_serif_4" | "hanken_grotesk";
+import type { WidgetFontId } from "@/fonts/registry";
+
+export type FontStyle = WidgetFontId;
 export type RefreshRateHours = 6 | 12 | 24;
 
 export type Citation = {

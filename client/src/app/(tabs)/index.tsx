@@ -1,9 +1,9 @@
-import { useFocusEffect } from "expo-router";
+﻿import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { CitationCard, type CitationCardVariant } from "@/components/citation-card";
-import { TopAppBar } from "@/components/top-app-bar";
+import { TopAppBar } from "@/components/ui/top-app-bar";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { t } from "@/i18n";
 import { fetchSavedCitations, unsaveCitation } from "@/services/api";
