@@ -2,7 +2,7 @@ import { env, isDev } from "../config/env.js";
 import { logger } from "../lib/logger.js";
 
 const APP_ID = "citations-widget";
-const APP_NAME = "Թվային սրբարան";
+const APP_NAME = "Մեջբերումներ Աստվածաշնչից";
 
 const COLORS = {
   primary: "#18294d",

@@ -17,96 +17,96 @@ export const APP_FONT_SOURCES = {
 
 /**
  * Widget typography options (commercially free fonts from fonter.am).
- * `label` is the original name from the font page.
+ * `label` uses the Armenian name from the font page.
  */
 export const WIDGET_FONT_OPTIONS = [
   {
     id: 'vrdznagir',
-    label: 'Vrdznagir',
+    label: 'Վրձնագիր',
     family: 'Vrdznagir',
     source: require('../../assets/fonts/vrdznagir/Vrdznagir.otf'),
   },
   {
     id: 'braind_amanor',
-    label: 'Braind Amanor',
+    label: 'Բրեինդ Ամանոր',
     family: 'BraindAmanor',
     source: require('../../assets/fonts/braind-amanor/BraindAmanor.otf'),
   },
   {
     id: 'artsakh',
-    label: 'Artsakh',
+    label: 'Արցախ',
     family: 'Artsakh',
     source: require('../../assets/fonts/artsakh/Artsakh.otf'),
   },
   {
     id: 'davel_aghvor',
-    label: 'Davel Aghvor',
+    label: 'Դավել Աղվոր',
     family: 'DavelAghvor',
     source: require('../../assets/fonts/davel-aghvor/davel-aghvor.otf'),
   },
   {
     id: 'mardoto',
-    label: 'Mardoto',
+    label: 'Մարդոտո',
     family: 'Mardoto',
     source: require('../../assets/fonts/mardoto/Mardoto-Regular.ttf'),
   },
   {
     id: 'arti',
-    label: 'Arti',
+    label: 'Արդի',
     family: 'Arti',
     source: require('../../assets/fonts/arti/Arti-Regular.otf'),
   },
   {
     id: 'arian_grqi',
-    label: 'Arian Grqi',
+    label: 'Արիան Գրքի',
     family: 'ArianGrqi',
     source: require('../../assets/fonts/arian-grqi/Arian_Grqi_U.ttf'),
   },
   {
     id: 'braind_zbans',
-    label: 'Braind Zbans',
+    label: 'Բրեինդ Զբանս',
     family: 'BraindZbans',
     source: require('../../assets/fonts/braind-zbans/BraindZbans.otf'),
   },
   {
     id: 'nortar_body',
-    label: 'Nortar & Nortar Body',
+    label: 'Նորտառ և Նորտառ Բոդի',
     family: 'NorTarBody',
     source: require('../../assets/fonts/nortar-body/NorTarBody.otf'),
   },
   {
     id: 'arm_hmks_script',
-    label: "Arm Hmk's Script",
+    label: "Արմ Հմկ'ս Սքրիփթ",
     family: 'ArmHmksScript',
     source: require('../../assets/fonts/arm-hmks-script/ArmHmksScript.ttf'),
   },
   {
     id: 'noyemi',
-    label: 'Noyemi',
+    label: 'Նոյեմի',
     family: 'Noyemi',
     source: require('../../assets/fonts/noyemi/Noyemi.otf'),
   },
   {
     id: 'armeniapedia_garun',
-    label: 'Armeniapedia Garun',
+    label: 'Արմենիապեդիա Գարուն',
     family: 'ArmeniapediaGarun',
     source: require('../../assets/fonts/armeniapedia-garun/ArmeniapediaGarun.ttf'),
   },
   {
     id: 'armeniapedia_geghagrutyun',
-    label: 'Armeniapedia Geghagrutyun',
+    label: 'Արմենիապեդիա Գեղագրություն',
     family: 'ArmeniapediaGeghagrutyun',
     source: require('../../assets/fonts/armeniapedia-geghagrutyun/ArmeniapediaGeghagrutyun.ttf'),
   },
   {
     id: 'sasuntsi',
-    label: 'Sasuntsi',
+    label: 'Սասունցի',
     family: 'Sasuntsi',
     source: require('../../assets/fonts/sasuntsi/Sasuntsi-Regular.ttf'),
   },
   {
     id: 'armeniapedia_jhapaven',
-    label: 'Armeniapedia Jhapaven',
+    label: 'Արմենիապեդիա Ժապավեն',
     family: 'ArmeniapediaJhapaven',
     source: require('../../assets/fonts/armeniapedia-jhapaven/ArmeniapediaJhapaven.ttf'),
   },
@@ -114,7 +114,7 @@ export const WIDGET_FONT_OPTIONS = [
 
 export type WidgetFontId = (typeof WIDGET_FONT_OPTIONS)[number]['id']
 
-export const DEFAULT_WIDGET_FONT: WidgetFontId = 'mardoto'
+export const DEFAULT_WIDGET_FONT: WidgetFontId = 'davel_aghvor'
 
 export const WIDGET_FONT_IDS = WIDGET_FONT_OPTIONS.map((f) => f.id) as [
   WidgetFontId,

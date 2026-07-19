@@ -49,6 +49,15 @@ enum FontStyle {
   armeniapedia_jhapaven
 }
 
+enum WidgetDesign {
+  classic
+  parchment
+  midnight
+  glass
+  ink
+  manuscript
+}
+
 model User {
   id            String       @id @default(uuid())
   email         String       @unique
@@ -59,8 +68,6 @@ model User {
   googleId      String?      @unique @map("google_id")
   emailVerified Boolean      @default(false) @map("email_verified")
   locale        String       @default("hy") @db.VarChar(5)
-  firstName     String?      @map("first_name")
-  lastName      String?      @map("last_name")
   socialUrl     String?      @map("social_url")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
@@ -174,7 +181,8 @@ model WidgetSettings {
   userId               String          @id @map("user_id")
   sourceSelection      SourceSelection @default(mixed) @map("source_selection")
   refreshRateHours     Int             @default(24) @map("refresh_rate_hours")
-  fontStyle            FontStyle       @default(mardoto) @map("font_style")
+  fontStyle            FontStyle       @default(davel_aghvor) @map("font_style")
+  widgetDesign         WidgetDesign    @default(classic) @map("widget_design")
   showAttribution      Boolean         @default(true) @map("show_attribution")
   showActions          Boolean         @default(true) @map("show_actions")
   currentCitationId    String?         @map("current_citation_id")

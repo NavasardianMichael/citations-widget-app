@@ -66,10 +66,10 @@ export default function SubmitScreen() {
     <View className="flex-1 bg-background">
       <TopAppBar title={t("common.brand")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
-        <View className="mx-auto w-full max-w-2xl px-margin-mobile py-8 md:px-margin-desktop md:py-12">
-          <View className={`mb-12 ${isMd ? "items-start" : "items-center"}`}>
+        <View className="mx-auto w-full max-w-2xl gap-12 px-margin-mobile py-8 md:px-margin-desktop md:py-12">
+          <View className={`gap-4 ${isMd ? "items-start" : "items-center"}`}>
             <Text
-              className={`mb-4 font-display-lg text-display-lg-mobile text-primary md:text-display-lg ${isMd ? "text-left" : "text-center"}`}
+              className={`font-display-lg text-display-lg-mobile text-primary md:text-display-lg ${isMd ? "text-left" : "text-center"}`}
             >
               {t("submit.heroTitle")}
             </Text>
@@ -123,7 +123,7 @@ export default function SubmitScreen() {
             }
           />
 
-          <View className="mt-12 items-center opacity-50">
+          <View className="items-center opacity-50">
             <MaterialIcons name="auto-awesome" size={40} color="#fed65b" />
           </View>
         </View>

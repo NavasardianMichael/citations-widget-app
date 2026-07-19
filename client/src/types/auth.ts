@@ -7,8 +7,6 @@ export type UserPublic = {
   avatarUrl: string | null;
   provider: AuthProvider;
   emailVerified: boolean;
-  firstName: string | null;
-  lastName: string | null;
   socialUrl: string | null;
   locale: string;
   createdAt: string;

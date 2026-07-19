@@ -14,6 +14,7 @@ function serializeWidgetSettings(row: Awaited<ReturnType<typeof getOrCreateSetti
     sourceSelection: row.sourceSelection,
     refreshRateHours: row.refreshRateHours,
     fontStyle: row.fontStyle,
+    widgetDesign: row.widgetDesign,
     showAttribution: row.showAttribution,
     showActions: row.showActions,
     currentCitationId: row.currentCitationId,
@@ -52,10 +53,20 @@ const FONT_STYLES = [
   "armeniapedia_jhapaven",
 ] as const;
 
+const WIDGET_DESIGNS = [
+  "classic",
+  "parchment",
+  "midnight",
+  "glass",
+  "ink",
+  "manuscript",
+] as const;
+
 const settingsSchema = z.object({
   sourceSelection: z.enum(["bible", "fiction", "mixed", "saved"]),
   refreshRateHours: z.union([z.literal(6), z.literal(12), z.literal(24)]),
   fontStyle: z.enum(FONT_STYLES),
+  widgetDesign: z.enum(WIDGET_DESIGNS),
   showAttribution: z.boolean(),
   showActions: z.boolean(),
 });
@@ -84,8 +95,7 @@ async function withAttribution(citation: NonNullable<Awaited<ReturnType<typeof p
   }
 
   const submitter = await prisma.user.findUnique({ where: { id: citation.submittedByUserId } });
-  const name = [submitter?.firstName, submitter?.lastName].filter(Boolean).join(" ");
-  return { ...base, addedBy: name || submitter?.name || null };
+  return { ...base, addedBy: submitter?.name ?? null };
 }
 
 widgetRouter.get("/widget/citation", async (req, res) => {
@@ -122,6 +132,7 @@ widgetRouter.get("/widget/citation", async (req, res) => {
 const previewSchema = z.object({
   sourceSelection: z.enum(["bible", "fiction", "mixed", "saved"]),
   fontStyle: z.enum(FONT_STYLES),
+  widgetDesign: z.enum(WIDGET_DESIGNS).optional(),
   showAttribution: z.boolean(),
 });
 

@@ -15,7 +15,7 @@ export function SignInRequired() {
       <Text className="max-w-md text-center font-body-md text-body-md text-on-surface-variant">
         {t("guest.signInRequiredBody")}
       </Text>
-      <Button label={t("guest.signIn")} onPress={() => router.replace("/auth/login")} className="mt-2" />
+      <Button label={t("guest.signIn")} onPress={() => router.push("/auth/login")} />
     </View>
   );
 }

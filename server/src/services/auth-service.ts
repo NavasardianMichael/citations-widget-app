@@ -27,8 +27,6 @@ function toPublicUser(user: User): UserPublic {
     avatarUrl: user.avatarUrl,
     provider: user.provider as AuthProvider,
     emailVerified: user.emailVerified,
-    firstName: user.firstName,
-    lastName: user.lastName,
     socialUrl: user.socialUrl,
     locale: user.locale ?? "hy",
     createdAt: user.createdAt.toISOString(),
@@ -147,8 +145,6 @@ export const authService = {
 
     const updated = await userRepository.update(userId, {
       ...(input.name !== undefined && { name: input.name }),
-      ...(input.firstName !== undefined && { firstName: input.firstName }),
-      ...(input.lastName !== undefined && { lastName: input.lastName }),
       ...(input.socialUrl !== undefined && { socialUrl: input.socialUrl }),
     });
 

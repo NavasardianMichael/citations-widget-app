@@ -81,18 +81,28 @@ export function validateLogin(fields: { email: string; password: string }): Fiel
   return errors;
 }
 
+export function validatePasswordConfirm(password: string, confirmPassword: string): string | null {
+  const missing = required(confirmPassword, "validation.passwordConfirmRequired");
+  if (missing) return missing;
+  if (password !== confirmPassword) return t("validation.passwordMismatch");
+  return null;
+}
+
 export function validateRegister(fields: {
   name: string;
   email: string;
   password: string;
-}): FieldErrors<"name" | "email" | "password"> {
-  const errors: FieldErrors<"name" | "email" | "password"> = {};
+  confirmPassword: string;
+}): FieldErrors<"name" | "email" | "password" | "confirmPassword"> {
+  const errors: FieldErrors<"name" | "email" | "password" | "confirmPassword"> = {};
   const name = validateName(fields.name);
   const email = validateEmail(fields.email);
   const password = validatePassword(fields.password);
+  const confirmPassword = validatePasswordConfirm(fields.password, fields.confirmPassword);
   if (name) errors.name = name;
   if (email) errors.email = email;
   if (password) errors.password = password;
+  if (confirmPassword) errors.confirmPassword = confirmPassword;
   return errors;
 }
 
@@ -103,10 +113,15 @@ export function validateForgotPassword(fields: { email: string }): FieldErrors<"
   return errors;
 }
 
-export function validateResetPassword(fields: { password: string }): FieldErrors<"password"> {
-  const errors: FieldErrors<"password"> = {};
+export function validateResetPassword(fields: {
+  password: string;
+  confirmPassword: string;
+}): FieldErrors<"password" | "confirmPassword"> {
+  const errors: FieldErrors<"password" | "confirmPassword"> = {};
   const password = validatePassword(fields.password);
+  const confirmPassword = validatePasswordConfirm(fields.password, fields.confirmPassword);
   if (password) errors.password = password;
+  if (confirmPassword) errors.confirmPassword = confirmPassword;
   return errors;
 }
 

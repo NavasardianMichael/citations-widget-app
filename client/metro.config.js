@@ -13,8 +13,20 @@ const LONG_PATH_MARKER = path.normalize("Desktop\\workplace\\personal\\citations
 const originalRelative = path.relative.bind(path);
 path.relative = (...args) => originalRelative(...args).split(path.sep).join("/");
 
+// Release/APK gradle bundling must stay on one drive letter. The APK script sets this
+// and temporarily unmaps W: so Node/Gradle do not mix W:\ and C:\ roots.
+const apkBuild = process.env.CITATIONS_APK_BUILD === "1";
+const onLongDesktopPath = path.normalize(__dirname).includes(LONG_PATH_MARKER);
+
 function resolveProjectRoot() {
-  if (process.platform === "win32" && fs.existsSync(path.join(SHORT_WINDOWS_ROOT, "package.json"))) {
+  // Only redirect Desktop → W: for day-to-day Metro. Short copies (e.g. C:\cw)
+  // and APK builds must keep their own root or aliases resolve across drives.
+  if (
+    !apkBuild &&
+    onLongDesktopPath &&
+    process.platform === "win32" &&
+    fs.existsSync(path.join(SHORT_WINDOWS_ROOT, "package.json"))
+  ) {
     return SHORT_WINDOWS_ROOT;
   }
   return __dirname;
@@ -25,9 +37,10 @@ const projectRoot = resolveProjectRoot();
 // Starting Expo from the long Desktop path while W: is mapped loads react-native
 // twice (Desktop + W:) → Hermes "TypeError: property is not writable".
 if (
+  !apkBuild &&
   process.platform === "win32" &&
   projectRoot === SHORT_WINDOWS_ROOT &&
-  path.normalize(__dirname).includes(LONG_PATH_MARKER)
+  onLongDesktopPath
 ) {
   console.error(`
 ╔════════════════════════════════════════════════════════════════╗

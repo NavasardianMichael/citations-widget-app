@@ -3,6 +3,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs, TabList, TabSlot, TabTrigger, type TabTriggerSlotProps } from "expo-router/ui";
 import { Pressable, Text, View } from "react-native";
 
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { t } from "@/i18n";
@@ -22,13 +23,18 @@ export default function TabsLayout() {
       <Tabs>
         <View className="min-h-screen flex-1 flex-row bg-background">
           <TabList asChild>
-            <View className="w-56 shrink-0 border-r border-outline-variant bg-surface px-4 py-8">
-              <Text className="mb-8 px-3 font-headline-md text-headline-md text-primary">{t("common.brand")}</Text>
-              {TABS.map((tab) => (
-                <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
-                  <SidebarTab icon={tab.icon} label={t(tab.labelKey)} />
-                </TabTrigger>
-              ))}
+            <View className="w-56 shrink-0 gap-8 border-r border-outline-variant bg-surface px-4 py-8">
+              <View className="flex-row items-center gap-2 px-3">
+                <BrandLogo size={32} />
+                <Text className="font-headline-md text-headline-md text-primary">{t("common.brand")}</Text>
+              </View>
+              <View className="gap-1">
+                {TABS.map((tab) => (
+                  <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
+                    <SidebarTab icon={tab.icon} label={t(tab.labelKey)} />
+                  </TabTrigger>
+                ))}
+              </View>
             </View>
           </TabList>
           <View className="flex-1">
@@ -65,7 +71,7 @@ function SidebarTab({
     <Pressable
       {...pressableNoRipple}
       {...props}
-      className={`mb-1 flex-row items-center gap-3 rounded-lg px-3 py-3 ${isFocused ? "bg-primary-fixed" : ""}`}
+      className={`flex-row items-center gap-3 rounded-lg px-3 py-3 ${isFocused ? "bg-primary-fixed" : ""}`}
       accessibilityRole="tab"
     >
       <MaterialIcons name={icon} size={20} color={isFocused ? "#021a35" : "#44474d"} />

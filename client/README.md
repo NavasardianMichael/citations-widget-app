@@ -63,6 +63,23 @@ Press **`a`** in the Expo terminal for the emulator, or open the dev build on a 
 
 Rebuild native app only after SDK upgrades, new native modules, or `app.json` plugin changes: `npx expo run:android`.
 
+## Shareable APK (phone install)
+
+Windows Desktop paths are too long for release CMake/ninja. Build from a short copy:
+
+```powershell
+# one-time / when you need a fresh APK tree
+robocopy "$PWD\.." C:\cw /E /XD node_modules .cxx build .git .expo dist /NFL /NDL /NP
+cd C:\cw\client
+npm install
+npm run android:apk
+```
+
+APK: `C:\cw\client\android\app\build\outputs\apk\release\app-release.apk`  
+Install: `adb install -r <that-path>` (or copy the file to the phone).
+
+Set `EXPO_PUBLIC_API_URL=http://YOUR_PC_LAN_IP:3001` in `client/.env` before building if the phone should hit your local server.
+
 ## Scripts
 
 | Script | Purpose |
@@ -70,6 +87,7 @@ Rebuild native app only after SDK upgrades, new native modules, or `app.json` pl
 | `npm start` | Metro (dev client) |
 | `npm run web` | Browser |
 | `npm run android` | Build, install, run (emulator) |
+| `npm run android:apk` | Shareable release APK (use from `C:\cw\client` on Windows) |
 | `npm run android:start` | Metro with Android focus |
 
 From repo root, `npm start` runs server and client together.

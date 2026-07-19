@@ -1,4 +1,4 @@
-# Digital Sanctuary — Build Progress
+# Մեջբերումներ Աստվածաշնչից — Build Progress
 
 This file tracks implementation progress against the approved build plan, so work can resume seamlessly on another machine (via `git pull`) or in a fresh Claude Code session. Point a fresh session at this file first.
 
@@ -6,7 +6,7 @@ This file tracks implementation progress against the approved build plan, so wor
 
 Full plan (context, architecture, all decisions): see the plan text embedded below — the original was written to a local Claude Code plan file (`C:\Users\michael.navasardyan\.claude\plans\gleaming-jingling-pearl.md`) which does **not** travel with git, so it's reproduced in full here.
 
-Design source: 4 finished HTML/Tailwind mockups at `client/design/{saved,submit,settings,profile}.html`, app branded "Digital Sanctuary" — a Bible-first (with Fiction/Mixed options) citation-widget app.
+Design source: 4 finished HTML/Tailwind mockups at `client/design/{saved,submit,settings,profile}.html`, app branded "Մեջբերումներ Աստվածաշնչից" — a Bible-first (with Fiction/Mixed options) citation-widget app.
 
 <details>
 <summary>Full plan text (click to expand)</summary>
@@ -104,7 +104,7 @@ server/data/citations.db   # runtime file, gitignored
 - Database seeded: **31,100** Bible verses + **30** fiction quotes (31,130 total).
 - All API routes smoke-tested (health, citations, saved, widget-settings, widget/citation, widget/preview, profile).
 
-**Client (`client/`) — full Digital Sanctuary in-app product:**
+**Client (`client/`) — full Մեջբերումներ Աստվածաշնչից in-app product:**
 - NativeWind v4 + Tailwind 3.4 with M3 design tokens from `client/design/` mockups.
 - Google Fonts: Source Serif 4 + Hanken Grotesk via `useFonts()` in `_layout.tsx`.
 - `app.json`: light-only, tablet support (`orientation: default`, `ios.supportsTablet`).
@@ -115,9 +115,13 @@ server/data/citations.db   # runtime file, gitignored
 - All 4 screens wired to real backend APIs.
 - `npx tsc --noEmit` passes. Web static export verified (`npx expo export --platform web`).
 
-### 🚧 Phase 2 (not started)
+### ✅ Phase 2 (native home widgets — scaffolded)
 
-Native home-screen widgets: iOS (`expo-widgets`) + Android (`react-native-android-widget`). Will read persisted `widget_settings` + `GET /api/widget/citation` rotation logic already on the server.
+Native home-screen widgets wired to settings:
+- iOS: `expo-widgets` → `src/widgets/CitationWidget.tsx` (Small/Medium/Large)
+- Android: `react-native-android-widget` → resizable provider (`minWidth` 180dp / `minHeight` 110dp)
+- Snapshot sync on settings load/save/refresh via `src/services/home-widget-sync.tsx`
+- Requires a **dev-client rebuild** (`npx expo prebuild` / `expo run:android` / `expo run:ios`) after plugin changes.
 
 ### Notes / gotchas hit so far (don't rediscover these)
 

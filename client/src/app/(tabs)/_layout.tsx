@@ -4,7 +4,13 @@ import { t } from "@/i18n";
 
 export default function TabsLayout() {
   return (
-    <NativeTabs backgroundColor="#fbf9f8" indicatorColor="#d4e3ff" labelStyle={{ selected: { color: "#021a35" } }}>
+    <NativeTabs
+      backgroundColor="#fbf9f8"
+      indicatorColor="#d4e3ff"
+      labelVisibilityMode="labeled"
+      labelStyle={{ default: { color: "#44474d" }, selected: { color: "#021a35" } }}
+      iconColor={{ default: "#44474d", selected: "#021a35" }}
+    >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>{t("tabs.saved")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon md="bookmark" sf="bookmark" />

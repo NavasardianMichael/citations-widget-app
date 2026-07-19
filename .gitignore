@@ -3,8 +3,10 @@ dist/
 .env
 .env.local
 .expo/
-android/
-ios/
+/android/
+/ios/
+/client/android/
+/client/ios/
 *.log
 .DS_Store
 server/data/seed/_armeastern*

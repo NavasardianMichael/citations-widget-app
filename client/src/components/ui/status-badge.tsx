@@ -17,9 +17,9 @@ const statusStyles: Record<
 export function StatusBadge({ status }: { status: CitationStatus }) {
   const style = statusStyles[status];
   return (
-    <View className={`flex-row items-center rounded px-2 py-1 ${style.bg}`}>
+    <View className={`flex-row items-center gap-1 rounded px-2 py-1 ${style.bg}`}>
       <MaterialIcons name={style.icon} size={14} color={status === "approved" ? "#745c00" : status === "rejected" ? "#93000a" : "#44474d"} />
-      <Text className={`ml-1 font-label-sm text-label-sm ${style.text}`}>{t(style.labelKey)}</Text>
+      <Text className={`font-label-sm text-label-sm ${style.text}`}>{t(style.labelKey)}</Text>
     </View>
   );
 }

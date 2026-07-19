@@ -26,12 +26,12 @@ export function SubmissionCard({ citation, onEdit, onDelete }: SubmissionCardPro
 
   return (
     <View
-      className="relative mb-6 overflow-hidden rounded-lg bg-surface-bright p-6"
+      className="relative gap-4 overflow-hidden rounded-lg bg-surface-bright p-6"
       style={{ boxShadow: "0 4px 20px -2px rgba(2, 26, 53, 0.05)" }}
     >
       {isApproved ? <View className="absolute bottom-0 left-0 top-0 w-1 bg-secondary" /> : null}
 
-      <View className="mb-4 flex-row items-start justify-between">
+      <View className="flex-row items-start justify-between">
         <StatusBadge status={citation.status} />
         <View className="flex-row gap-2">
           {onEdit ? (
@@ -47,23 +47,25 @@ export function SubmissionCard({ citation, onEdit, onDelete }: SubmissionCardPro
         </View>
       </View>
 
-      <Text className={`mb-4 border-l-2 ${borderClass} py-2 pl-4 font-citation-xl text-citation-xl italic ${textClass}`}>
+      <Text className={`border-l-2 ${borderClass} py-2 pl-4 font-citation-xl text-citation-xl italic ${textClass}`}>
         "{citation.text}"
       </Text>
 
-      <Text className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-        {formatSubmittedDate(citation.createdAt)}
-      </Text>
-
-      {citation.moderatorNote ? (
-        <Text className="mt-3 text-sm text-on-error-container">
-          {t("common.note")}: {citation.moderatorNote}
+      <View className="gap-2">
+        <Text className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+          {formatSubmittedDate(citation.createdAt)}
         </Text>
-      ) : null}
 
-      {isApproved && citation.removableOnRequest ? (
-        <Text className="mt-2 font-label-sm text-label-sm text-outline-variant">{t("card.removableNote")}</Text>
-      ) : null}
+        {citation.moderatorNote ? (
+          <Text className="text-sm text-on-error-container">
+            {t("common.note")}: {citation.moderatorNote}
+          </Text>
+        ) : null}
+
+        {isApproved && citation.removableOnRequest ? (
+          <Text className="font-label-sm text-label-sm text-outline-variant">{t("card.removableNote")}</Text>
+        ) : null}
+      </View>
     </View>
   );
 }

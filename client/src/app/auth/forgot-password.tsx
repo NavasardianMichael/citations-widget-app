@@ -2,6 +2,7 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { SkipAuthLink } from "@/components/ui/skip-auth-link";
@@ -39,39 +40,46 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
-          <View className="mx-auto w-full max-w-md">
-            <Text className="mb-2 font-display-lg text-display-lg-mobile text-primary">{t("auth.forgot.title")}</Text>
-            <Text className="mb-8 font-body-md text-body-md text-on-surface-variant">{t("auth.forgot.subtitle")}</Text>
+          <View className="mx-auto w-full max-w-md gap-8">
+            <View className="gap-2">
+              <BrandLogo size={48} className="mb-2" />
+              <Text className="font-display-lg text-display-lg-mobile text-primary">{t("auth.forgot.title")}</Text>
+              <Text className="font-body-md text-body-md text-on-surface-variant">{t("auth.forgot.subtitle")}</Text>
+            </View>
 
-            {error ? <Text className="mb-4 text-error">{error}</Text> : null}
-            {message ? <Text className="mb-4 text-primary">{message}</Text> : null}
+            <View className="gap-6">
+              {error ? <Text className="text-error">{error}</Text> : null}
+              {message ? <Text className="text-primary">{message}</Text> : null}
 
-            <FormField
-              label={t("auth.login.email")}
-              value={email}
-              onChangeText={(v) => {
-                setEmail(v);
-                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
-              }}
-              placeholder="you@example.com"
-              error={fieldErrors.email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="email"
-              textContentType="emailAddress"
-            />
-            <Button
-              label={loading ? t("auth.forgot.submitting") : t("auth.forgot.submit")}
-              onPress={handleSubmit}
-              disabled={loading}
-            />
+              <FormField
+                label={t("auth.login.email")}
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }}
+                placeholder="you@example.com"
+                error={fieldErrors.email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
+              />
+              <Button
+                label={loading ? t("auth.forgot.submitting") : t("auth.forgot.submit")}
+                onPress={handleSubmit}
+                disabled={loading}
+              />
+            </View>
 
-            <TextLink href="/auth/login" replace variant="underline" align="center" className="mt-6">
-              {t("auth.forgot.back")}
-            </TextLink>
+            <View className="gap-4">
+              <TextLink href="/auth/login" replace variant="underline" align="center">
+                {t("auth.forgot.back")}
+              </TextLink>
 
-            <SkipAuthLink />
+              <SkipAuthLink />
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

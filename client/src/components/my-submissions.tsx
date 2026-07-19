@@ -107,8 +107,8 @@ export function MySubmissions() {
     statusFilter === "all" ? submissions : submissions.filter((citation) => citation.status === statusFilter);
 
   return (
-    <View>
-      <View className="mb-8 gap-4 border-b border-outline-variant pb-4">
+    <View className="gap-8">
+      <View className="gap-4 border-b border-outline-variant pb-4">
         <Text className="font-headline-md text-headline-md text-primary">{t("submit.mySubmissions")}</Text>
         <View className="flex-row flex-wrap gap-2">
           {FILTER_OPTIONS.map((option) => (
@@ -127,10 +127,11 @@ export function MySubmissions() {
       ) : filteredSubmissions.length === 0 ? (
         <Text className="font-body-md text-body-md text-on-surface-variant">{t("submit.noSubmissions")}</Text>
       ) : (
-        filteredSubmissions.map((citation) =>
-          editingId === citation.id && editValues ? (
-            <View key={citation.id} className="mb-6">
+        <View className="gap-6">
+          {filteredSubmissions.map((citation) =>
+            editingId === citation.id && editValues ? (
               <CitationForm
+                key={citation.id}
                 values={editValues}
                 onChange={(next) => {
                   setEditValues(next);
@@ -157,16 +158,16 @@ export function MySubmissions() {
                   </View>
                 }
               />
-            </View>
-          ) : (
-            <SubmissionCard
-              key={citation.id}
-              citation={citation}
-              onEdit={() => startEdit(citation)}
-              onDelete={() => handleDelete(citation.id)}
-            />
-          ),
-        )
+            ) : (
+              <SubmissionCard
+                key={citation.id}
+                citation={citation}
+                onEdit={() => startEdit(citation)}
+                onDelete={() => handleDelete(citation.id)}
+              />
+            ),
+          )}
+        </View>
       )}
     </View>
   );

@@ -54,8 +54,6 @@ export const updateAuthProfileSchema = z
       .max(name.maxLength, name.messages.maxLength)
       .regex(name.pattern, name.messages.pattern)
       .optional(),
-    firstName: z.string().min(1).max(100).nullable().optional(),
-    lastName: z.string().min(1).max(100).nullable().optional(),
     socialUrl: z.string().url().max(300).nullable().optional(),
   })
   .strict()

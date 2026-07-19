@@ -1,26 +1,26 @@
-import { Text, TextInput, View, type TextInputProps } from "react-native";
+import { Text, TextInput, View, type TextInputProps } from 'react-native'
 
-import { t } from "@/i18n";
+import { t } from '@/i18n'
 
-type FormFieldVariant = "default" | "paper" | "academic";
+type FormFieldVariant = 'default' | 'paper' | 'academic'
 
 type FormFieldProps = {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-  optional?: boolean;
-  variant?: FormFieldVariant;
-  editable?: boolean;
-  error?: string | null;
-  secureTextEntry?: boolean;
-  autoCapitalize?: TextInputProps["autoCapitalize"];
-  autoCorrect?: boolean;
-  keyboardType?: TextInputProps["keyboardType"];
-  textContentType?: TextInputProps["textContentType"];
-  autoComplete?: TextInputProps["autoComplete"];
-};
+  label: string
+  value: string
+  onChangeText: (text: string) => void
+  placeholder?: string
+  multiline?: boolean
+  optional?: boolean
+  variant?: FormFieldVariant
+  editable?: boolean
+  error?: string | null
+  secureTextEntry?: boolean
+  autoCapitalize?: TextInputProps['autoCapitalize']
+  autoCorrect?: boolean
+  keyboardType?: TextInputProps['keyboardType']
+  textContentType?: TextInputProps['textContentType']
+  autoComplete?: TextInputProps['autoComplete']
+}
 
 export function FormField({
   label,
@@ -29,7 +29,7 @@ export function FormField({
   placeholder,
   multiline = false,
   optional = false,
-  variant = "default",
+  variant = 'default',
   editable = true,
   error,
   secureTextEntry = false,
@@ -39,33 +39,33 @@ export function FormField({
   textContentType,
   autoComplete,
 }: FormFieldProps) {
-  const hasError = Boolean(error);
+  const hasError = Boolean(error)
 
   const labelClass =
-    variant === "paper"
-      ? "mb-2 font-label-sm text-label-sm text-primary"
-      : "mb-2 font-label-sm text-label-sm text-on-surface-variant";
+    variant === 'paper'
+      ? 'font-semibold text-primary'
+      : 'font-semibold text-on-surface-variant'
 
-  const borderClass = hasError ? "border-error" : "border-outline-variant";
+  const borderClass = hasError ? 'border-error' : 'border-outline-variant'
 
   const inputClass =
-    variant === "paper"
-      ? `w-full border ${borderClass} bg-transparent px-4 font-body-md text-body-md text-on-surface ${multiline ? "min-h-[120px] py-4" : "py-2"}`
-      : variant === "academic"
+    variant === 'paper'
+      ? `w-full border ${borderClass} bg-transparent px-4 font-body-md text-body-md text-on-surface ${multiline ? 'min-h-[120px] py-4' : 'py-2'}`
+      : variant === 'academic'
         ? `w-full border-b ${borderClass} bg-transparent px-0 py-2 font-body-md text-body-md text-on-surface`
-        : `rounded-lg border ${borderClass} bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface ${multiline ? "min-h-[120px]" : ""}`;
+        : `rounded-lg border ${borderClass} bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface ${multiline ? 'min-h-[120px]' : ''}`
 
   return (
-    <View className="mb-6">
+    <View className='gap-2'>
       <Text className={labelClass}>
         {label}
-        {optional ? ` (${t("common.optional")})` : ""}
+        {optional ? ` (${t('common.optional')})` : ''}
       </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#74777e"
+        placeholderTextColor='#74777e'
         multiline={multiline}
         numberOfLines={multiline ? 4 : 1}
         editable={editable}
@@ -76,11 +76,17 @@ export function FormField({
         textContentType={textContentType}
         autoComplete={autoComplete}
         className={inputClass}
-        style={multiline && variant === "paper" ? { fontStyle: "normal" } : undefined}
-        textAlignVertical={multiline ? "top" : "auto"}
+        style={
+          multiline && variant === 'paper' ? { fontStyle: 'normal' } : undefined
+        }
+        textAlignVertical={multiline ? 'top' : 'auto'}
         accessibilityState={{ disabled: !editable }}
       />
-      {hasError ? <Text className="mt-2 font-label-sm text-label-sm text-error">{error}</Text> : null}
+      {hasError ? (
+        <Text className='font-label-sm text-label-sm text-error'>
+          {error}
+        </Text>
+      ) : null}
     </View>
-  );
+  )
 }

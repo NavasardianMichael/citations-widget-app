@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Մեջբերումներ Աստվածաշնչից logo — citation rising from pages">
+  <defs>
+    <linearGradient id="o2-page" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#d4e3ff"/>
+      <stop offset="100%" stop-color="#fbf9f8"/>
+    </linearGradient>
+    <linearGradient id="o2-rise" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#fed65b" stop-opacity="0"/>
+      <stop offset="55%" stop-color="#fed65b" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fed65b" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="64" cy="112" rx="36" ry="5" fill="#021a35" opacity="0.12"/>
+
+  <!-- Book base (shallow, grounded) -->
+  <path
+    d="M24 86 C40 78 52 76 64 76 C76 76 88 78 104 86 L98 98 C84 92 74 90 64 90 C54 90 44 92 30 98 Z"
+    fill="#021a35"
+  />
+  <path
+    d="M28 88 C42 81 52 80 64 80 C76 80 86 81 100 88 L96 94 C84 89 74 88 64 88 C54 88 44 89 32 94 Z"
+    fill="#fed65b"
+  />
+
+  <!-- Left page rising like a wing -->
+  <path
+    d="M64 78 C48 74 34 62 26 42 C24 37 26 32 31 31 C42 28 54 40 64 56 Z"
+    fill="url(#o2-page)"
+    stroke="#021a35"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+  <!-- Right page rising like a wing -->
+  <path
+    d="M64 78 C80 74 94 62 102 42 C104 37 102 32 97 31 C86 28 74 40 64 56 Z"
+    fill="url(#o2-page)"
+    stroke="#021a35"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+
+  <!-- Soft lift glow between pages -->
+  <ellipse cx="64" cy="48" rx="14" ry="22" fill="url(#o2-rise)"/>
+
+  <!-- Citation mark ascending from the gutter -->
+  <g fill="#fed65b" transform="translate(48 22)">
+    <path d="M6 4a7 7 0 1 1 0 10.5V24H0V14A7 7 0 0 1 6 4Zm16 0a7 7 0 1 1 0 10.5V24h-6V14A7 7 0 0 1 22 4Z"/>
+  </g>
+
+  <!-- Tiny page lines on wings -->
+  <g stroke="#021a35" stroke-width="1.25" stroke-linecap="round" opacity="0.22">
+    <path d="M40 48 C46 52 52 56 58 60"/>
+    <path d="M36 56 C44 60 50 64 56 68"/>
+    <path d="M88 48 C82 52 76 56 70 60"/>
+    <path d="M92 56 C84 60 78 64 72 68"/>
+  </g>
+</svg>

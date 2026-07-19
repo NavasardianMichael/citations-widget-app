@@ -11,8 +11,8 @@ type ToggleRowProps = {
 export function ToggleRow({ title, description, value, onValueChange, disabled = false }: ToggleRowProps) {
   return (
     <View className="flex-row items-center justify-between gap-4">
-      <View className="flex-1 pr-4">
-        <Text className="mb-1 font-body-md text-body-md text-on-surface">{title}</Text>
+      <View className="flex-1 gap-1 pr-4">
+        <Text className="font-body-md text-body-md text-on-surface">{title}</Text>
         {description ? <Text className="text-sm text-on-surface-variant">{description}</Text> : null}
       </View>
       <Switch

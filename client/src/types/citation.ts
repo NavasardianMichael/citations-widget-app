@@ -1,9 +1,11 @@
 export type CitationCategory = "bible" | "fiction";
 export type SourceSelection = CitationCategory | "mixed" | "saved";
 export type CitationStatus = "approved" | "pending" | "rejected" | "private";
+import type { WidgetDesignId } from "@/constants/widget-designs";
 import type { WidgetFontId } from "@/fonts/registry";
 
 export type FontStyle = WidgetFontId;
+export type WidgetDesign = WidgetDesignId;
 export type RefreshRateHours = 6 | 12 | 24;
 
 export type Citation = {
@@ -32,6 +34,7 @@ export type WidgetSettings = {
   sourceSelection: SourceSelection;
   refreshRateHours: RefreshRateHours;
   fontStyle: FontStyle;
+  widgetDesign: WidgetDesign;
   showAttribution: boolean;
   showActions: boolean;
   currentCitationId: string | null;
@@ -41,17 +44,23 @@ export type WidgetSettings = {
 
 export type WidgetSettingsDraft = Pick<
   WidgetSettings,
-  "sourceSelection" | "refreshRateHours" | "fontStyle" | "showAttribution" | "showActions"
+  | "sourceSelection"
+  | "refreshRateHours"
+  | "fontStyle"
+  | "widgetDesign"
+  | "showAttribution"
+  | "showActions"
 >;
 
-export type WidgetPreviewDraft = Pick<WidgetSettings, "sourceSelection" | "fontStyle" | "showAttribution">;
+export type WidgetPreviewDraft = Pick<
+  WidgetSettings,
+  "sourceSelection" | "fontStyle" | "widgetDesign" | "showAttribution"
+>;
 
 export type UserProfile = {
   id: string;
   email?: string;
-  name?: string;
-  firstName: string | null;
-  lastName: string | null;
+  name: string;
   socialUrl: string | null;
   createdAt: string;
   updatedAt: string;
@@ -75,7 +84,6 @@ export type UpdateCitationInput = {
 };
 
 export type UpdateProfileInput = {
-  firstName?: string | null;
-  lastName?: string | null;
+  name?: string;
   socialUrl?: string | null;
 };

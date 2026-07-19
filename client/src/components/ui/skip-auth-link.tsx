@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
 
-import { pressableNoRipple } from "@/constants/pressable";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
 
@@ -14,11 +13,5 @@ export function SkipAuthLink({ className = "" }: { className?: string }) {
     router.replace("/(tabs)");
   }
 
-  return (
-    <Pressable {...pressableNoRipple} onPress={handleSkip} accessibilityRole="button" className={`mt-4 ${className}`}>
-      <Text className="text-center font-body-md text-body-md text-on-surface-variant underline">
-        {t("auth.skip")}
-      </Text>
-    </Pressable>
-  );
+  return <Button label={t("auth.skip")} variant="secondary" onPress={handleSkip} className={className} />;
 }

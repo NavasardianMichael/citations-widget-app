@@ -11,8 +11,6 @@ export type UserCreate = {
   googleId?: string | null;
   emailVerified?: boolean;
   locale?: string;
-  firstName?: string | null;
-  lastName?: string | null;
   socialUrl?: string | null;
 };
 

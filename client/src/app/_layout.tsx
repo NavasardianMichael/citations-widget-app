@@ -24,9 +24,10 @@ function useProtectedRoute() {
 
     const inAuthGroup = segments[0] === 'auth'
 
+    // Guests may open auth screens to sign in later; only signed-in users are kept out of /auth.
     if (!user && !isGuest && !inAuthGroup) {
       router.replace('/auth/login')
-    } else if ((user || isGuest) && inAuthGroup) {
+    } else if (user && inAuthGroup) {
       router.replace('/(tabs)')
     }
   }, [user, isGuest, isLoading, segments, router])

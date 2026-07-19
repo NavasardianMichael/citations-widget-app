@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 
+import { AUTH_VALIDATION } from "../constants/validation.js";
 import { prisma } from "../db/index.js";
 import { requireAuth } from "../middleware/require-auth.js";
 
@@ -12,8 +13,6 @@ function serializeProfile(user: NonNullable<Awaited<ReturnType<typeof prisma.use
     id: user.id,
     email: user.email,
     name: user.name,
-    firstName: user.firstName,
-    lastName: user.lastName,
     socialUrl: user.socialUrl,
     avatarUrl: user.avatarUrl,
     locale: user.locale ?? "hy",
@@ -32,8 +31,12 @@ profileRouter.get("/profile", async (req, res) => {
 });
 
 const patchSchema = z.object({
-  firstName: z.string().min(1).max(100).nullable().optional(),
-  lastName: z.string().min(1).max(100).nullable().optional(),
+  name: z
+    .string()
+    .min(AUTH_VALIDATION.name.minLength, AUTH_VALIDATION.name.messages.minLength)
+    .max(AUTH_VALIDATION.name.maxLength, AUTH_VALIDATION.name.messages.maxLength)
+    .regex(AUTH_VALIDATION.name.pattern, AUTH_VALIDATION.name.messages.pattern)
+    .optional(),
   socialUrl: z.string().url().max(300).nullable().optional(),
 });
 

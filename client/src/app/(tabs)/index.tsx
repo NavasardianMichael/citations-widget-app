@@ -52,9 +52,9 @@ export default function SavedScreen() {
     <View className="flex-1 bg-background">
       <TopAppBar title={t("common.brand")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
-        <View className="mx-auto w-full max-w-[1200px] px-margin-mobile pt-8 md:px-margin-desktop md:pt-12">
-          <View className={`mb-12 ${isMd ? "items-start" : "items-center"}`}>
-            <Text className={`mb-4 font-display-lg text-display-lg-mobile text-primary md:text-display-lg ${isMd ? "text-left" : "text-center"}`}>
+        <View className="mx-auto w-full max-w-[1200px] gap-12 px-margin-mobile pt-8 md:px-margin-desktop md:pt-12">
+          <View className={`gap-4 ${isMd ? "items-start" : "items-center"}`}>
+            <Text className={`font-display-lg text-display-lg-mobile text-primary md:text-display-lg ${isMd ? "text-left" : "text-center"}`}>
               {t("saved.title")}
             </Text>
             <Text className={`max-w-2xl font-body-lg text-body-lg text-on-surface-variant ${isMd ? "text-left" : "text-center"}`}>
@@ -67,8 +67,8 @@ export default function SavedScreen() {
           ) : error ? (
             <Text className="text-center text-error">{error}</Text>
           ) : citations.length === 0 ? (
-            <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12">
-              <Text className="mb-2 text-center font-headline-md text-headline-md text-primary">{t("saved.emptyTitle")}</Text>
+            <View className="items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12">
+              <Text className="text-center font-headline-md text-headline-md text-primary">{t("saved.emptyTitle")}</Text>
               <Text className="text-center font-body-md text-body-md text-on-surface-variant">{t("saved.emptyBody")}</Text>
             </View>
           ) : (

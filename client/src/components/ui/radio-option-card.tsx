@@ -19,9 +19,9 @@ export function RadioOptionCard({ label, icon, selected, onPress }: RadioOptionC
       accessibilityState={{ selected }}
       className={`flex-1 min-w-[45%] rounded-lg border p-4 ${selected ? "border-primary bg-primary-fixed" : "border-outline-variant bg-surface-container-lowest"}`}
     >
-      <View className="items-center">
+      <View className="items-center gap-2">
         <MaterialIcons name={icon} size={28} color={selected ? "#041c37" : "#44474d"} />
-        <Text className={`mt-2 font-label-sm text-label-sm ${selected ? "text-on-primary-fixed" : "text-on-surface"}`}>
+        <Text className={`font-label-sm text-label-sm ${selected ? "text-on-primary-fixed" : "text-on-surface"}`}>
           {label}
         </Text>
       </View>

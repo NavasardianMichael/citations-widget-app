@@ -1,4 +1,4 @@
-/** M3 color tokens from client/design mockups (Digital Sanctuary). */
+/** M3 color tokens from client/design mockups (Մեջբերումներ Աստվածաշնչից). */
 export const colors = {
   tertiaryFixedDim: "#c8c6c3",
   background: "#fbf9f8",

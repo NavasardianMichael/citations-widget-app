@@ -1,6 +1,6 @@
 # Citations Widget — Server
 
-REST API for the Digital Sanctuary app. Express 5, PostgreSQL (Prisma), Redis sessions, Argon2 passwords, JWT access/refresh tokens for mobile.
+REST API for the Մեջբերումներ Աստվածաշնչից app. Express 5, PostgreSQL (Prisma), Redis sessions, Argon2 passwords, JWT access/refresh tokens for mobile.
 
 ## Prerequisites
 
@@ -50,7 +50,7 @@ Match `DATABASE_URL` and `REDIS_URL` in `.env` (see `.env.example`).
 
 Protected routes require `Authorization: Bearer <accessToken>` or a session cookie.
 
-**Domain** (`/api`) — citations (public read; auth for submit/edit), saved bookmarks, widget settings/preview, profile (`firstName`, `lastName`, `socialUrl`).
+**Domain** (`/api`) — citations (public read; auth for submit/edit), saved bookmarks, widget settings/preview, profile (`name`, `socialUrl`).
 
 ## Environment
 

@@ -38,12 +38,12 @@ export function CitationCard({
           style={shadowLevel1}
         >
           <View className="absolute inset-0 bg-primary/80" />
-          <View className="relative z-10 max-w-3xl items-center">
-            <MaterialIcons name="format-quote" size={28} color="#fed65b" style={{ marginBottom: 16, opacity: 0.8 }} />
-            <Text className="mb-6 text-center font-citation-xl text-citation-xl leading-relaxed text-white">
+          <View className="relative z-10 max-w-3xl items-center gap-6">
+            <MaterialIcons name="format-quote" size={28} color="#fed65b" style={{ opacity: 0.8 }} />
+            <Text className="text-center font-citation-xl text-citation-xl leading-relaxed text-white">
               "{citation.text}"
             </Text>
-            <Text className="mb-6 font-label-sm text-label-sm uppercase tracking-widest text-secondary-fixed">
+            <Text className="font-label-sm text-label-sm uppercase tracking-widest text-secondary-fixed">
               — {citation.author ?? t("card.unknownAuthor")}
               {citation.source ? `, ${citation.source}` : ""}
             </Text>
@@ -70,14 +70,14 @@ export function CitationCard({
 
   return (
     <View className={className}>
-      <View className={`relative overflow-hidden rounded-xl p-6 md:p-8 ${bgClass} ${borderClass}`} style={shadowLevel1}>
+      <View className={`relative gap-6 overflow-hidden rounded-xl p-6 md:p-8 ${bgClass} ${borderClass}`} style={shadowLevel1}>
         {variant === "decorative" ? (
           <View className="absolute right-4 top-4 opacity-10">
             <MaterialIcons name="eco" size={36} color="#735c00" />
           </View>
         ) : null}
 
-        <Text className={`relative z-10 mb-6 ${quoteClass} text-primary`}>"{citation.text}"</Text>
+        <Text className={`relative z-10 ${quoteClass} text-primary`}>"{citation.text}"</Text>
 
         <View className={`${variant === "minimalist" ? "mt-auto border-t border-outline-variant pt-4" : ""} flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`}>
           <View className="flex-row items-center gap-3">

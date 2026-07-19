@@ -52,7 +52,7 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
 
   return (
     <View
-      className="rounded-xl bg-surface-container-low p-6 md:p-10"
+      className="gap-8 rounded-xl bg-surface-container-low p-6 md:p-10"
       style={{ boxShadow: "0 4px 20px rgba(2, 26, 53, 0.15)" }}
     >
       <FormField
@@ -66,7 +66,7 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
         error={errors?.text}
       />
 
-      <View className="mb-8 flex-col gap-8 md:flex-row">
+      <View className="flex-col gap-8 md:flex-row">
         <View className="flex-1">
           <FormField
             label={t("form.author")}
@@ -93,8 +93,8 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
         </View>
       </View>
 
-      <View className="mb-8">
-        <Text className="mb-3 font-label-sm text-label-sm text-primary">{t("form.category")}</Text>
+      <View className="gap-2">
+        <Text className="font-label-sm text-label-sm text-primary">{t("form.category")}</Text>
         <TogglePill
           variant="category"
           options={[
@@ -107,15 +107,13 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
         />
       </View>
 
-      <View className={footer ? "mb-10" : ""}>
-        <ToggleRow
-          title={t("form.shareProfile")}
-          description={t("form.shareProfileDetail")}
-          value={values.shareProfile}
-          onValueChange={(shareProfile) => patch("shareProfile", shareProfile)}
-          disabled={disabled}
-        />
-      </View>
+      <ToggleRow
+        title={t("form.shareProfile")}
+        description={t("form.shareProfileDetail")}
+        value={values.shareProfile}
+        onValueChange={(shareProfile) => patch("shareProfile", shareProfile)}
+        disabled={disabled}
+      />
 
       {footer ? <View className="border-t border-outline-variant/30 pt-6">{footer}</View> : null}
     </View>

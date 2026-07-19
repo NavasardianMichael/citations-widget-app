@@ -8,6 +8,7 @@ import { TopAppBar } from "@/components/ui/top-app-bar";
 import { SignInRequired } from "@/components/sign-in-required";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
+import { hasErrors, validateName, type FieldErrors } from "@/lib/validation";
 import { fetchProfile, updateProfile } from "@/services/api";
 import { deleteAccountRequest } from "@/services/auth-api";
 import { getAccessToken } from "@/services/auth-storage";
@@ -17,9 +18,9 @@ export default function ProfileScreen() {
   const { user, isGuest, signOut } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [name, setName] = useState("");
   const [socialUrl, setSocialUrl] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"name">>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -29,8 +30,7 @@ export default function ProfileScreen() {
     try {
       const fetched = await fetchProfile();
       setProfile(fetched);
-      setFirstName(fetched.firstName ?? "");
-      setLastName(fetched.lastName ?? "");
+      setName(fetched.name ?? "");
       setSocialUrl(fetched.socialUrl ?? "");
     } catch (e) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.loadFailed"));
@@ -55,11 +55,14 @@ export default function ProfileScreen() {
   }
 
   async function handleSaveProfile() {
+    const nextErrors: FieldErrors<"name"> = { name: validateName(name) ?? undefined };
+    setFieldErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
+
     setSaving(true);
     try {
       const updated = await updateProfile({
-        firstName: firstName.trim() || null,
-        lastName: lastName.trim() || null,
+        name: name.trim(),
         socialUrl: socialUrl.trim() || null,
       });
       setProfile(updated);
@@ -120,45 +123,60 @@ export default function ProfileScreen() {
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-xl px-margin-mobile py-8 md:px-margin-desktop md:py-12">
           <View
-            className="relative overflow-hidden rounded-lg bg-surface-bright p-8"
+            className="relative overflow-hidden rounded-lg bg-surface-bright p-8 gap-8"
             style={{ boxShadow: "0 4px 20px -2px rgba(2, 26, 53, 0.05)" }}
           >
             <View className="absolute bottom-0 left-0 top-0 w-1 bg-secondary" />
-            <Text className="mb-6 font-headline-md text-headline-md text-primary">{t("profile.scholarTitle")}</Text>
-            <FormField label={t("profile.firstName")} value={firstName} onChangeText={setFirstName} variant="academic" />
-            <FormField label={t("profile.lastName")} value={lastName} onChangeText={setLastName} variant="academic" />
-            <FormField
-              label={t("profile.socialUrl")}
-              value={socialUrl}
-              onChangeText={setSocialUrl}
-              placeholder="https://…"
-              variant="academic"
-            />
-            <Button
-              label={saving ? t("common.saving") : t("profile.saveChanges")}
-              onPress={handleSaveProfile}
-              disabled={saving}
-              className="mt-2 w-full md:w-auto"
-            />
-            {profile && "email" in profile && profile.email ? (
-              <Text className="mt-4 text-sm text-on-surface-variant">
-                {t("profile.signedInAs", { email: String(profile.email) })}
-              </Text>
-            ) : null}
-            <Button
-              label={t("profile.signOut")}
-              variant="secondary"
-              onPress={confirmSignOut}
-              className="mt-4 w-full md:w-auto"
-            />
-            <Button
-              label={deleting ? t("common.saving") : t("profile.removeAccount")}
-              variant="secondary"
-              icon="delete-forever"
-              disabled={deleting}
-              onPress={confirmDeleteAccount}
-              className="mt-4 w-full md:w-auto"
-            />
+            <Text className="font-headline-md text-headline-md text-primary">{t("profile.scholarTitle")}</Text>
+            <View className="gap-6">
+              <FormField
+                label={t("profile.name")}
+                value={name}
+                onChangeText={(v) => {
+                  setName(v);
+                  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                }}
+                error={fieldErrors.name}
+                variant="academic"
+                autoCapitalize="words"
+                textContentType="name"
+                autoComplete="name"
+              />
+              <FormField
+                label={t("profile.socialUrl")}
+                value={socialUrl}
+                onChangeText={setSocialUrl}
+                placeholder="https://…"
+                variant="academic"
+              />
+            </View>
+            <View className="gap-3">
+              <Button
+                label={saving ? t("common.saving") : t("profile.saveChanges")}
+                onPress={handleSaveProfile}
+                disabled={saving}
+                className="w-full md:w-auto"
+              />
+              {profile && "email" in profile && profile.email ? (
+                <Text className="text-sm text-on-surface-variant">
+                  {t("profile.signedInAs", { email: String(profile.email) })}
+                </Text>
+              ) : null}
+              <Button
+                label={t("profile.signOut")}
+                variant="secondary"
+                onPress={confirmSignOut}
+                className="w-full md:w-auto"
+              />
+              <Button
+                label={deleting ? t("common.saving") : t("profile.removeAccount")}
+                variant="secondary"
+                icon="delete-forever"
+                disabled={deleting}
+                onPress={confirmDeleteAccount}
+                className="w-full md:w-auto"
+              />
+            </View>
           </View>
         </View>
       </ScrollView>

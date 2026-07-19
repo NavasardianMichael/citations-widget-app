@@ -1,6 +1,6 @@
 /** Eastern Armenian (արևելահայերեն) UI catalog — namespaced for future per-screen splits. */
 export const hy = {
-  'common.brand': 'Թվային սրբարան',
+  'common.brand': 'Մեջբերումներ Աստվածաշնչից',
   'common.save': 'Պահպանել',
   'common.saving': 'Պահպանվում է…',
   'common.error': 'Սխալ',
@@ -9,7 +9,6 @@ export const hy = {
   'common.delete': 'Ջնջել',
   'common.loading': 'Բեռնվում է…',
   'common.optional': 'ոչ պարտադիր',
-  'common.discard': 'Չեղարկել փոփոխությունները',
   'common.note': 'Նշում',
   'common.back': 'Հետ',
 
@@ -44,6 +43,8 @@ export const hy = {
   'auth.register.name': 'Անուն',
   'auth.register.namePlaceholder': 'Մուտքագրեք Ձեր անունը',
   'auth.register.passwordPlaceholder': 'Մուտքագրեք Ձեր գաղտնաբառը',
+  'auth.register.confirmPassword': 'Կրկնել գաղտնաբառը',
+  'auth.register.confirmPasswordPlaceholder': 'Կրկին մուտքագրեք գաղտնաբառը',
   'auth.register.submit': 'Ստեղծել հաշիվ',
   'auth.register.submitting': 'Ստեղծվում է…',
   'auth.register.hasAccount': 'Ունե՞ք հաշիվ',
@@ -61,6 +62,8 @@ export const hy = {
   'auth.reset.title': 'Նոր գաղտնաբառ',
   'auth.reset.subtitle': 'Մուտքագրեք նոր գաղտնաբառը Ձեր հաշվի համար',
   'auth.reset.newPassword': 'Նոր գաղտնաբառ',
+  'auth.reset.confirmPassword': 'Կրկնել գաղտնաբառը',
+  'auth.reset.confirmPasswordPlaceholder': 'Կրկին մուտքագրեք նոր գաղտնաբառը',
   'auth.reset.submit': 'Թարմացնել գաղտնաբառը',
   'auth.reset.submitting': 'Պահպանվում է…',
   'auth.reset.invalidLink':
@@ -87,11 +90,11 @@ export const hy = {
 
   'submit.ctaTitle': 'Ավելացրեք նոր մեջբերում',
   'submit.ctaBody':
-    'Կիսվեք Ձեր սիրելի հատվածով սրբարանի հետ, կամ վերանայեք ստորև Ձեր ուղարկումները։',
+    'Կիսվեք Ձեր սիրելի հատվածով, կամ վերանայեք ստորև Ձեր ուղարկումները։',
   'submit.addNew': 'Ավելացնել մեջբերում',
   'submit.heroTitle': 'Ավելացնել մեջբերում',
   'submit.heroBody':
-    'Նվիրաբերեք սրբարանին։ Ուղարկված հարցումները վերանայվում են մինչև հանրային հավաքածուին միանալը։',
+    'Նվիրաբերեք հանրային հավաքածուին։ Ուղարկված հարցումները վերանայվում են մինչև միանալը։',
   'submit.pendingHint': 'Հարցումները սպասում են վերանայման',
   'submit.missingTextTitle': 'Բացակայում է տեքստը',
   'submit.missingTextBody': 'Խնդրում ենք մուտքագրել մեջբերման տեքստը։',
@@ -139,8 +142,7 @@ export const hy = {
   'category.fiction': 'Գրականություն',
 
   'profile.scholarTitle': 'Գիտնականի պրոֆիլ',
-  'profile.firstName': 'Անուն',
-  'profile.lastName': 'Ազգանուն',
+  'profile.name': 'Անուն',
   'profile.socialUrl': 'Սոց․ / հղում',
   'profile.saveChanges': 'Պահպանել փոփոխությունները',
   'profile.signedInAs': 'Մուտք գործած՝ {email}',
@@ -159,11 +161,10 @@ export const hy = {
   'settings.title': 'Վիջեթի կարգավորումներ',
   'settings.sourcePool': 'Աղբյուրների ընտրություն',
   'settings.refreshRate': 'Թարմացման հաճախականություն',
-  'settings.typography': 'Տպագրություն',
-  'settings.font': 'Տառատեսակ',
-  'settings.displayOptions': 'Ցուցադրման ընտրանքներ',
-  'settings.attribution': 'Ցույց տալ վերագրումը համայնքի ուղարկումների համար',
-  'settings.showActions': 'Ցույց տալ գործողությունները վիջեթի վրա',
+  'settings.typography': 'Տառատեսակ',
+  'settings.displayOptions': 'Ցուցադրման կարգավորումներ',
+  'settings.attribution': 'Ցույց տալ մեջբերումն ավելացրած օգտատիրոջ անունը',
+  'settings.showActions': 'Ցույց տալ գործողությունները կոճակները',
   'settings.showActionsDesc':
     'Ցույց տալ թարմացման, կարգավորումների, պահպանման և կիսվելու կոճակները վիջեթի նախադիտման վրա։',
   'settings.actionSaveSuccess': 'Մեջբերումը պահպանվեց',
@@ -178,15 +179,23 @@ export const hy = {
   'settings.poolMixed': 'Խառը',
   'settings.poolSaved': 'Պահված',
   'settings.preview': 'Նախադիտում',
-  'settings.livePreview': 'Կենդանի նախադիտում',
+  'settings.livePreview': 'Նախադիտում',
   'settings.previewLoading': 'Նախադիտումը բեռնվում է…',
   'settings.previewEmpty': 'Այս ընտրության համար մեջբերումներ չկան։',
+  'settings.designLabel': 'Վիջեթի դիզայն',
+  'settings.designClassic': 'Դասական',
+  'settings.designParchment': 'Մագաղաթ',
+  'settings.designMidnight': 'Կեսգիշեր',
+  'settings.designGlass': 'Ապակի',
+  'settings.designInk': 'Թանաք',
+  'settings.designManuscript': 'Ձեռագիր',
+  'settings.designPrev': 'Նախորդ դիզայն',
+  'settings.designNext': 'Հաջորդ դիզայն',
   'settings.addedBy': 'Ավելացրել է {name}',
   'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',
   'settings.actionBookmark': 'Էջանշել',
   'settings.actionShare': 'Կիսվել',
-  'settings.save': 'Պահպանել վիջեթը',
   'settings.saved': 'Կարգավորումները պահված են։',
   'settings.saveFailed': 'Չհաջողվեց պահպանել կարգավորումները',
   'settings.loadFailed': 'Չհաջողվեց բեռնել կարգավորումները',
@@ -206,7 +215,7 @@ export const hy = {
   'card.editSubmission': 'Խմբագրել ուղարկումը',
   'card.deleteSubmission': 'Ջնջել ուղարկումը',
 
-  'validation.emailRequired': 'Մուտքագրեք էլ․ փոստը',
+  'validation.emailRequired': 'էլ․ փոստը լրացնելը պարտադիր է',
   'validation.emailInvalid': 'Մուտքագրեք վավեր էլ․ փոստ',
   'validation.passwordRequired': 'Մուտքագրեք գաղտնաբառը',
   'validation.passwordMin': 'Գաղտնաբառը պետք է լինի առնվազն 8 նիշ',
@@ -216,6 +225,8 @@ export const hy = {
   'validation.passwordUpper':
     'Գաղտնաբառը պետք է պարունակի առնվազն մեկ մեծատառ լատինատառ',
   'validation.passwordNumber': 'Գաղտնաբառը պետք է պարունակի առնվազն մեկ թիվ',
+  'validation.passwordConfirmRequired': 'Կրկին մուտքագրեք գաղտնաբառը',
+  'validation.passwordMismatch': 'Գաղտնաբառները չեն համընկնում',
   'validation.nameRequired': 'Մուտքագրեք անունը',
   'validation.nameMin': 'Անունը պետք է լինի առնվազն 2 նիշ',
   'validation.nameMax': 'Անունը չի կարող գերազանցել 100 նիշը',
@@ -225,6 +236,6 @@ export const hy = {
   'validation.citationTextMax': 'Մեջբերումը չի կարող գերազանցել 2000 նիշը',
   'validation.authorMax': 'Հեղինակի անունը չի կարող գերազանցել 200 նիշը',
   'validation.sourceMax': 'Աղբյուրը չի կարող գերազանցել 200 նիշը',
-} as const;
+} as const
 
-export type HyMessages = typeof hy;
+export type HyMessages = typeof hy

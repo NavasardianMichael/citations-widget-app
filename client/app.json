@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Digital Sanctuary",
+    "name": "Մեջբերումներ Աստվածաշնչից",
     "slug": "citations-widget-app",
     "version": "1.0.0",
     "orientation": "default",
@@ -14,7 +14,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#fbf9f8",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -40,9 +40,60 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#fbf9f8",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 128
+        }
+      ],
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "com.anonymous.citationswidgetapp.widgets",
+          "groupIdentifier": "group.com.anonymous.citationswidgetapp",
+          "widgets": [
+            {
+              "name": "CitationWidget",
+              "displayName": "Մեջբերումներ Աստվածաշնչից",
+              "description": "Մեջբերումներ ձեր գլխավոր էկրանին",
+              "contentMarginsDisabled": true,
+              "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+            }
+          ]
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "fonts": [
+            "./assets/fonts/vrdznagir/Vrdznagir.otf",
+            "./assets/fonts/braind-amanor/BraindAmanor.otf",
+            "./assets/fonts/artsakh/Artsakh.otf",
+            "./assets/fonts/davel-aghvor/davel-aghvor.otf",
+            "./assets/fonts/mardoto/Mardoto-Regular.ttf",
+            "./assets/fonts/arti/Arti-Regular.otf",
+            "./assets/fonts/arian-grqi/Arian_Grqi_U.ttf",
+            "./assets/fonts/braind-zbans/BraindZbans.otf",
+            "./assets/fonts/nortar-body/NorTarBody.otf",
+            "./assets/fonts/arm-hmks-script/ArmHmksScript.ttf",
+            "./assets/fonts/noyemi/Noyemi.otf",
+            "./assets/fonts/armeniapedia-garun/ArmeniapediaGarun.ttf",
+            "./assets/fonts/armeniapedia-geghagrutyun/ArmeniapediaGeghagrutyun.ttf",
+            "./assets/fonts/sasuntsi/Sasuntsi-Regular.ttf",
+            "./assets/fonts/armeniapedia-jhapaven/ArmeniapediaJhapaven.ttf"
+          ],
+          "widgets": [
+            {
+              "name": "CitationWidget",
+              "label": "Մեջբերումներ Աստվածաշնչից",
+              "description": "Մեջբերումներ ձեր գլխավոր էկրանին",
+              "minWidth": "180dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
         }
       ]
     ],
