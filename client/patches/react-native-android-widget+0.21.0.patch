@@ -1,0 +1,101 @@
+diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java
+index 5a3ea00..cb1252a 100644
+--- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java
++++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java
+@@ -1,6 +1,7 @@
+ package com.reactnativeandroidwidget.builder.widget;
+ 
+ import android.graphics.Bitmap;
++import android.graphics.Canvas;
+ import android.widget.ImageView;
+ 
+ import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+@@ -24,9 +25,11 @@ public class ImageWidget extends BaseWidget<ImageView> {
+ 
+     @Override
+     protected void applyProps() {
++        String resizeMode = props.hasKey("resizeMode") ? props.getString("resizeMode") : "contain";
+         Bitmap bitmapFromURL = getBitmapFromURL(props.getMap("image").getString("uri"),
+             dpToPx(props.getDouble("imageWidth")),
+-            dpToPx(props.getDouble("imageHeight"))
++            dpToPx(props.getDouble("imageHeight")),
++            resizeMode
+         );
+ 
+         RoundedBitmapDrawable bitmapDrawable =
+@@ -36,37 +39,59 @@ public class ImageWidget extends BaseWidget<ImageView> {
+             bitmapDrawable.setCornerRadius(dpToPx(props.getDouble("radius")));
+         }
+ 
+-        if (props.hasKey("resizeMode")) {
+-            view.setScaleType(getScaleType(props.getString("resizeMode")));
+-        }
++        // The bitmap is already resized/cropped to exactly fill width x height above,
++        // so the ImageView just needs to draw it as-is.
++        view.setScaleType(ImageView.ScaleType.FIT_XY);
+ 
+         view.setImageDrawable(bitmapDrawable);
+     }
+ 
+-    private Bitmap getBitmapFromURL(String src, int width, int height) {
++    private Bitmap getBitmapFromURL(String src, int width, int height, String resizeMode) {
+         try {
+             Bitmap bitmap = ResourceUtils.getBitmap(appContext, src);
+             if (bitmap == null) {
+                 return null;
+             }
+-            return Bitmap.createScaledBitmap(bitmap, width, height, true);
++            if ("stretch".equals(resizeMode)) {
++                return Bitmap.createScaledBitmap(bitmap, width, height, true);
++            }
++            return resizeBitmap(bitmap, width, height, resizeMode);
+         } catch (IOException e) {
+             e.printStackTrace();
+             return null;
+         }
+     }
+ 
+-    private ImageView.ScaleType getScaleType(String resizeMode) {
+-        switch (resizeMode) {
+-            case "cover":
+-                return ImageView.ScaleType.CENTER_CROP;
+-            case "stretch":
+-                return ImageView.ScaleType.FIT_XY;
+-            case "center":
+-                return ImageView.ScaleType.CENTER;
+-            case "contain":
+-            default:
+-                return ImageView.ScaleType.FIT_CENTER;
++    /**
++     * Scales {@code source} uniformly (preserving aspect ratio) and centers it on a
++     * {@code width}x{@code height} canvas, matching Android's CENTER_CROP / FIT_CENTER /
++     * CENTER ScaleType semantics. Needed because RemoteViews bitmaps are pre-baked to an
++     * exact size — setting ScaleType on the ImageView after the fact has no effect once
++     * the bitmap itself already matches the view bounds.
++     */
++    private Bitmap resizeBitmap(Bitmap source, int width, int height, String resizeMode) {
++        int sourceWidth = source.getWidth();
++        int sourceHeight = source.getHeight();
++
++        float scale;
++        if ("center".equals(resizeMode)) {
++            scale = 1f;
++        } else if ("contain".equals(resizeMode)) {
++            scale = Math.min((float) width / sourceWidth, (float) height / sourceHeight);
++        } else {
++            // cover (default)
++            scale = Math.max((float) width / sourceWidth, (float) height / sourceHeight);
+         }
++
++        int scaledWidth = Math.round(sourceWidth * scale);
++        int scaledHeight = Math.round(sourceHeight * scale);
++        Bitmap scaled = scale == 1f
++            ? source
++            : Bitmap.createScaledBitmap(source, scaledWidth, scaledHeight, true);
++
++        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
++        Canvas canvas = new Canvas(output);
++        canvas.drawBitmap(scaled, (width - scaledWidth) / 2f, (height - scaledHeight) / 2f, null);
++        return output;
+     }
+ }

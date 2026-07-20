@@ -42,9 +42,11 @@
     "babel-plugin-module-resolver": "^5.0.3",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.0",
+    "patch-package": "^8.0.1",
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "start": "powershell -ExecutionPolicy Bypass -File ./run-start.ps1",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "powershell -ExecutionPolicy Bypass -File ./run-android.ps1",

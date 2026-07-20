@@ -1,4 +1,3 @@
-import React from "react";
 import {
   FlexWidget,
   ImageWidget,
@@ -10,6 +9,8 @@ import type { ColorProp } from "react-native-android-widget";
 import { getWidgetBackgroundImage } from "@/constants/widget-designs";
 import {
   colorWithOpacity,
+  WIDGET_ICON_FONT_FAMILY,
+  WIDGET_ICON_GLYPH,
   WIDGET_LAYOUT,
 } from "@/constants/widget-layout";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
@@ -55,6 +56,7 @@ function ActionChip({
         allowFontScaling={false}
         style={{
           fontSize: WIDGET_LAYOUT.actionIconSize,
+          fontFamily: WIDGET_ICON_FONT_FAMILY,
           color: asColor(color),
           textAlign: "center",
         }}
@@ -86,10 +88,11 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
     >
       {snapshot.showOrnament ? (
         <TextWidget
-          text="✦"
+          text={WIDGET_ICON_GLYPH.flare}
           allowFontScaling={false}
           style={{
             fontSize: WIDGET_LAYOUT.ornamentIconSize,
+            fontFamily: WIDGET_ICON_FONT_FAMILY,
             color: asColor(ornamentColor),
             textAlign: "right",
             width: "match_parent",
@@ -144,21 +147,22 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
           }}
         >
           {snapshot.sourceText ? (
-            <TextWidget
-              text={snapshot.sourceText.toUpperCase()}
-              maxLines={1}
-              truncate="END"
-              allowFontScaling={false}
-              style={{
-                fontSize: WIDGET_LAYOUT.metaFontSize,
-                lineHeight: WIDGET_LAYOUT.metaLineHeight,
-                letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
-                color: asColor(snapshot.metaColor),
-                fontFamily: snapshot.androidFontFile,
-                fontWeight: "600",
-                flex: 1,
-              }}
-            />
+            <FlexWidget style={{ flex: 1 }}>
+              <TextWidget
+                text={snapshot.sourceText.toUpperCase()}
+                maxLines={1}
+                truncate="END"
+                allowFontScaling={false}
+                style={{
+                  fontSize: WIDGET_LAYOUT.metaFontSize,
+                  lineHeight: WIDGET_LAYOUT.metaLineHeight,
+                  letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+                  color: asColor(snapshot.metaColor),
+                  fontFamily: snapshot.androidFontFile,
+                  fontWeight: "600",
+                }}
+              />
+            </FlexWidget>
           ) : (
             <FlexWidget style={{ flex: 1 }} />
           )}
@@ -172,27 +176,27 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
               }}
             >
               <ActionChip
-                label="↻"
+                label={WIDGET_ICON_GLYPH.refresh}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="REFRESH"
               />
               <ActionChip
-                label="⚙"
+                label={WIDGET_ICON_GLYPH.settings}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="OPEN_URI"
                 clickActionData={{ uri: "citationswidget://settings" }}
               />
               <ActionChip
-                label="☆"
+                label={WIDGET_ICON_GLYPH.bookmark}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="OPEN_URI"
                 clickActionData={{ uri: "citationswidget:///" }}
               />
               <ActionChip
-                label="↗"
+                label={WIDGET_ICON_GLYPH.share}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="OPEN_URI"
