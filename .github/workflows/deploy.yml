@@ -168,19 +168,33 @@ jobs:
             exit 1
           fi
           # printf avoids echo quirks; secret must be raw base64 only (no script banners).
-          printf '%s' "$ENV_FILE_BASE64" | base64 -d | tr -d '\r' > /tmp/env.production
+          printf '%s' "$ENV_FILE_BASE64" | base64 -d | tr -d '\r' | sed '1s/^\xEF\xBB\xBF//' > /tmp/env.production
+          if [ ! -s /tmp/env.production ]; then
+            echo "::error::Decoded ENV_FILE_BASE64 is empty or not valid base64. Paste only the base64 string from npm run envtobase64."
+            exit 1
+          fi
           echo "Env file: $(wc -c < /tmp/env.production) bytes, $(wc -l < /tmp/env.production) lines"
-          echo "Variable names:"
+          echo "Variable names in decoded file:"
           sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/  - \1/p' /tmp/env.production
-          # Fail fast if Postgres cannot initialize (empty password is a hard error).
+          missing=0
           for key in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DATABASE_URL; do
-            val=$(grep -E "^${key}=" /tmp/env.production | tail -n1 | cut -d= -f2-)
-            if [ -z "$val" ]; then
-              echo "::error::Decoded env is missing non-empty ${key}. Re-encode server/.env.production and update ENV_FILE_BASE64 (paste base64 only)."
-              exit 1
+            line=$(grep -E "^${key}=" /tmp/env.production | tail -n1 || true)
+            val=$(printf '%s' "$line" | cut -d= -f2-)
+            if [ -z "$line" ]; then
+              echo "::error::Decoded env has no line for ${key}"
+              missing=1
+            elif [ -z "$val" ]; then
+              echo "::error::Decoded env has empty ${key} (set a non-empty value in .env.production)"
+              missing=1
+            else
+              echo "OK ${key} (length ${#val})"
             fi
           done
-          echo "Required Postgres keys present (values not shown)."
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Fix server/.env.production, run: npm run envtobase64 -- production"
+            echo "::error::Copy ONLY the single base64 line into ENV_FILE_BASE64 (no 'Encoded...' text)."
+            exit 1
+          fi
 
       - name: Copy server bundle to host
         run: |
