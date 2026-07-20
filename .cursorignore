@@ -1,0 +1,10 @@
+﻿# Block AI indexing / Read / @-mentions (Cursor)
+# Note: Agent terminal commands (type/cat) are NOT blocked by this file.
+
+**/.env
+**/.env.*
+
+# Allow safe templates (must come after the block patterns)
+!**/.env.example
+!**/.env*.example
+!**/.env.sample

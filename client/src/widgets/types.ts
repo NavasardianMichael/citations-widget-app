@@ -23,6 +23,9 @@ export type HomeWidgetSnapshot = {
   ornamentOpacity: number;
   showOrnament: boolean;
   showLargeQuotes: boolean;
+  /** Dark scrim over photo backgrounds; null for solid designs. */
+  overlayColor: string | null;
+  hasBackgroundImage: boolean;
   emptyMessage: string;
   fetchedAt: number;
 };

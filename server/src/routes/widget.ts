@@ -60,6 +60,9 @@ const WIDGET_DESIGNS = [
   "glass",
   "ink",
   "manuscript",
+  "vista",
+  "sanctuary",
+  "horizon",
 ] as const;
 
 const settingsSchema = z.object({

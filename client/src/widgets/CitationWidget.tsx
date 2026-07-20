@@ -1,14 +1,20 @@
-import { HStack, Text, VStack } from "@expo/ui/swift-ui";
+import { HStack, Spacer, Text, VStack } from "@expo/ui/swift-ui";
 import {
   background,
   containerBackground,
   font,
   foregroundStyle,
   frame,
+  opacity,
   padding,
+  shapes,
 } from "@expo/ui/swift-ui/modifiers";
 import { createWidget, type WidgetEnvironment } from "expo-widgets";
 
+import {
+  colorWithOpacity,
+  WIDGET_LAYOUT,
+} from "@/constants/widget-layout";
 import { toArgbHex } from "@/widgets/color";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
 import { IOS_WIDGET_NAME } from "@/widgets/types";
@@ -34,31 +40,87 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   ornamentOpacity: 0.2,
   showOrnament: true,
   showLargeQuotes: false,
+  overlayColor: null,
+  hasBackgroundImage: false,
   emptyMessage: "",
   fetchedAt: 0,
 };
 
-function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnvironment) {
+function ActionChip({
+  label,
+  iconColor,
+  actionBg,
+}: {
+  label: string;
+  iconColor: string;
+  actionBg: string;
+}) {
+  return (
+    <Text
+      modifiers={[
+        font({ size: WIDGET_LAYOUT.actionIconSize, weight: "medium" }),
+        foregroundStyle(toArgbHex(iconColor)),
+        background(
+          toArgbHex(actionBg),
+          shapes.roundedRectangle({ cornerRadius: WIDGET_LAYOUT.actionSize / 2 }),
+        ),
+        frame({
+          width: WIDGET_LAYOUT.actionSize,
+          height: WIDGET_LAYOUT.actionSize,
+          alignment: "center",
+        }),
+      ]}
+    >
+      {label}
+    </Text>
+  );
+}
+
+function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvironment) {
   "widget";
   const data = { ...EMPTY_SNAPSHOT, ...props };
-  const isSmall = environment.widgetFamily === "systemSmall";
-  const quoteSize = isSmall ? 13 : environment.widgetFamily === "systemLarge" ? 17 : 15;
+  const largeQuoteColor = colorWithOpacity(
+    data.ornamentColor,
+    Math.min(1, data.ornamentOpacity + 0.15),
+  );
+  // Photo bitmaps are not available in the iOS widget extension yet — use the
+  // design's dark panel / overlay so text contrast still matches preview.
+  const iosBg = data.overlayColor ?? data.panelBg;
 
   return (
     <VStack
-      spacing={8}
+      spacing={0}
       alignment="leading"
       modifiers={[
-        containerBackground(toArgbHex(data.panelBg), "widget"),
-        padding({ all: isSmall ? 12 : 16 }),
+        containerBackground(toArgbHex(iosBg), "widget"),
+        padding({ all: WIDGET_LAYOUT.padding }),
         frame({ maxWidth: Infinity, maxHeight: Infinity, alignment: "topLeading" }),
       ]}
     >
+      {data.showOrnament ? (
+        <HStack modifiers={[frame({ maxWidth: Infinity })]}>
+          <Spacer />
+          <Text
+            modifiers={[
+              font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: "regular" }),
+              foregroundStyle(toArgbHex(data.ornamentColor)),
+              opacity(data.ornamentOpacity),
+            ]}
+          >
+            ✦
+          </Text>
+        </HStack>
+      ) : null}
+
       {data.showLargeQuotes ? (
         <Text
           modifiers={[
-            font({ size: 28, weight: "bold", family: data.fontFamily }),
-            foregroundStyle(toArgbHex(data.ornamentColor)),
+            font({
+              size: WIDGET_LAYOUT.largeQuoteFontSize,
+              weight: "bold",
+              family: data.fontFamily,
+            }),
+            foregroundStyle(toArgbHex(largeQuoteColor)),
           ]}
         >
           “
@@ -67,7 +129,11 @@ function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnviro
 
       <Text
         modifiers={[
-          font({ size: quoteSize, weight: "regular", family: data.fontFamily }),
+          font({
+            size: WIDGET_LAYOUT.quoteFontSize,
+            weight: "regular",
+            family: data.fontFamily,
+          }),
           foregroundStyle(toArgbHex(data.quoteColor)),
           frame({ maxWidth: Infinity, alignment: "leading" }),
         ]}
@@ -75,53 +141,78 @@ function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnviro
         {data.quoteText || data.emptyMessage}
       </Text>
 
-      {!isSmall && data.sourceText ? (
-        <Text
-          modifiers={[
-            font({ size: 11, weight: "semibold", family: data.fontFamily }),
-            foregroundStyle(toArgbHex(data.metaColor)),
-            frame({ maxWidth: Infinity, alignment: "leading" }),
-          ]}
+      <VStack
+        spacing={WIDGET_LAYOUT.metaBlockGap}
+        alignment="leading"
+        modifiers={[
+          padding({ top: WIDGET_LAYOUT.sectionGap }),
+          frame({ maxWidth: Infinity, alignment: "leading" }),
+        ]}
+      >
+        <HStack
+          spacing={WIDGET_LAYOUT.actionGap}
+          alignment="center"
+          modifiers={[frame({ maxWidth: Infinity })]}
         >
-          {data.sourceText.toUpperCase()}
-        </Text>
-      ) : null}
+          {data.sourceText ? (
+            <Text
+              modifiers={[
+                font({
+                  size: WIDGET_LAYOUT.metaFontSize,
+                  weight: "semibold",
+                  family: data.fontFamily,
+                }),
+                foregroundStyle(toArgbHex(data.metaColor)),
+                frame({ maxWidth: Infinity, alignment: "leading" }),
+              ]}
+            >
+              {data.sourceText.toUpperCase()}
+            </Text>
+          ) : (
+            <Spacer />
+          )}
 
-      {data.attributionText ? (
-        <Text
-          modifiers={[
-            font({ size: 10, weight: "regular", family: data.fontFamily }),
-            foregroundStyle(toArgbHex(data.attributionColor)),
-          ]}
-        >
-          {data.attributionText}
-        </Text>
-      ) : null}
-
-      {data.showActions && !isSmall ? (
-        <HStack spacing={8} modifiers={[padding({ top: 4 })]}>
-          <Text
-            modifiers={[
-              font({ size: 10, weight: "medium" }),
-              foregroundStyle(toArgbHex(data.actionIconColor)),
-              background(toArgbHex(data.actionBg)),
-              padding({ horizontal: 8, vertical: 4 }),
-            ]}
-          >
-            ↻
-          </Text>
-          <Text
-            modifiers={[
-              font({ size: 10, weight: "medium" }),
-              foregroundStyle(toArgbHex(data.actionIconColor)),
-              background(toArgbHex(data.actionBg)),
-              padding({ horizontal: 8, vertical: 4 }),
-            ]}
-          >
-            ⚙
-          </Text>
+          {data.showActions ? (
+            <HStack spacing={WIDGET_LAYOUT.actionGap}>
+              <ActionChip
+                label="↻"
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+              />
+              <ActionChip
+                label="⚙"
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+              />
+              <ActionChip
+                label="☆"
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+              />
+              <ActionChip
+                label="↗"
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+              />
+            </HStack>
+          ) : null}
         </HStack>
-      ) : null}
+
+        {data.attributionText ? (
+          <Text
+            modifiers={[
+              font({
+                size: WIDGET_LAYOUT.attributionFontSize,
+                weight: "regular",
+                family: data.fontFamily,
+              }),
+              foregroundStyle(toArgbHex(data.attributionColor)),
+            ]}
+          >
+            {data.attributionText}
+          </Text>
+        ) : null}
+      </VStack>
     </VStack>
   );
 }

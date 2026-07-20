@@ -74,7 +74,7 @@ export const hy = {
   'auth.verify.invalidLink': 'Անվավեր հաստատման հղում։',
   'auth.verify.failed': 'Հաստատումը ձախողվեց',
   'auth.verify.goLogin': 'Անցնել մուտքին',
-  'auth.skip': 'Առայժմ բաց թողնել',
+  'auth.skip': 'Գրանցվել հետո',
 
   'guest.signInRequiredTitle': 'Անհրաժեշտ է մուտք գործել համակարգ',
   'guest.signInRequiredBody':
@@ -82,12 +82,13 @@ export const hy = {
   'guest.signIn': 'Մուտք գործել',
 
   'saved.title': 'Պահված մեջբերումներ',
-  'saved.subtitle': 'Այստեղ ցւոցադրված են Ձեր նախընտրած հղումների հավաքածուն։',
+  'saved.subtitle': 'Այստեղ ցուցադրված են Ձեր նախընտրած մեջբերումները',
   'saved.emptyTitle': 'Դեռ պահված մեջբերումներ չկան',
   'saved.emptyBody':
     'Նշեք հատվածներ Կարգավորումների նախադիտումից կամ պահեք Ձեր սեփական մասնավոր ուղարկումները։',
   'saved.loadFailed': 'Չհաջողվեց բեռնել պահված մեջբերումները',
 
+  'submit.title': 'Ավելացնել մեջբերում',
   'submit.ctaTitle': 'Ավելացրեք նոր մեջբերում',
   'submit.ctaBody':
     'Կիսվեք Ձեր սիրելի հատվածով, կամ վերանայեք ստորև Ձեր ուղարկումները։',
@@ -141,6 +142,7 @@ export const hy = {
   'category.bible': 'Աստվածաշունչ',
   'category.fiction': 'Գրականություն',
 
+  'profile.title': 'Պրոֆիլ',
   'profile.scholarTitle': 'Գիտնականի պրոֆիլ',
   'profile.name': 'Անուն',
   'profile.socialUrl': 'Սոց․ / հղում',
@@ -189,6 +191,9 @@ export const hy = {
   'settings.designGlass': 'Ապակի',
   'settings.designInk': 'Թանաք',
   'settings.designManuscript': 'Ձեռագիր',
+  'settings.designVista': 'Տեսարան',
+  'settings.designSanctuary': 'Սրբավայր',
+  'settings.designHorizon': 'Հորիզոն',
   'settings.designPrev': 'Նախորդ դիզայն',
   'settings.designNext': 'Հաջորդ դիզայն',
   'settings.addedBy': 'Ավելացրել է {name}',

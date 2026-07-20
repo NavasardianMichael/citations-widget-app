@@ -26,7 +26,7 @@ function getApiBaseUrl() {
     return configuredUrl;
   }
 
-  return Platform.OS === "android" ? "http://10.0.2.2:3001" : "http://localhost:3001";
+  return Platform.OS === "android" ? "http://10.0.2.2:9003" : "http://localhost:9003";
 }
 
 const API_BASE_URL = getApiBaseUrl();

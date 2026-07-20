@@ -12,7 +12,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  PORT: z.coerce.number().default(3001),
+  PORT: z.coerce.number().default(9003),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
 
   DATABASE_URL: z.string().min(1),
@@ -30,7 +30,7 @@ const envSchema = z.object({
 
   GOOGLE_CLIENT_ID: z.string().default("unused"),
   GOOGLE_CLIENT_SECRET: z.string().default("unused"),
-  GOOGLE_CALLBACK_URL: z.string().url().default("http://localhost:3001/api/auth/google/callback"),
+  GOOGLE_CALLBACK_URL: z.string().url().default("http://localhost:9003/api/auth/google/callback"),
 
   CLIENT_URL: z.string().min(1),
   API_URL: z.string().url().optional(),

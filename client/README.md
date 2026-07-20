@@ -11,18 +11,20 @@ Expo SDK 57 React Native app (NativeWind, expo-router). Requires a **development
 
 ## Environment
 
-Optional `client/.env`:
+Optional `client/.env` (copy from `.env.example`):
 
 ```env
-EXPO_PUBLIC_API_URL=http://localhost:3001
+EXPO_PUBLIC_API_URL=http://localhost:9003
 EXPO_PUBLIC_GOOGLE_CLIENT_ID=          # enables Google sign-in
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
 ```
 
 | Target | API URL |
 |--------|---------|
-| Web / iOS simulator | `http://localhost:3001` (default) |
-| Android emulator | `http://10.0.2.2:3001` (default) |
-| Physical device | `http://<your-pc-lan-ip>:3001` |
+| Web / iOS simulator | `http://localhost:9003` (default) |
+| Android emulator | `http://10.0.2.2:9003` (default) |
+| Physical device | `http://<your-pc-lan-ip>:9003` |
 
 ## Auth
 
@@ -78,7 +80,7 @@ npm run android:apk
 APK: `C:\cw\client\android\app\build\outputs\apk\release\app-release.apk`  
 Install: `adb install -r <that-path>` (or copy the file to the phone).
 
-Set `EXPO_PUBLIC_API_URL=http://YOUR_PC_LAN_IP:3001` in `client/.env` before building if the phone should hit your local server.
+Set `EXPO_PUBLIC_API_URL=http://YOUR_PC_LAN_IP:9003` in `client/.env` before building if the phone should hit your local server.
 
 ## Scripts
 

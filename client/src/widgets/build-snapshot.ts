@@ -70,6 +70,8 @@ export function buildHomeWidgetSnapshot(
     ornamentOpacity: design.ornamentOpacity,
     showOrnament: design.showOrnament,
     showLargeQuotes: design.showLargeQuotes,
+    overlayColor: design.overlayColor ?? null,
+    hasBackgroundImage: !!design.backgroundImage,
     emptyMessage: t("settings.previewEmpty"),
     fetchedAt: Date.now(),
   };

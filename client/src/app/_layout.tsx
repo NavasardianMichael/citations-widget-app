@@ -1,7 +1,7 @@
 import { useFonts } from 'expo-font'
-import { DefaultTheme, ThemeProvider } from 'expo-router'
-import { Stack, useRouter, useSegments } from 'expo-router'
+import { DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
+import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -68,6 +68,7 @@ export default function RootLayout() {
       <ThemeProvider value={DefaultTheme}>
         <AuthProvider>
           <View style={{ flex: 1, backgroundColor: '#fbf9f8' }}>
+            <StatusBar style="dark" />
             <RootNavigator />
           </View>
         </AuthProvider>

@@ -14,6 +14,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "envtobase64": "node scripts/env-to-base64.cjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

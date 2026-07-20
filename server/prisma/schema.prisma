@@ -56,6 +56,9 @@ enum WidgetDesign {
   glass
   ink
   manuscript
+  vista
+  sanctuary
+  horizon
 }
 
 model User {

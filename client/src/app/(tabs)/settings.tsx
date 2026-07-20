@@ -368,11 +368,14 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        <View className='items-center gap-2'>
-          <Text className='font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
+        <View className='items-center gap-2 px-2'>
+          <Text className='text-center font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
             {t('settings.designLabel')}
           </Text>
-          <Text className='font-headline-md text-headline-md text-primary'>
+          <Text
+            className='text-center font-headline-md text-primary'
+            style={{ fontSize: 20, lineHeight: 28, fontWeight: '600' }}
+          >
             {t(activeDesign.labelKey)}
           </Text>
           <View className='flex-row items-center gap-2 pt-1'>

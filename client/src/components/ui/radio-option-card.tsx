@@ -21,7 +21,9 @@ export function RadioOptionCard({ label, icon, selected, onPress }: RadioOptionC
     >
       <View className="items-center gap-2">
         <MaterialIcons name={icon} size={28} color={selected ? "#041c37" : "#44474d"} />
-        <Text className={`font-label-sm text-label-sm ${selected ? "text-on-primary-fixed" : "text-on-surface"}`}>
+        <Text
+          className={`text-center font-label-sm text-label-sm ${selected ? "text-on-primary-fixed" : "text-on-surface"}`}
+        >
           {label}
         </Text>
       </View>

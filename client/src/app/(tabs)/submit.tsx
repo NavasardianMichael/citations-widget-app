@@ -56,7 +56,7 @@ export default function SubmitScreen() {
   if (!user && isGuest) {
     return (
       <View className="flex-1 bg-background">
-        <TopAppBar title={t("common.brand")} showBrandIcon />
+        <TopAppBar title={t("submit.title")} showBrandIcon />
         <SignInRequired />
       </View>
     );
@@ -64,7 +64,7 @@ export default function SubmitScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title={t("common.brand")} showBrandIcon />
+      <TopAppBar title={t("submit.title")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-2xl gap-12 px-margin-mobile py-8 md:px-margin-desktop md:py-12">
           <View className={`gap-4 ${isMd ? "items-start" : "items-center"}`}>

@@ -1,0 +1,73 @@
+name: citations-widget
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: citations-postgres
+    restart: unless-stopped
+    logging: *default-logging
+    env_file:
+      - '${CITATIONS_ENV_FILE:?Set CITATIONS_ENV_FILE to the absolute path of server/.env.production}'
+    ports:
+      # Host 5434 — avoid clash with regionify on 127.0.0.1:5433
+      - '127.0.0.1:5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-citations}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - citations-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: citations-redis
+    restart: unless-stopped
+    logging: *default-logging
+    ports:
+      - '127.0.0.1:6380:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - citations-network
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: citations-server
+    restart: unless-stopped
+    logging: *default-logging
+    ports:
+      - '9003:9003'
+    env_file:
+      - '${CITATIONS_ENV_FILE:?Set CITATIONS_ENV_FILE to the absolute path of server/.env.production}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - citations-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  citations-network:
+    driver: bridge

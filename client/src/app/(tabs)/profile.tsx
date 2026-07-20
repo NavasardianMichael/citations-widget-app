@@ -48,7 +48,7 @@ export default function ProfileScreen() {
   if (!user && isGuest) {
     return (
       <View className="flex-1 bg-background">
-        <TopAppBar title={t("common.brand")} showBrandIcon />
+        <TopAppBar title={t("profile.title")} showBrandIcon />
         <SignInRequired />
       </View>
     );
@@ -119,7 +119,7 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title={t("common.brand")} showBrandIcon />
+      <TopAppBar title={t("profile.title")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-xl px-margin-mobile py-8 md:px-margin-desktop md:py-12">
           <View

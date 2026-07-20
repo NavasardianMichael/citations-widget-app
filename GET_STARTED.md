@@ -22,7 +22,7 @@ npm run db:seed    # optional: seeds KJV + fiction citations
 npm run dev
 ```
 
-Server runs at `http://localhost:3001` — health check: `GET /api/health`.
+Server runs at `http://localhost:9003` — health check: `GET /api/health`.
 
 `.env` defaults already match `docker-compose.yml` (Postgres on host port 5433, Redis on 6380). Optional: set `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` for Google OAuth, `MAIL_API_URL`/`MAIL_API_KEY` for real verification emails (otherwise dev mode logs tokens to the console).
 
@@ -37,7 +37,7 @@ npx expo-doctor
 Optional `client/.env`:
 
 ```env
-EXPO_PUBLIC_API_URL=http://localhost:3001
+EXPO_PUBLIC_API_URL=http://localhost:9003
 EXPO_PUBLIC_GOOGLE_CLIENT_ID=          # enables Google sign-in
 ```
 

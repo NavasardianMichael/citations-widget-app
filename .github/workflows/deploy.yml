@@ -1,0 +1,255 @@
+# ==============================================================================
+# Build and Deploy Citations Widget API to Production
+# ==============================================================================
+# REQUIRED GITHUB SECRETS:
+# - SSH_HOST, SSH_USER, SSH_KEY, SSH_PORT (optional, default 22)
+# - APP_DIR: Deployment root (e.g. /home/user/apps/citations-widget-app)
+# - ENV_FILE_BASE64: Base64-encoded server/.env.production
+#
+# Encode env locally:
+#   node server/scripts/env-to-base64.cjs production
+#   (expects server/.env.production or falls back to server/.env)
+#
+# On-host layout after deploy:
+#   $APP_DIR/server/.env.production  (persistent; not inside a release)
+#   $APP_DIR/server/releases/<sha>/  and  $APP_DIR/server/current -> releases/<sha>
+# Run: cd $APP_DIR/server/current && export CITATIONS_ENV_FILE=$APP_DIR/server/.env.production \
+#      && docker compose -f docker-compose.prod.yml ...
+# ==============================================================================
+
+name: Deploy to Production
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'server/**'
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/deploy.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  NODE_VERSION: '22'
+  KEEP_RELEASES: 2
+  SSH_OPTS: '-o ServerAliveInterval=30 -o ServerAliveCountMax=120 -o TCPKeepAlive=yes -o ConnectTimeout=30'
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_server: ${{ steps.flags.outputs.deploy_server }}
+      release_name: ${{ github.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Path filters
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            server_pkg:
+              - 'server/**'
+            deploy_config:
+              - 'docker-compose.prod.yml'
+              - 'server/Dockerfile'
+              - 'server/entrypoint.sh'
+              - '.github/workflows/deploy.yml'
+
+      - name: Set deploy flags
+        id: flags
+        run: |
+          deploy_server=false
+          if [ "${{ steps.filter.outputs.server_pkg }}" = "true" ] || \
+             [ "${{ steps.filter.outputs.deploy_config }}" = "true" ]; then
+            deploy_server=true
+          fi
+          echo "deploy_server=$deploy_server" >> "$GITHUB_OUTPUT"
+          echo "deploy_server=$deploy_server"
+
+  build-server:
+    name: Build / server
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.deploy_server == 'true'
+    concurrency:
+      group: build-server
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Build server
+        working-directory: server
+        run: npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Verify server Docker image builds
+        uses: docker/build-push-action@v7
+        with:
+          context: ./server
+          file: server/Dockerfile
+          push: false
+          load: true
+          tags: citations-server:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create server archive
+        run: |
+          tar -czf server-build.tar.gz \
+            --exclude='server/node_modules' \
+            --exclude='server/dist' \
+            --exclude='server/.env' \
+            --exclude='server/.env.*' \
+            --exclude='server/data' \
+            --exclude='server/*.md' \
+            --exclude='server/.gitignore' \
+            --anchored \
+            server docker-compose.prod.yml
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: server-build
+          path: server-build.tar.gz
+          retention-days: 1
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+    needs: [changes, build-server]
+    if: |
+      always() &&
+      needs.changes.outputs.deploy_server == 'true' &&
+      needs.build-server.result == 'success'
+    steps:
+      - name: Download server artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: server-build
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Prepare server env file
+        run: |
+          echo "${{ secrets.ENV_FILE_BASE64 }}" | base64 -d | tr -d '\r' > /tmp/env.production
+          echo "Env file: $(wc -c < /tmp/env.production) bytes, $(wc -l < /tmp/env.production) lines"
+
+      - name: Copy server bundle to host
+        run: |
+          scp ${{ env.SSH_OPTS }} -P "${{ secrets.SSH_PORT || 22 }}" \
+            server-build.tar.gz \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/"
+
+      - name: Copy env to host
+        run: |
+          scp ${{ env.SSH_OPTS }} -P "${{ secrets.SSH_PORT || 22 }}" \
+            /tmp/env.production \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/env.production"
+
+      - name: Deploy server
+        run: |
+          ssh ${{ env.SSH_OPTS }} -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -s -- \
+            "${{ secrets.APP_DIR }}" \
+            "${{ needs.changes.outputs.release_name }}" \
+            "${{ env.KEEP_RELEASES }}" << 'EOF'
+          set -e
+          APP_DIR="$1"
+          RELEASE_NAME="$2"
+          KEEP_RELEASES="$3"
+          RELEASES_DIR="$APP_DIR/server/releases"
+          NEW_RELEASE="$RELEASES_DIR/$RELEASE_NAME"
+          ENV_TARGET="$APP_DIR/server/.env.production"
+
+          echo "Deploying server release: $RELEASE_NAME"
+          mkdir -p "$APP_DIR/server" "$RELEASES_DIR"
+          mkdir -p "$NEW_RELEASE"
+          tar -xzf /tmp/server-build.tar.gz -C "$NEW_RELEASE"
+          install -m 600 /tmp/env.production "$ENV_TARGET"
+
+          ln -sfn "$NEW_RELEASE" "$APP_DIR/server/current"
+          cd "$APP_DIR/server/current"
+          export CITATIONS_ENV_FILE="$ENV_TARGET"
+
+          echo "Verifying env file at $ENV_TARGET"
+          ENV_LINES=$(wc -l < "$ENV_TARGET")
+          ENV_SIZE=$(wc -c < "$ENV_TARGET")
+          echo "  Lines: $ENV_LINES, Size: $ENV_SIZE bytes"
+          echo "  Variables found:"
+          sed -n 's/^\([A-Z_]*\)=.*/    - \1/p' "$ENV_TARGET"
+
+          export COMPOSE_PROJECT_NAME=citations-widget
+
+          # Build the new server image while the old container is still serving traffic.
+          docker compose -f docker-compose.prod.yml build server
+
+          # Keep postgres/redis up; do not recreate if already running.
+          docker compose -f docker-compose.prod.yml up -d --no-recreate postgres redis
+
+          # Recreate ONLY the server with the freshly built image.
+          docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate server
+
+          echo "Waiting for citations-server health check..."
+          HEALTHY=false
+          for i in $(seq 1 30); do
+            STATUS=$(docker inspect --format '{{.State.Health.Status}}' citations-server 2>/dev/null || echo "unknown")
+            if [ "$STATUS" = "healthy" ]; then
+              echo "Server healthy after $((i * 3))s"
+              HEALTHY=true
+              break
+            fi
+            sleep 3
+          done
+          if [ "$HEALTHY" != "true" ]; then
+            echo "::error::Server failed to become healthy within 90s"
+            docker compose -f docker-compose.prod.yml logs server --tail=200
+            exit 1
+          fi
+
+          if ! curl -sSf -o /dev/null --max-time 5 http://127.0.0.1:9003/api/health; then
+            echo "::error::Server /api/health endpoint not responding on 127.0.0.1:9003"
+            docker compose -f docker-compose.prod.yml logs server --tail=200
+            exit 1
+          fi
+
+          docker image prune -f
+          cd "$RELEASES_DIR" && ls -t | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf || true
+          rm -f /tmp/server-build.tar.gz /tmp/env.production
+          echo "Server deployed"
+          EOF
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Release:** \`${{ needs.changes.outputs.release_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Server (Docker under \`server/current\`)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Database migrations (container entrypoint)" >> "$GITHUB_STEP_SUMMARY"

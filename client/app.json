@@ -86,10 +86,10 @@
               "name": "CitationWidget",
               "label": "Մեջբերումներ Աստվածաշնչից",
               "description": "Մեջբերումներ ձեր գլխավոր էկրանին",
-              "minWidth": "180dp",
-              "minHeight": "110dp",
-              "targetCellWidth": 3,
-              "targetCellHeight": 2,
+              "minWidth": "250dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 3,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
             }
