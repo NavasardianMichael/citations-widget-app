@@ -212,7 +212,10 @@ jobs:
           docker compose -f docker-compose.prod.yml build server
 
           # Keep postgres/redis up; do not recreate if already running.
-          docker compose -f docker-compose.prod.yml up -d --no-recreate postgres redis
+          # --wait blocks here until both pass their healthcheck, so the
+          # server (recreated with --no-deps below, which skips depends_on
+          # health checks) never races Postgres coming up.
+          docker compose -f docker-compose.prod.yml up -d --wait --no-recreate postgres redis
 
           # Recreate ONLY the server with the freshly built image.
           docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate server
