@@ -36,21 +36,53 @@ function emailLayout(content: string, preheader?: string): string {
 </html>`.trim();
 }
 
-function emailButton(text: string, url: string): string {
-  return `<p style="margin:16px 0;"><a href="${url}" style="display:inline-block;padding:10px 32px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;border-radius:6px;background:${COLORS.primary};">${text}</a></p>`;
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-function buildDeepLink(path: string, token: string): string {
-  const base = env.CLIENT_URL.replace(/\/$/, "");
-  return `${base}/${path}?token=${encodeURIComponent(token)}`;
+function emailButton(text: string, url: string): string {
+  const safeUrl = escapeHtmlAttr(url);
+  return `<p style="margin:16px 0;"><a href="${safeUrl}" style="display:inline-block;padding:10px 32px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;border-radius:6px;background:${COLORS.primary};">${text}</a></p>`;
+}
+
+/** App deep link opened by the native client (Expo scheme). */
+export function buildAppDeepLink(path: string, token: string): string {
+  const cleanPath = path.replace(/^\//, "");
+  const query = `token=${encodeURIComponent(token)}`;
+
+  // CLIENT_URL like citationswidget:// — do not strip "//" via replace(/\/$/, "")
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(env.CLIENT_URL) && !/^https?:\/\//i.test(env.CLIENT_URL)) {
+    const scheme = env.CLIENT_URL.split(":")[0];
+    return `${scheme}://${cleanPath}?${query}`;
+  }
+
+  const base = env.CLIENT_URL.replace(/\/+$/, "");
+  return `${base}/${cleanPath}?${query}`;
+}
+
+/**
+ * HTTPS link for email clients. Gmail and others strip custom-scheme hrefs
+ * (e.g. citationswidget://), so emails use an API bridge that opens the app.
+ */
+export function buildEmailLink(path: string, token: string): string {
+  const cleanPath = path.replace(/^\//, "");
+  if (env.API_URL) {
+    const api = env.API_URL.replace(/\/+$/, "");
+    return `${api}/api/auth/app-link?path=${encodeURIComponent(cleanPath)}&token=${encodeURIComponent(token)}`;
+  }
+  return buildAppDeepLink(cleanPath, token);
 }
 
 export const emailTemplates = {
   welcome(name: string) {
     const subject = `Բարի գալուստ «${APP_NAME}»`;
-    const text = `Բարի գալուստ, ${name}։ Ձեր էլ․ փոստը հաստատված է։ Բացեք հավելվածը՝ սկսելու համար։`;
+    const text = `Բարի գալուստ, ${name}։ Ձեր էլ. փոստը հաստատված է։ Բացեք հավելվածը՝ սկսելու համար։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Բարի գալուստ, ${name}</h2><p style="color:${COLORS.textLight};">Ձեր էլ․ փոստը հաստատված է։ Բացեք հավելվածը՝ շարունակելու համար։</p>`,
+      `<h2 style="color:${COLORS.textDark};">Բարի գալուստ, ${name}</h2><p style="color:${COLORS.textLight};">Ձեր էլ. փոստը հաստատված է։ Բացեք հավելվածը՝ շարունակելու համար։</p>`,
       `Բարի գալուստ «${APP_NAME}»`,
     );
     return { subject, text, html };
@@ -97,11 +129,11 @@ export const emailTemplates = {
   },
 
   verifyEmail(name: string, verifyUrl: string, expiresInHours: number) {
-    const subject = `Հաստատեք «${APP_NAME}» էլ․ փոստը`;
+    const subject = `Հաստատեք «${APP_NAME}» էլ. փոստը`;
     const text = `Ողջույն, ${name},\n\nՀաստատեք՝ ${verifyUrl}\n\nՀղումը գործում է ${expiresInHours} ժամ։`;
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Հաստատեք էլ․ փոստը</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Սեղմեք ստորև՝ գրանցումն ավարտելու համար։</p>${emailButton("Հաստատել էլ․ փոստը", verifyUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Հղումը գործում է ${expiresInHours} ժամ։</p>`,
-      "Հաստատեք էլ․ փոստը",
+      `<h2 style="color:${COLORS.textDark};">Հաստատեք էլ. փոստը</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Սեղմեք ստորև՝ գրանցումն ավարտելու համար։</p>${emailButton("Հաստատել էլ. փոստը", verifyUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Հղումը գործում է ${expiresInHours} ժամ։</p>`,
+      "Հաստատեք էլ. փոստը",
     );
     return { subject, text, html };
   },
@@ -146,7 +178,7 @@ export const emailService = {
   },
 
   async sendPasswordReset(to: string, name: string, resetToken: string) {
-    const resetUrl = buildDeepLink("auth/reset-password", resetToken);
+    const resetUrl = buildEmailLink("auth/reset-password", resetToken);
     const { subject, text, html } = emailTemplates.passwordReset(name, resetUrl, 30);
     await sendEmail({ to, subject, text, html });
   },
@@ -168,7 +200,7 @@ export const emailService = {
   },
 
   async sendVerifyEmail(to: string, name: string, verifyToken: string) {
-    const verifyUrl = buildDeepLink("auth/verify-email", verifyToken);
+    const verifyUrl = buildEmailLink("auth/verify-email", verifyToken);
     const { subject, text, html } = emailTemplates.verifyEmail(name, verifyUrl, 48);
     await sendEmail({ to, subject, text, html });
   },

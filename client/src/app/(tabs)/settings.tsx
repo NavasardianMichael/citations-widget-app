@@ -157,10 +157,12 @@ export default function SettingsScreen() {
   }, [loadSettings])
 
   useEffect(() => {
-    void Promise.all(
-      WIDGET_FONT_OPTIONS.map((font) => ensureWidgetFontLoaded(font.id)),
-    )
-  }, [])
+    // Load the selected face (and default) on demand — not every widget font at once.
+    void ensureWidgetFontLoaded(draft.fontStyle)
+    if (draft.fontStyle !== DEFAULT_WIDGET_FONT) {
+      void ensureWidgetFontLoaded(DEFAULT_WIDGET_FONT)
+    }
+  }, [draft.fontStyle])
 
   useEffect(() => {
     if (isFirstSourceRender.current) {

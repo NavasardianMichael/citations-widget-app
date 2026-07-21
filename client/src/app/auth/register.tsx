@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, useRouter, type Href } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +13,7 @@ import { t } from "@/i18n";
 import { hasErrors, validateRegister, type FieldErrors } from "@/lib/validation";
 
 export default function RegisterScreen() {
+  const router = useRouter();
   const { signUp } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,21 +22,20 @@ export default function RegisterScreen() {
   const [fieldErrors, setFieldErrors] = useState<
     FieldErrors<"name" | "email" | "password" | "confirmPassword">
   >({});
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleRegister() {
     setError(null);
-    setMessage(null);
     const nextErrors = validateRegister({ name, email, password, confirmPassword });
     setFieldErrors(nextErrors);
     if (hasErrors(nextErrors)) return;
 
     setLoading(true);
     try {
-      const result = await signUp(email.trim(), password, name.trim());
-      setMessage(result);
+      const trimmedEmail = email.trim();
+      await signUp(trimmedEmail, password, name.trim());
+      router.replace(`/auth/check-email?email=${encodeURIComponent(trimmedEmail)}` as Href);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("auth.register.failed"));
     } finally {
@@ -56,7 +56,6 @@ export default function RegisterScreen() {
 
             <View className="gap-6">
               {error ? <Text className="text-error">{error}</Text> : null}
-              {message ? <Text className="text-primary">{message}</Text> : null}
 
               <FormField
                 label={t("auth.register.name")}

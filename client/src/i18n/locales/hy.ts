@@ -51,6 +51,16 @@ export const hy = {
   'auth.register.signIn': 'Մուտք',
   'auth.register.failed': 'Գրանցումը ձախողվեց',
 
+  'auth.checkEmail.title': 'Ստուգեք էլ․ փոստը',
+  'auth.checkEmail.body':
+    'Հաստատման հղում ենք ուղարկել {email} հասցեին։ Բացեք նամակը և սեղմեք կոճակը՝ հաշիվն ակտիվացնելու համար։',
+  'auth.checkEmail.resend': 'Կրկին ուղարկել նամակը',
+  'auth.checkEmail.resending': 'Ուղարկվում է…',
+  'auth.checkEmail.resent': 'Նամակը կրկին ուղարկված է։',
+  'auth.checkEmail.resendFailed': 'Չհաջողվեց կրկին ուղարկել նամակը',
+  'auth.checkEmail.goLogin': 'Անցնել մուտքին',
+  'auth.checkEmail.back': 'Վերադառնալ գրանցմանը',
+
   'auth.forgot.title': 'Վերականգնել գաղտնաբառը',
   'auth.forgot.subtitle':
     'Մուտքագրեք էլ․ փոստը, և մենք կուղարկենք վերականգնման հղումը:',

@@ -24,11 +24,57 @@ import {
 } from "../schemas/auth.js";
 import { authService } from "../services/auth-service.js";
 import { enforceSessionLimit, establishSession, issueAuthTokens } from "../services/auth-session.js";
+import { buildAppDeepLink } from "../services/email-service.js";
 import { ErrorCode, HttpStatus } from "../types/api.js";
 import type { UserPublic } from "../types/auth.js";
 
 const router = Router();
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+
+const APP_LINK_PATHS = new Set(["auth/verify-email", "auth/reset-password"]);
+
+/** HTTPS bridge for email buttons → opens the native app via deep link. */
+router.get("/app-link", authLimiter, (req, res) => {
+  const path = typeof req.query.path === "string" ? req.query.path : "";
+  const token = typeof req.query.token === "string" ? req.query.token : "";
+
+  if (!APP_LINK_PATHS.has(path) || !token || token.length > 512) {
+    res.status(400).type("html").send("<!DOCTYPE html><html lang='hy'><body><p>Անվավեր հղում։</p></body></html>");
+    return;
+  }
+
+  const deepLink = buildAppDeepLink(path, token);
+  const safeDeepLink = deepLink
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const jsDeepLink = JSON.stringify(deepLink);
+
+  res
+    .status(200)
+    .type("html")
+    .send(`<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="0;url=${safeDeepLink}">
+  <title>Բացել հավելվածը</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#262626;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;padding:24px;text-align:center}
+    a{display:inline-block;margin-top:16px;padding:12px 28px;background:#18294d;color:#fff;text-decoration:none;border-radius:6px;font-weight:600}
+  </style>
+  <script>window.location.replace(${jsDeepLink});</script>
+</head>
+<body>
+  <div>
+    <p>Բացում ենք հավելվածը…</p>
+    <a href="${safeDeepLink}">Բացել հավելվածը</a>
+  </div>
+</body>
+</html>`);
+});
 
 router.post("/register", authLimiter, validate(registerSchema), async (req, res, next) => {
   try {
@@ -149,9 +195,15 @@ router.get("/google/callback", (req, res, next) => {
 
 router.post("/google/mobile", authLimiter, validate(googleMobileSchema), async (req, res, next) => {
   try {
+    const audiences = [
+      env.GOOGLE_CLIENT_ID,
+      env.GOOGLE_ANDROID_CLIENT_ID,
+      env.GOOGLE_IOS_CLIENT_ID,
+    ].filter((value): value is string => Boolean(value && value !== "unused"));
+
     const ticket = await googleClient.verifyIdToken({
       idToken: req.body.idToken,
-      audience: env.GOOGLE_CLIENT_ID,
+      audience: audiences.length > 0 ? audiences : env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();

@@ -45,11 +45,7 @@ try {
   Remove-Item -Recurse -Force @(
     "android\app\.cxx",
     "android\app\build",
-    "android\build",
-    "node_modules\react-native-worklets\android\.cxx",
-    "node_modules\react-native-worklets\android\build",
-    "node_modules\react-native-reanimated\android\.cxx",
-    "node_modules\react-native-reanimated\android\build"
+    "android\build"
   ) -ErrorAction SilentlyContinue
 
   Set-Location (Join-Path $clientDir "android")

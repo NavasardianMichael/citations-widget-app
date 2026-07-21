@@ -1,6 +1,6 @@
 import { Image } from 'expo-image'
-import { StyleSheet, View } from 'react-native'
-import Animated, { Easing, Keyframe } from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { Animated, Easing, StyleSheet, View } from 'react-native'
 
 const DURATION = 300
 
@@ -8,22 +8,30 @@ export function AnimatedSplashOverlay() {
   return null
 }
 
-const logoKeyframe = new Keyframe({
-  0: {
-    opacity: 0,
-    transform: [{ scale: 0.92 }],
-  },
-  100: {
-    opacity: 1,
-    transform: [{ scale: 1 }],
-    easing: Easing.out(Easing.cubic),
-  },
-})
-
 export function AnimatedIcon() {
+  const opacity = useRef(new Animated.Value(0)).current
+  const scale = useRef(new Animated.Value(0.92)).current
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: DURATION,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: DURATION,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [opacity, scale])
+
   return (
     <View style={styles.iconContainer}>
-      <Animated.View style={styles.imageContainer} entering={logoKeyframe.duration(DURATION)}>
+      <Animated.View style={[styles.imageContainer, { opacity, transform: [{ scale }] }]}>
         <Image style={styles.image} source={require('../../assets/images/splash-icon.png')} contentFit='contain' />
       </Animated.View>
     </View>

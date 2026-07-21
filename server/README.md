@@ -66,9 +66,14 @@ Copy `.env.example`. Required:
 | `SESSION_SECRET` | Cookie signing (32+ chars) |
 | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Mobile token signing |
 | `CORS_ORIGINS` | Allowed origins (include Expo dev URLs) |
-| `CLIENT_URL` | Deep links for email verify/reset (`citationswidget://`) |
+| `CLIENT_URL` | App deep-link scheme for verify/reset (`citationswidget://`) |
+| `API_URL` | Public API base used as HTTPS bridge in emails (required in prod so mail clients keep the button `href`) |
 
 Optional: `MAIL_API_URL` + `MAIL_API_KEY` (verification/reset emails; dev logs tokens if unset), `GOOGLE_*` for OAuth.
+
+For mobile Google sign-in, set `GOOGLE_ANDROID_CLIENT_ID` (and `GOOGLE_IOS_CLIENT_ID` when needed) to the same OAuth client IDs as the Expo app so `/api/auth/google/mobile` accepts those id_token audiences.
+
+Email verify/reset buttons link to `GET /api/auth/app-link?path=…&token=…`, which opens the app via `CLIENT_URL`.
 
 For production Docker (`docker-compose.prod.yml`), also set `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`. Inside the compose network use service hostnames:
 

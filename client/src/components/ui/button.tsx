@@ -1,4 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import type { ReactNode } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
@@ -16,6 +17,8 @@ type ButtonProps = {
   disabled?: boolean
   className?: string
   icon?: keyof typeof MaterialIcons.glyphMap
+  /** Custom leading content; takes precedence over `icon`. */
+  leading?: ReactNode
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -60,6 +63,7 @@ export function Button({
   disabled = false,
   className = '',
   icon,
+  leading,
 }: ButtonProps) {
   const borderClass =
     variant === 'secondary' ? secondaryBorderClasses[secondaryBorder] : ''
@@ -83,7 +87,9 @@ export function Button({
           : undefined
       }
     >
-      {icon ? (
+      {leading ? (
+        leading
+      ) : icon ? (
         <View>
           <MaterialIcons name={icon} size={18} color={iconColor} />
         </View>

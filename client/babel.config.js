@@ -1,17 +1,30 @@
 const path = require("path");
+const fs = require("fs");
 
 const SHORT_WINDOWS_ROOT = "W:\\client";
+const LONG_PATH_MARKER = path.normalize(
+  "Desktop\\workplace\\personal\\citations-widget-app\\client",
+);
 
 function resolveProjectRoot() {
-  const fs = require("fs");
-  if (process.platform === "win32" && fs.existsSync(path.join(SHORT_WINDOWS_ROOT, "package.json"))) {
+  const apkBuild = process.env.CITATIONS_APK_BUILD === "1";
+  const onLongDesktopPath = path.normalize(__dirname).includes(LONG_PATH_MARKER);
+
+  // Match metro.config.js: only use W: for day-to-day Metro on the Desktop path.
+  // APK builds and short copies (e.g. C:\cw) must keep their own root.
+  if (
+    !apkBuild &&
+    onLongDesktopPath &&
+    process.platform === "win32" &&
+    fs.existsSync(path.join(SHORT_WINDOWS_ROOT, "package.json"))
+  ) {
     return SHORT_WINDOWS_ROOT;
   }
-  return path.join(__dirname);
+  return __dirname;
 }
 
 module.exports = function (api) {
-  api.cache(true);
+  api.cache(() => `${process.env.CITATIONS_APK_BUILD === "1"}:${resolveProjectRoot()}`);
   const projectRoot = resolveProjectRoot();
 
   return {

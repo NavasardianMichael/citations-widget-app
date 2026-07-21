@@ -192,7 +192,7 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     labelKey: 'settings.designSanctuary',
     panelBg: 'rgba(18, 14, 12, 0.92)',
     ...PHOTO_TEXT,
-    backgroundImage: require('../../assets/images/widget-bg/2.png'),
+    backgroundImage: require('../../assets/images/widget-bg/2.jpg'),
     overlayColor: 'rgba(12, 10, 8, 0.72)',
   },
   horizon: {

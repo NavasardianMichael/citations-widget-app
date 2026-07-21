@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { BrandLogo } from '@/components/ui/brand-logo'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
+import { GoogleLogo } from '@/components/ui/google-logo'
 import { SkipAuthLink } from '@/components/ui/skip-auth-link'
 import { TextLink } from '@/components/ui/text-link'
 import { pressableNoRipple } from '@/constants/pressable'
@@ -165,6 +166,7 @@ export default function LoginScreen() {
                   <Button
                     label={t('auth.login.google')}
                     variant='secondary'
+                    leading={<GoogleLogo />}
                     onPress={() => handleGoogleLogin()}
                     disabled={loading || !request}
                   />

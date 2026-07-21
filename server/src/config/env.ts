@@ -29,6 +29,9 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().transform((val) => val.split(",").map((s) => s.trim())),
 
   GOOGLE_CLIENT_ID: z.string().default("unused"),
+  /** Android OAuth client ID — accepted as id_token audience for mobile sign-in */
+  GOOGLE_ANDROID_CLIENT_ID: z.string().optional(),
+  GOOGLE_IOS_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().default("unused"),
   GOOGLE_CALLBACK_URL: z.string().url().default("http://localhost:9003/api/auth/google/callback"),
 
