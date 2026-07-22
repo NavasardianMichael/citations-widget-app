@@ -81,8 +81,8 @@ export default function ProfileScreen() {
         text: t("profile.signOut"),
         style: "destructive",
         onPress: async () => {
-          await signOut();
-          router.replace("/auth/login");
+          await signOut({ redirectTo: "/auth/logged-out" });
+          router.replace("/auth/logged-out");
         },
       },
     ]);
@@ -93,8 +93,8 @@ export default function ProfileScreen() {
     try {
       const accessToken = await getAccessToken();
       if (accessToken) await deleteAccountRequest(accessToken);
-      await signOut();
-      router.replace("/auth/login");
+      await signOut({ redirectTo: "/auth/account-deleted" });
+      router.replace("/auth/account-deleted");
     } catch (e) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("profile.removeAccountFailed"));
     } finally {

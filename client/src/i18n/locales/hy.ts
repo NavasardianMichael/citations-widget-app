@@ -51,13 +51,13 @@ export const hy = {
   'auth.register.signIn': 'Մուտք',
   'auth.register.failed': 'Գրանցումը ձախողվեց',
 
-  'auth.checkEmail.title': 'Ստուգեք էլ․ փոստը',
+  'auth.checkEmail.title': 'Էլ․ փոստն ուղարկված է',
   'auth.checkEmail.body':
-    'Հաստատման հղում ենք ուղարկել {email} հասցեին։ Բացեք նամակը և սեղմեք կոճակը՝ հաշիվն ակտիվացնելու համար։',
-  'auth.checkEmail.resend': 'Կրկին ուղարկել նամակը',
+    'Հաստատման հղում ենք ուղարկել {email} հասցեին։ Բացեք էլ․ փոստը և սեղմեք կոճակը՝ հաշիվն ակտիվացնելու համար։',
+  'auth.checkEmail.resend': 'Կրկին ուղարկել էլ․ փոստը',
   'auth.checkEmail.resending': 'Ուղարկվում է…',
-  'auth.checkEmail.resent': 'Նամակը կրկին ուղարկված է։',
-  'auth.checkEmail.resendFailed': 'Չհաջողվեց կրկին ուղարկել նամակը',
+  'auth.checkEmail.resent': 'Էլ․ փոստը կրկին ուղարկված է։',
+  'auth.checkEmail.resendFailed': 'Չհաջողվեց կրկին ուղարկել էլ․ փոստը',
   'auth.checkEmail.goLogin': 'Անցնել մուտքին',
   'auth.checkEmail.back': 'Վերադառնալ գրանցմանը',
 
@@ -68,6 +68,11 @@ export const hy = {
   'auth.forgot.submitting': 'Ուղարկվում է…',
   'auth.forgot.back': 'Վերադառնալ',
   'auth.forgot.failed': 'Հարցումը ձախողվեց',
+  'auth.forgotSent.title': 'Էլ․ փոստն ուղարկված է',
+  'auth.forgotSent.body':
+    'Եթե {email} հասցեով հաշիվը գոյություն ունի, մենք ուղարկել ենք գաղտնաբառի վերականգնման հղումը։ Խնդրում ենք՝ ստուգեք Ձեր էլ․ փոստը և հետևեք հրահանգներին։',
+  'auth.forgotSent.goLogin': 'Անցնել մուտքին',
+  'auth.forgotSent.back': 'Վերադառնալ',
 
   'auth.reset.title': 'Նոր գաղտնաբառ',
   'auth.reset.subtitle': 'Մուտքագրեք նոր գաղտնաբառը Ձեր հաշվի համար',
@@ -79,6 +84,19 @@ export const hy = {
   'auth.reset.invalidLink':
     'Անվավեր վերականգնման հղում։ Հավելվածից կատարեք նոր հղման հարցում։',
   'auth.reset.failed': 'Վերականգնումը ձախողվեց',
+  'auth.resetSuccess.title': 'Գաղտնաբառը փոխված է',
+  'auth.resetSuccess.body':
+    'Ձեր գաղտնաբառը հաջողությամբ փոխվել է։ Այժմ կարող եք մուտք գործել նոր գաղտնաբառով։',
+  'auth.resetSuccess.goLogin': 'Մուտք գործել նոր գաղտնաբառով',
+
+  'auth.loggedOut.title': 'Դուրս եք եկել',
+  'auth.loggedOut.body':
+    'Դուք հաջողությամբ դուրս եք եկել Ձեր հաշվից այս սարքում։',
+  'auth.loggedOut.goLogin': 'Մուտք գործել',
+
+  'auth.accountDeleted.title': 'Հաշիվը ջնջված է',
+  'auth.accountDeleted.body': 'Ձեր հաշիվը և կապված տվյալները ջնջված են։',
+  'auth.accountDeleted.goLogin': 'Մուտք գործել',
 
   'auth.verify.title': 'Էլ․ փոստի հաստատում',
   'auth.verify.invalidLink': 'Անվավեր հաստատման հղում։',

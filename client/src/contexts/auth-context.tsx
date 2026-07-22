@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { Href } from "expo-router";
 
 import {
   loginRequest,
@@ -16,9 +17,12 @@ type AuthContextValue = {
   user: UserPublic | null;
   isGuest: boolean;
   isLoading: boolean;
+  /** One-shot post-sign-out route; consumed by the root auth gate. */
+  pendingAuthRoute: Href | null;
   signIn: (email: string, password: string, forceLogin?: boolean) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<string>;
-  signOut: () => Promise<void>;
+  signOut: (options?: { redirectTo?: Href }) => Promise<void>;
+  consumePendingAuthRoute: () => Href | null;
   refreshSession: () => Promise<boolean>;
   setUser: (user: UserPublic | null) => void;
   continueAsGuest: () => Promise<void>;
@@ -35,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserPublic | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingAuthRoute, setPendingAuthRoute] = useState<Href | null>(null);
 
   const refreshSession = useCallback(async () => {
     const refreshToken = await getRefreshToken();
@@ -98,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.message;
   }, []);
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback(async (options?: { redirectTo?: Href }) => {
     const refreshToken = await getRefreshToken();
     try {
       if (refreshToken) await logoutRequest(refreshToken);
@@ -106,23 +111,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore logout errors
     }
     await clearTokens();
+    if (options?.redirectTo) setPendingAuthRoute(options.redirectTo);
     setUser(null);
   }, []);
+
+  const consumePendingAuthRoute = useCallback(() => {
+    const route = pendingAuthRoute;
+    if (route) setPendingAuthRoute(null);
+    return route;
+  }, [pendingAuthRoute]);
 
   const value = useMemo(
     () => ({
       user,
       isGuest,
       isLoading,
+      pendingAuthRoute,
       signIn,
       signUp,
       signOut,
+      consumePendingAuthRoute,
       refreshSession,
       setUser,
       continueAsGuest,
       completeGuestSignIn,
     }),
-    [user, isGuest, isLoading, signIn, signUp, signOut, refreshSession, continueAsGuest, completeGuestSignIn],
+    [
+      user,
+      isGuest,
+      isLoading,
+      pendingAuthRoute,
+      signIn,
+      signUp,
+      signOut,
+      consumePendingAuthRoute,
+      refreshSession,
+      continueAsGuest,
+      completeGuestSignIn,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

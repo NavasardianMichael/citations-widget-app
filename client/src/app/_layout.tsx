@@ -15,7 +15,7 @@ import { APP_FONT_SOURCES } from '@/fonts/registry'
 SplashScreen.preventAutoHideAsync()
 
 function useProtectedRoute() {
-  const { user, isGuest, isLoading } = useAuth()
+  const { user, isGuest, isLoading, pendingAuthRoute, consumePendingAuthRoute } = useAuth()
   const segments = useSegments()
   const router = useRouter()
 
@@ -26,12 +26,14 @@ function useProtectedRoute() {
 
     // Guests may open auth screens to sign in later; only signed-in users are kept out of /auth.
     if (!user && !isGuest && !inAuthGroup) {
-      router.replace('/auth/login')
+      // Prefer post-logout / account-deleted landing over a hard jump to login.
+      router.replace(consumePendingAuthRoute() ?? '/auth/login')
     } else if (user && inAuthGroup) {
       router.replace('/(tabs)')
+    } else if (!user && inAuthGroup && pendingAuthRoute) {
+      consumePendingAuthRoute()
     }
-  }, [user, isGuest, isLoading, segments, router])
-}
+  }, [user, isGuest, isLoading, segments, router, pendingAuthRoute, consumePendingAuthRoute])
 
 function RootNavigator() {
   const { isLoading } = useAuth()

@@ -17,7 +17,6 @@ export default function ResetPasswordScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<"password" | "confirmPassword">>({});
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,16 +27,14 @@ export default function ResetPasswordScreen() {
   async function handleSubmit() {
     if (!token) return;
     setError(null);
-    setMessage(null);
     const nextErrors = validateResetPassword({ password, confirmPassword });
     setFieldErrors(nextErrors);
     if (hasErrors(nextErrors)) return;
 
     setLoading(true);
     try {
-      const result = await resetPasswordRequest(token, password);
-      setMessage(result.message);
-      setTimeout(() => router.replace("/auth/login"), 1500);
+      await resetPasswordRequest(token, password);
+      router.replace("/auth/reset-success");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("auth.reset.failed"));
     } finally {
@@ -58,7 +55,6 @@ export default function ResetPasswordScreen() {
 
             <View className="gap-6">
               {error ? <Text className="text-error">{error}</Text> : null}
-              {message ? <Text className="text-primary">{message}</Text> : null}
 
               <FormField
                 label={t("auth.reset.newPassword")}

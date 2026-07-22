@@ -1,3 +1,4 @@
+import { useRouter, type Href } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,23 +13,25 @@ import { hasErrors, validateForgotPassword, type FieldErrors } from "@/lib/valid
 import { forgotPasswordRequest } from "@/services/auth-api";
 
 export default function ForgotPasswordScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<"email">>({});
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
     setError(null);
-    setMessage(null);
     const nextErrors = validateForgotPassword({ email });
     setFieldErrors(nextErrors);
     if (hasErrors(nextErrors)) return;
 
     setLoading(true);
     try {
-      const result = await forgotPasswordRequest(email.trim());
-      setMessage(result.message);
+      const trimmedEmail = email.trim();
+      await forgotPasswordRequest(trimmedEmail);
+      router.replace(
+        `/auth/forgot-password-sent?email=${encodeURIComponent(trimmedEmail)}` as Href,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : t("auth.forgot.failed"));
     } finally {
@@ -49,7 +52,6 @@ export default function ForgotPasswordScreen() {
 
             <View className="gap-6">
               {error ? <Text className="text-error">{error}</Text> : null}
-              {message ? <Text className="text-primary">{message}</Text> : null}
 
               <FormField
                 label={t("auth.login.email")}
