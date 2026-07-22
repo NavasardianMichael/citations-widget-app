@@ -1,5 +1,6 @@
 import {
   FlexWidget,
+  IconWidget,
   ImageWidget,
   OverlapWidget,
   TextWidget,
@@ -26,13 +27,13 @@ function asColor(value: string): ColorProp {
 }
 
 function ActionChip({
-  label,
+  icon,
   color,
   backgroundColor,
   clickAction,
   clickActionData,
 }: {
-  label: string;
+  icon: string;
   color: string;
   backgroundColor: string;
   clickAction: string;
@@ -51,15 +52,11 @@ function ActionChip({
         alignItems: "center",
       }}
     >
-      <TextWidget
-        text={label}
-        allowFontScaling={false}
-        style={{
-          fontSize: WIDGET_LAYOUT.actionIconSize,
-          fontFamily: WIDGET_ICON_FONT_FAMILY,
-          color: asColor(color),
-          textAlign: "center",
-        }}
+      <IconWidget
+        icon={icon}
+        size={WIDGET_LAYOUT.actionIconSize}
+        font={WIDGET_ICON_FONT_FAMILY}
+        style={{ color: asColor(color) }}
       />
     </FlexWidget>
   );
@@ -87,18 +84,21 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
       }}
     >
       {snapshot.showOrnament ? (
-        <TextWidget
-          text={WIDGET_ICON_GLYPH.flare}
-          allowFontScaling={false}
+        <FlexWidget
           style={{
-            fontSize: WIDGET_LAYOUT.ornamentIconSize,
-            fontFamily: WIDGET_ICON_FONT_FAMILY,
-            color: asColor(ornamentColor),
-            textAlign: "right",
             width: "match_parent",
+            flexDirection: "row",
+            justifyContent: "flex-end",
             marginBottom: 4,
           }}
-        />
+        >
+          <IconWidget
+            icon={WIDGET_ICON_GLYPH.flare}
+            size={WIDGET_LAYOUT.ornamentIconSize}
+            font={WIDGET_ICON_FONT_FAMILY}
+            style={{ color: asColor(ornamentColor) }}
+          />
+        </FlexWidget>
       ) : null}
 
       {snapshot.showLargeQuotes ? (
@@ -176,27 +176,27 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
               }}
             >
               <ActionChip
-                label={WIDGET_ICON_GLYPH.refresh}
+                icon={WIDGET_ICON_GLYPH.refresh}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="REFRESH"
               />
               <ActionChip
-                label={WIDGET_ICON_GLYPH.settings}
+                icon={WIDGET_ICON_GLYPH.settings}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="OPEN_URI"
                 clickActionData={{ uri: "citationswidget://settings" }}
               />
               <ActionChip
-                label={WIDGET_ICON_GLYPH.bookmark}
+                icon={WIDGET_ICON_GLYPH.bookmark}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="OPEN_URI"
                 clickActionData={{ uri: "citationswidget:///" }}
               />
               <ActionChip
-                label={WIDGET_ICON_GLYPH.share}
+                icon={WIDGET_ICON_GLYPH.share}
                 color={snapshot.actionIconColor}
                 backgroundColor={snapshot.actionBg}
                 clickAction="OPEN_URI"
@@ -256,8 +256,9 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
           resizeMode="cover"
           radius={WIDGET_LAYOUT.borderRadius}
           style={{
-            width: "match_parent",
-            height: "match_parent",
+            // Pin to the same dp as the cover-cropped bitmap so FIT_XY cannot re-stretch.
+            width: imgW,
+            height: imgH,
           }}
         />
         <FlexWidget

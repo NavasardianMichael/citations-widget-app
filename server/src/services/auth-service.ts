@@ -50,9 +50,32 @@ export const authService = {
   },
 
   async register(input: RegisterInput): Promise<RegisterResponse> {
-    const exists = await userRepository.existsByEmail(input.email);
-    if (exists) {
-      throw new AppError(HttpStatus.CONFLICT, ErrorCode.EMAIL_ALREADY_EXISTS, "Այս էլ․ փոստով հաշիվ արդեն գոյություն ունի");
+    const existing = await userRepository.findByEmail(input.email);
+    if (existing) {
+      // Unverified local signup: refresh credentials and resend verification instead of a conflict.
+      if (existing.provider === "local" && !existing.emailVerified) {
+        const passwordHash = await hashPassword(input.password);
+        const user =
+          (await userRepository.update(existing.id, {
+            name: input.name,
+            passwordHash,
+          })) ?? existing;
+
+        const verificationToken = await emailVerificationRepository.create(user.id);
+        emailService.sendVerifyEmail(user.email, user.name, verificationToken.token).catch((error) => {
+          logger.error({ error, userId: user.id }, "Failed to resend verification email on re-register");
+        });
+
+        return {
+          message: "Գրանցումն հաջողվեց։ Խնդրում ենք ստուգել էլ․ փոստը՝ հաշիվը հաստատելու համար։",
+        };
+      }
+
+      throw new AppError(
+        HttpStatus.CONFLICT,
+        ErrorCode.EMAIL_ALREADY_EXISTS,
+        "Այս էլ․ փոստով հաշիվ արդեն գոյություն ունի",
+      );
     }
 
     const passwordHash = await hashPassword(input.password);
