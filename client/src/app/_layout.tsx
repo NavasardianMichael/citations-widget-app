@@ -34,6 +34,7 @@ function useProtectedRoute() {
       consumePendingAuthRoute()
     }
   }, [user, isGuest, isLoading, segments, router, pendingAuthRoute, consumePendingAuthRoute])
+}
 
 function RootNavigator() {
   const { isLoading } = useAuth()
