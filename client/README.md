@@ -20,11 +20,19 @@ EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=  # Android OAuth client ID (required on An
 EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=      # iOS OAuth client ID (optional until iOS builds)
 ```
 
-Google Android client in Cloud Console must use package `com.anonymous.citationswidgetapp` and the **SHA-1** of the keystore that signs the APK (release builds currently use the debug keystore). Get it with:
+Google Android client in Cloud Console must use package `com.anonymous.citationswidgetapp` and the **SHA-1** of the keystore that signs the APK.
+
+Shareable release APKs (`npm run android:apk`) are signed with **`android/app/debug.keystore`** (not `%USERPROFILE%\.android\debug.keystore`). Get the correct fingerprint with:
 
 ```bash
-keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android -keypass android
+keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android -keypass android
 ```
+
+Expected SHA-1 for this repo’s debug keystore:
+
+`5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`
+
+A Google **400 invalid_request** on the consent screen almost always means that SHA-1 (or package name) is missing from the Android OAuth client. After updating Cloud Console, wait a few minutes and reinstall the APK.
 
 | Target | API URL |
 |--------|---------|
