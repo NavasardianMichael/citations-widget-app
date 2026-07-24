@@ -129,6 +129,10 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
         }}
       />
 
+      {/* RemoteViews has no margin:"auto" — a flex:1 spacer is the LinearLayout-weight
+          equivalent, so this block sits at the bottom regardless of quote length. */}
+      <FlexWidget style={{ flex: 1 }} />
+
       <FlexWidget
         style={{
           width: "match_parent",
