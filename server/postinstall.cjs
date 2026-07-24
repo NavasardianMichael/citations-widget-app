@@ -11,12 +11,28 @@ const { execSync } = require("node:child_process");
 execSync("npx prisma generate", { stdio: "inherit" });
 
 try {
-  execSync("npx prisma migrate deploy", { stdio: "inherit" });
-} catch {
+  const output = execSync("npx prisma migrate deploy", {
+    encoding: "utf-8",
+    stdio: ["inherit", "pipe", "pipe"],
+  });
+  process.stdout.write(output);
+} catch (error) {
+  const combined = `${error.stdout ?? ""}${error.stderr ?? ""}`;
+
+  // DATABASE_URL simply isn't defined at all — the expected, unavoidable case in CI and
+  // the Docker image build (no .env is present there). Don't print Prisma's validation
+  // error for this; it looks alarming but there's nothing to fix.
+  if (combined.includes("P1012") && combined.includes("DATABASE_URL")) {
+    console.log("[postinstall] Skipping `prisma migrate deploy` — DATABASE_URL isn't set (expected in CI/Docker builds).");
+    process.exit(0);
+  }
+
+  // Anything else (unreachable database, a genuinely failed migration, ...) is worth
+  // seeing, so show Prisma's real output instead of swallowing it silently.
+  process.stdout.write(combined);
   console.warn(
     "\n[postinstall] `prisma migrate deploy` did not complete — continuing anyway. " +
-      "This is expected when DATABASE_URL isn't set or reachable (e.g. CI, Docker image build). " +
-      "If you're running this locally with your dev database up, re-run `npm run db:migrate:deploy` " +
-      "in server/ to see the real error.\n",
+      "If your dev database should be reachable, check it's running and DATABASE_URL is correct " +
+      "(see the error above), then re-run `npm run db:migrate:deploy` in server/.\n",
   );
 }
