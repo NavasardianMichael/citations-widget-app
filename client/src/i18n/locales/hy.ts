@@ -258,6 +258,9 @@ export const hy = {
   'validation.citationTextMax': 'Մեջբերումը չի կարող գերազանցել 400 նիշը',
   'validation.sourceRequired': 'Մուտքագրեք աղբյուրը',
   'validation.sourceMax': 'Աղբյուրը չի կարող գերազանցել 200 նիշը',
+  'validation.socialUrlInvalid':
+    'Մուտքագրեք վավեր հղում (սկսած http:// կամ https://)',
+  'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
 } as const;
 
 export type HyMessages = typeof hy;

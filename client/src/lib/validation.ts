@@ -8,9 +8,13 @@ const NAME_MAX = 100;
 const CITATION_TEXT_MAX = 400;
 const CITATION_META_MAX = 200;
 
+const SOCIAL_URL_MAX = 300;
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Letters (incl. Armenian), spaces, hyphens, apostrophes */
 const NAME_RE = /^[\p{L}\s'-]+$/u;
+/** Requires an explicit http(s) scheme, matching the `https://…` placeholder shown to users. */
+const SOCIAL_URL_RE = /^https?:\/\/[^\s/$.?#][^\s]*$/i;
 
 export type FieldErrors<T extends string> = Partial<Record<T, string>>;
 
@@ -66,6 +70,15 @@ export function validateCitationText(value: string): string | null {
 /** Live typing feedback: max-length only (required is enforced on submit). */
 export function validateCitationTextMax(value: string): string | null {
   return value.trim().length > CITATION_TEXT_MAX ? t("validation.citationTextMax") : null;
+}
+
+/** Optional field — only checked once the user has actually typed something. */
+export function validateSocialUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > SOCIAL_URL_MAX) return t("validation.socialUrlMax");
+  if (!SOCIAL_URL_RE.test(trimmed)) return t("validation.socialUrlInvalid");
+  return null;
 }
 
 export function validateSource(value: string): string | null {

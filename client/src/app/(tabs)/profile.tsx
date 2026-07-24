@@ -10,7 +10,7 @@ import { TopAppBar } from "@/components/ui/top-app-bar";
 import { SignInRequired } from "@/components/sign-in-required";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
-import { hasErrors, validateName, type FieldErrors } from "@/lib/validation";
+import { hasErrors, validateName, validateSocialUrl, type FieldErrors } from "@/lib/validation";
 import { fetchProfile, updateProfile } from "@/services/api";
 import { deleteAccountRequest } from "@/services/auth-api";
 import { getAccessToken } from "@/services/auth-storage";
@@ -43,7 +43,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState("");
   const [socialUrl, setSocialUrl] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"name">>({});
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"name" | "socialUrl">>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -78,7 +78,10 @@ export default function ProfileScreen() {
   }
 
   async function handleSaveProfile() {
-    const nextErrors: FieldErrors<"name"> = { name: validateName(name) ?? undefined };
+    const nextErrors: FieldErrors<"name" | "socialUrl"> = {
+      name: validateName(name) ?? undefined,
+      socialUrl: validateSocialUrl(socialUrl) ?? undefined,
+    };
     setFieldErrors(nextErrors);
     if (hasErrors(nextErrors)) return;
 
@@ -178,9 +181,17 @@ export default function ProfileScreen() {
                 <FormField
                   label={t("profile.socialUrl")}
                   value={socialUrl}
-                  onChangeText={setSocialUrl}
+                  onChangeText={(v) => {
+                    setSocialUrl(v);
+                    if (fieldErrors.socialUrl) setFieldErrors((prev) => ({ ...prev, socialUrl: undefined }));
+                  }}
+                  error={fieldErrors.socialUrl}
                   placeholder="https://…"
                   variant="academic"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  textContentType="URL"
                 />
                 <Text className="text-sm text-on-surface-variant">{t("settings.attributionDesc")}</Text>
               </View>
