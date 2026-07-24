@@ -18,4 +18,4 @@ ALTER TABLE "users" DROP COLUMN "first_name",
 DROP COLUMN "last_name";
 
 -- AlterTable
-ALTER TABLE "widget_settings" ADD COLUMN     "show_actions" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "widget_settings" ADD COLUMN IF NOT EXISTS "show_actions" BOOLEAN NOT NULL DEFAULT true;

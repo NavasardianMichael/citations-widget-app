@@ -125,7 +125,6 @@ async function main() {
     id: string;
     category: "bible";
     text: string;
-    author: null;
     source: string;
   }> = [];
 
@@ -150,7 +149,6 @@ async function main() {
       id: `bible-${slugifyBook(book)}-${chapter}-${verse}`,
       category: "bible",
       text,
-      author: null,
       source: `${hyName} ${chapter}:${verse}`,
     });
   }

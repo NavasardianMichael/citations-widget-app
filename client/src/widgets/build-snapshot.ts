@@ -1,7 +1,5 @@
-import {
-  DEFAULT_WIDGET_DESIGN,
-  getWidgetDesign,
-} from "@/constants/widget-designs";
+import { WIDGET_DESIGN_TOKENS } from "@/constants/widget-designs";
+import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import {
   DEFAULT_WIDGET_FONT,
   getWidgetFontFamily,
@@ -41,22 +39,21 @@ export function buildHomeWidgetSnapshot(
   settings: WidgetSettingsDraft,
   citation: WidgetCitation | null,
 ): HomeWidgetSnapshot {
-  const design = getWidgetDesign(settings.widgetDesign ?? DEFAULT_WIDGET_DESIGN);
   const fontId = (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId;
-  const source =
-    citation?.source ?? citation?.author ?? citation?.category ?? "";
+  const design = WIDGET_DESIGN_TOKENS;
 
   return {
     quoteText: citation?.text ? `"${citation.text}"` : "",
-    sourceText: source,
+    sourceText: citation?.source ?? "",
     attributionText:
       settings.showAttribution && citation?.addedBy
         ? t("settings.addedBy", { name: citation.addedBy })
         : null,
     showActions: settings.showActions,
-    designId: design.id,
+    backgroundImageIndex: citation?.backgroundImageIndex ?? 0,
     fontFamily: getWidgetFontFamily(fontId),
     androidFontFile: FONT_FILE_BY_ID[fontId] ?? FONT_FILE_BY_ID[DEFAULT_WIDGET_FONT],
+    fontSize: settings.fontSize ?? DEFAULT_QUOTE_FONT_SIZE,
     panelBg: design.panelBg,
     panelBorderColor: design.panelBorderColor,
     accentBorderColor: design.accentBorderColor,
@@ -70,8 +67,7 @@ export function buildHomeWidgetSnapshot(
     ornamentOpacity: design.ornamentOpacity,
     showOrnament: design.showOrnament,
     showLargeQuotes: design.showLargeQuotes,
-    overlayColor: design.overlayColor ?? null,
-    hasBackgroundImage: !!design.backgroundImage,
+    overlayColor: design.overlayColor,
     emptyMessage: t("settings.previewEmpty"),
     fetchedAt: Date.now(),
   };

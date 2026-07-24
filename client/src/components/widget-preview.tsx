@@ -2,12 +2,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { ImageBackground, Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
-import {
-  DEFAULT_WIDGET_DESIGN,
-  getWidgetDesign,
-  type WidgetDesignId,
-} from '@/constants/widget-designs'
-import { colorWithOpacity, WIDGET_LAYOUT } from '@/constants/widget-layout'
+import { getWidgetBackgroundImage, WIDGET_DESIGN_TOKENS } from '@/constants/widget-designs'
+import { colorWithOpacity, getQuoteLineHeight, WIDGET_LAYOUT } from '@/constants/widget-layout'
 import { getWidgetFontFamily } from '@/fonts/registry'
 import { useWidgetFont } from '@/fonts/use-widget-font'
 import { t } from '@/i18n'
@@ -16,7 +12,7 @@ import type { FontStyle, WidgetCitation } from '@/types/citation'
 type WidgetPreviewProps = {
   citation: WidgetCitation | null
   fontStyle: FontStyle
-  design?: WidgetDesignId
+  fontSize: number
   loading?: boolean
   showActions?: boolean
   onRefresh?: () => void
@@ -83,7 +79,7 @@ function PreviewActionIcon({
 export function WidgetPreview({
   citation,
   fontStyle,
-  design = DEFAULT_WIDGET_DESIGN,
+  fontSize,
   loading = false,
   showActions = true,
   onRefresh,
@@ -91,8 +87,10 @@ export function WidgetPreview({
   onShare,
 }: WidgetPreviewProps) {
   const fontReady = useWidgetFont(fontStyle)
-  const tokens = getWidgetDesign(design)
+  const tokens = WIDGET_DESIGN_TOKENS
+  const backgroundImage = getWidgetBackgroundImage(citation?.backgroundImageIndex ?? 0)
   const fontFamily = getWidgetFontFamily(fontStyle)
+  const quoteLineHeight = getQuoteLineHeight(fontSize)
   const previewActions: {
     icon: keyof typeof MaterialIcons.glyphMap
     label: string
@@ -105,9 +103,9 @@ export function WidgetPreview({
   ]
 
   const showLoading = loading || (!!citation && !fontReady)
-  const hasPhoto = !!tokens.backgroundImage
 
   const frameStyle = {
+    minHeight: WIDGET_LAYOUT.previewMinHeight,
     borderRadius: WIDGET_LAYOUT.borderRadius,
     borderWidth: 1,
     borderColor: tokens.panelBorderColor,
@@ -117,93 +115,100 @@ export function WidgetPreview({
     overflow: 'hidden' as const,
   }
 
-  const contentPad = { padding: WIDGET_LAYOUT.padding }
+  const contentPad = {
+    padding: WIDGET_LAYOUT.padding,
+    // Matches the real widget: top content and the meta/actions row anchor to
+    // opposite ends of the frame instead of flowing directly under the quote.
+    flex: 1,
+    justifyContent: 'space-between' as const,
+  }
 
-  const content = showLoading ? (
+  const topContent = showLoading ? (
     <Text
       style={{
-        fontSize: WIDGET_LAYOUT.quoteFontSize,
-        lineHeight: WIDGET_LAYOUT.quoteLineHeight,
+        fontSize,
+        lineHeight: quoteLineHeight,
         color: tokens.attributionColor,
       }}
     >
       {t('settings.previewLoading')}
     </Text>
   ) : citation ? (
-    <View style={{ gap: WIDGET_LAYOUT.sectionGap }}>
-      <Text
-        style={{
-          fontFamily,
-          fontSize: WIDGET_LAYOUT.quoteFontSize,
-          lineHeight: WIDGET_LAYOUT.quoteLineHeight,
-          color: tokens.quoteColor,
-        }}
-      >
-        &quot;{citation.text}&quot;
-      </Text>
-      <View style={{ gap: WIDGET_LAYOUT.metaBlockGap }}>
-        <View
-          className='w-full flex-row flex-wrap items-center justify-end'
-          style={{
-            columnGap: WIDGET_LAYOUT.actionGap,
-            rowGap: WIDGET_LAYOUT.sourceActionsGap,
-          }}
-        >
-          <Text
-            className='mr-auto min-w-0 uppercase'
-            style={{
-              color: tokens.metaColor,
-              fontFamily,
-              fontSize: WIDGET_LAYOUT.metaFontSize,
-              lineHeight: WIDGET_LAYOUT.metaLineHeight,
-              letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
-              fontWeight: '600',
-            }}
-          >
-            {citation.source ?? citation.author ?? citation.category}
-          </Text>
-          {showActions ? (
-            <View
-              className='flex-row shrink-0'
-              style={{ gap: WIDGET_LAYOUT.actionGap }}
-            >
-              {previewActions.map((action) => (
-                <PreviewActionIcon
-                  key={action.icon}
-                  icon={action.icon}
-                  label={action.label}
-                  onPress={action.onPress}
-                  backgroundColor={tokens.actionBg}
-                  iconColor={tokens.actionIconColor}
-                />
-              ))}
-            </View>
-          ) : null}
-        </View>
-        {citation.addedBy ? (
-          <Text
-            style={{
-              fontSize: WIDGET_LAYOUT.attributionFontSize,
-              lineHeight: WIDGET_LAYOUT.attributionLineHeight,
-              color: tokens.attributionColor,
-            }}
-          >
-            {t('settings.addedBy', { name: citation.addedBy })}
-          </Text>
-        ) : null}
-      </View>
-    </View>
+    <Text
+      style={{
+        fontFamily,
+        fontSize,
+        lineHeight: quoteLineHeight,
+        color: tokens.quoteColor,
+      }}
+    >
+      &quot;{citation.text}&quot;
+    </Text>
   ) : (
     <Text
       style={{
-        fontSize: WIDGET_LAYOUT.quoteFontSize,
-        lineHeight: WIDGET_LAYOUT.quoteLineHeight,
+        fontSize,
+        lineHeight: quoteLineHeight,
         color: tokens.attributionColor,
       }}
     >
       {t('settings.previewEmpty')}
     </Text>
   )
+
+  const metaContent = citation ? (
+    <View style={{ gap: WIDGET_LAYOUT.metaBlockGap, marginTop: WIDGET_LAYOUT.sectionGap }}>
+      <View
+        className='w-full flex-row flex-wrap items-center justify-end'
+        style={{
+          columnGap: WIDGET_LAYOUT.actionGap,
+          rowGap: WIDGET_LAYOUT.sourceActionsGap,
+        }}
+      >
+        <Text
+          className='mr-auto min-w-0 uppercase'
+          style={{
+            color: tokens.metaColor,
+            fontFamily,
+            fontSize: WIDGET_LAYOUT.metaFontSize,
+            lineHeight: WIDGET_LAYOUT.metaLineHeight,
+            letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+            fontWeight: '600',
+          }}
+        >
+          {citation.source || citation.category}
+        </Text>
+        {showActions ? (
+          <View
+            className='flex-row shrink-0'
+            style={{ gap: WIDGET_LAYOUT.actionGap }}
+          >
+            {previewActions.map((action) => (
+              <PreviewActionIcon
+                key={action.icon}
+                icon={action.icon}
+                label={action.label}
+                onPress={action.onPress}
+                backgroundColor={tokens.actionBg}
+                iconColor={tokens.actionIconColor}
+              />
+            ))}
+          </View>
+        ) : null}
+      </View>
+      {citation.addedBy ? (
+        <Text
+          style={{
+            fontSize: WIDGET_LAYOUT.attributionFontSize,
+            lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+            color: tokens.attributionColor,
+          }}
+        >
+          {t('settings.addedBy', { name: citation.addedBy })}
+        </Text>
+      ) : null}
+    </View>
+  ) : null
 
   const ornaments = (
     <>
@@ -256,38 +261,25 @@ export function WidgetPreview({
         </Text>
       </View>
 
-      {hasPhoto && tokens.backgroundImage ? (
-        <ImageBackground
-          source={tokens.backgroundImage}
-          resizeMode='cover'
-          className='relative mt-4'
-          style={frameStyle}
-          imageStyle={{ borderRadius: WIDGET_LAYOUT.borderRadius }}
-        >
-          <View
-            style={{
-              ...contentPad,
-              backgroundColor: tokens.overlayColor ?? 'rgba(0,0,0,0.42)',
-              borderRadius: WIDGET_LAYOUT.borderRadius,
-            }}
-          >
-            {ornaments}
-            {content}
-          </View>
-        </ImageBackground>
-      ) : (
+      <ImageBackground
+        source={backgroundImage}
+        resizeMode='cover'
+        className='relative mt-4'
+        style={frameStyle}
+        imageStyle={{ borderRadius: WIDGET_LAYOUT.borderRadius }}
+      >
         <View
-          className='relative mt-4'
           style={{
-            ...frameStyle,
             ...contentPad,
-            backgroundColor: tokens.panelBg,
+            backgroundColor: tokens.overlayColor,
+            borderRadius: WIDGET_LAYOUT.borderRadius,
           }}
         >
           {ornaments}
-          {content}
+          {topContent}
+          {metaContent}
         </View>
-      )}
+      </ImageBackground>
     </View>
   )
 }

@@ -12,8 +12,7 @@ type SeedCitation = {
   id: string;
   category: CitationCategory;
   text: string;
-  author: string | null;
-  source: string | null;
+  source: string;
 };
 
 function loadJson<T>(file: string): T {

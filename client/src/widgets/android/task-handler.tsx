@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
 
-import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
+import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
 import { fetchWidgetCitation } from "@/services/api";
 import { pickGuestWidgetCitation } from "@/services/guest-citation-picker";
@@ -20,26 +20,47 @@ import {
   type HomeWidgetSnapshot,
 } from "@/widgets/types";
 
+const FALLBACK_SETTINGS = {
+  sourceSelection: "mixed" as const,
+  refreshRateHours: 24 as const,
+  fontStyle: DEFAULT_WIDGET_FONT,
+  fontSize: DEFAULT_QUOTE_FONT_SIZE,
+  showAttribution: true,
+  showActions: true,
+};
+
+/**
+ * Loads (or rebuilds) the snapshot to render. This runs on EVERY widget task invocation,
+ * including OS-triggered background updates with no user interaction — so a transient
+ * network/auth failure here must never throw, or the widget host never gets a
+ * `renderWidget` call at all and is left showing nothing.
+ */
 async function loadSnapshot(): Promise<HomeWidgetSnapshot> {
-  const raw = await AsyncStorage.getItem(HOME_WIDGET_SNAPSHOT_KEY);
+  const raw = await AsyncStorage.getItem(HOME_WIDGET_SNAPSHOT_KEY).catch(() => null);
   if (raw) {
     try {
       return JSON.parse(raw) as HomeWidgetSnapshot;
     } catch {
-      // fall through
+      // fall through to rebuilding from settings + cache
     }
   }
 
-  const guest = await isGuestMode();
-  const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
-  const cached = await getCachedWidgetCitation();
-  return buildHomeWidgetSnapshot(settings, cached?.citation ?? null);
+  try {
+    const guest = await isGuestMode();
+    const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
+    const cached = await getCachedWidgetCitation();
+    return buildHomeWidgetSnapshot(settings, cached?.citation ?? null);
+  } catch {
+    // No persisted snapshot AND settings/cache unreachable (e.g. first placement with no
+    // network yet) — render the empty state instead of leaving the widget host with nothing.
+    return buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null);
+  }
 }
 
 async function refreshCitationSnapshot(): Promise<HomeWidgetSnapshot> {
-  const guest = await isGuestMode();
-  const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
   try {
+    const guest = await isGuestMode();
+    const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
     const result = guest
       ? await pickGuestWidgetCitation(settings.sourceSelection)
       : await fetchWidgetCitation(true);
@@ -61,27 +82,24 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
 
   if (props.widgetAction === "WIDGET_DELETED") return;
 
-  let snapshot = await loadSnapshot();
+  let snapshot: HomeWidgetSnapshot;
+  try {
+    snapshot = await loadSnapshot();
 
-  if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
-    snapshot = await refreshCitationSnapshot();
+    if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
+      snapshot = await refreshCitationSnapshot();
+    }
+
+    // Ensure defaults if older snapshots lack fields.
+    snapshot = {
+      ...buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null),
+      ...snapshot,
+    };
+  } catch {
+    // Belt-and-suspenders: loadSnapshot/refreshCitationSnapshot already catch their own
+    // failures, but renderWidget must run no matter what so the widget never goes blank.
+    snapshot = buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null);
   }
-
-  // Ensure defaults if older snapshots lack fields.
-  snapshot = {
-    ...buildHomeWidgetSnapshot(
-      {
-        sourceSelection: "mixed",
-        refreshRateHours: 24,
-        fontStyle: DEFAULT_WIDGET_FONT,
-        widgetDesign: DEFAULT_WIDGET_DESIGN,
-        showAttribution: true,
-        showActions: true,
-      },
-      null,
-    ),
-    ...snapshot,
-  };
 
   props.renderWidget(
     <CitationAndroidWidget

@@ -1,4 +1,6 @@
-﻿import { useFocusEffect, useRouter } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Image } from "expo-image";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
@@ -13,6 +15,27 @@ import { fetchProfile, updateProfile } from "@/services/api";
 import { deleteAccountRequest } from "@/services/auth-api";
 import { getAccessToken } from "@/services/auth-storage";
 import type { UserProfile } from "@/types/citation";
+
+function ProfileAvatar({ avatarUrl }: { avatarUrl: string | null }) {
+  if (avatarUrl) {
+    return (
+      <Image
+        source={{ uri: avatarUrl }}
+        style={{ width: 56, height: 56, borderRadius: 28 }}
+        contentFit="cover"
+        accessibilityLabel={t("profile.avatarAlt")}
+      />
+    );
+  }
+  return (
+    <View
+      className="h-14 w-14 items-center justify-center rounded-full bg-surface-container-high"
+      accessibilityLabel={t("profile.avatarAlt")}
+    >
+      <MaterialIcons name="person" size={28} color="#44474d" />
+    </View>
+  );
+}
 
 export default function ProfileScreen() {
   const { user, isGuest, signOut } = useAuth();
@@ -127,7 +150,16 @@ export default function ProfileScreen() {
             style={{ boxShadow: "0 4px 20px -2px rgba(2, 26, 53, 0.05)" }}
           >
             <View className="absolute bottom-0 left-0 top-0 w-1 bg-secondary" />
-            <Text className="font-headline-md text-headline-md text-primary">{t("profile.scholarTitle")}</Text>
+
+            <View className="flex-row items-center gap-4">
+              <ProfileAvatar avatarUrl={profile?.avatarUrl ?? null} />
+              {profile && "email" in profile && profile.email ? (
+                <Text className="flex-1 font-body-md text-body-md text-on-surface-variant">
+                  {profile.email}
+                </Text>
+              ) : null}
+            </View>
+
             <View className="gap-6">
               <FormField
                 label={t("profile.name")}
@@ -142,13 +174,16 @@ export default function ProfileScreen() {
                 textContentType="name"
                 autoComplete="name"
               />
-              <FormField
-                label={t("profile.socialUrl")}
-                value={socialUrl}
-                onChangeText={setSocialUrl}
-                placeholder="https://…"
-                variant="academic"
-              />
+              <View className="gap-1">
+                <FormField
+                  label={t("profile.socialUrl")}
+                  value={socialUrl}
+                  onChangeText={setSocialUrl}
+                  placeholder="https://…"
+                  variant="academic"
+                />
+                <Text className="text-sm text-on-surface-variant">{t("settings.attributionDesc")}</Text>
+              </View>
             </View>
             <View className="gap-3">
               <Button
@@ -157,11 +192,6 @@ export default function ProfileScreen() {
                 disabled={saving}
                 className="w-full md:w-auto"
               />
-              {profile && "email" in profile && profile.email ? (
-                <Text className="text-sm text-on-surface-variant">
-                  {t("profile.signedInAs", { email: String(profile.email) })}
-                </Text>
-              ) : null}
               <Button
                 label={t("profile.signOut")}
                 variant="secondary"
@@ -170,7 +200,7 @@ export default function ProfileScreen() {
               />
               <Button
                 label={deleting ? t("common.saving") : t("profile.removeAccount")}
-                variant="secondary"
+                variant="danger"
                 icon="delete-forever"
                 disabled={deleting}
                 onPress={confirmDeleteAccount}

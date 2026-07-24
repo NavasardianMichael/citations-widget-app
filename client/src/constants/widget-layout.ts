@@ -6,9 +6,9 @@ export const WIDGET_LAYOUT = {
   /** Preview `p-8` / rounded-lg */
   padding: 32,
   borderRadius: 8,
-  /** Design-system `text-body-md` */
-  quoteFontSize: 16,
-  quoteLineHeight: 24,
+  /** Matches the real widget's declared minHeight (widgetprovider_citationwidget.xml) so the
+   *  Settings preview pins its action row to the bottom the same way the real widget does. */
+  previewMinHeight: 180,
   /** Design-system `text-label-sm` */
   metaFontSize: 12,
   metaLineHeight: 16,
@@ -22,10 +22,10 @@ export const WIDGET_LAYOUT = {
   metaBlockGap: 12,
   /** Vertical space when source and actions wrap onto separate rows */
   sourceActionsGap: 16,
-  /** Preview action circles `h-8 w-8` */
-  actionSize: 32,
-  actionIconSize: 18,
-  actionGap: 8,
+  /** Preview action circles — a little larger than the design-system default `h-8 w-8`. */
+  actionSize: 40,
+  actionIconSize: 22,
+  actionGap: 10,
   /** Preview ornament / large quotes */
   ornamentIconSize: 20,
   largeQuoteFontSize: 48,
@@ -34,14 +34,33 @@ export const WIDGET_LAYOUT = {
 
 export type WidgetLayout = typeof WIDGET_LAYOUT;
 
+/** Typography range for the "font size" control in Settings → Typography. */
+export const FONT_SIZE_MIN = 13;
+export const FONT_SIZE_MAX = 22;
+export const DEFAULT_QUOTE_FONT_SIZE = 16;
+
+/** Quote line-height scales with font size at the same 1.5 ratio as the previous fixed 16/24. */
+export function getQuoteLineHeight(fontSize: number): number {
+  return Math.round(fontSize * 1.5);
+}
+
 /**
  * Native widgets can't render `@expo/vector-icons/MaterialIcons` directly, so this
- * bundles the same MaterialIcons glyphs (registered via the `react-native-android-widget`
- * config plugin's `fonts` list) and uses their codepoints directly, keeping the
- * home-screen widget's icons pixel-identical to the Settings preview.
+ * bundles the same MaterialIcons glyphs as their own native font family (registered via the
+ * `react-native-android-widget` config plugin's `fonts` list) and uses their codepoints
+ * directly, keeping the home-screen widget's icons pixel-identical to the Settings preview.
  *
- * `assets/fonts/material-icons/MaterialIcons.ttf` is NOT the full ~357KB upstream font —
- * it is subset down to only the glyphs in `WIDGET_ICON_GLYPH` (~1.6KB) using `subset-font`
+ * This MUST be named something other than "MaterialIcons": the config plugin copies it into
+ * the app's native Android font assets at prebuild time, and a family-name collision with the
+ * real (full, non-subsetted) `@expo/vector-icons/MaterialIcons` font that ships in that same
+ * location will non-deterministically shadow one with the other — whichever copy step runs
+ * last wins in a release build. That's why every JS-rendered MaterialIcons glyph *outside* the
+ * widget (e.g. the Settings preview's action buttons) could silently vanish in a production
+ * APK while looking fine in dev: dev mode resolves fonts through a different (Metro/JS) path
+ * that isn't affected by the native asset collision.
+ *
+ * `assets/fonts/widget-glyphs/WidgetGlyphs.ttf` is NOT the full ~357KB upstream font — it is
+ * subset down to only the glyphs in `WIDGET_ICON_GLYPH` (~1.6KB) using `subset-font`
  * (https://www.npmjs.com/package/subset-font). If you add a new icon below, regenerate it:
  *
  *   npm install --no-save subset-font
@@ -51,10 +70,10 @@ export type WidgetLayout = typeof WIDGET_LAYOUT;
  *     const src = fs.readFileSync('node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf');
  *     // Keep this codepoint list in sync with WIDGET_ICON_GLYPH below.
  *     const text = [0xe5d5, 0xe8b8, 0xe866, 0xe80d, 0xe3e4].map(cp => String.fromCodePoint(cp)).join('');
- *     subsetFont(src, text, { targetFormat: 'sfnt' }).then(buf => fs.writeFileSync('assets/fonts/material-icons/MaterialIcons.ttf', buf));
+ *     subsetFont(src, text, { targetFormat: 'sfnt' }).then(buf => fs.writeFileSync('assets/fonts/widget-glyphs/WidgetGlyphs.ttf', buf));
  *   "
  */
-export const WIDGET_ICON_FONT_FAMILY = "MaterialIcons";
+export const WIDGET_ICON_FONT_FAMILY = "WidgetGlyphs";
 
 /** MaterialIcons glyph codepoints for `refresh` / `settings` / `bookmark` / `share` / `flare`. */
 export const WIDGET_ICON_GLYPH = {

@@ -65,7 +65,7 @@
         "react-native-android-widget",
         {
           "fonts": [
-            "./assets/fonts/material-icons/MaterialIcons.ttf",
+            "./assets/fonts/widget-glyphs/WidgetGlyphs.ttf",
             "./assets/fonts/vrdznagir/Vrdznagir.otf",
             "./assets/fonts/braind-amanor/BraindAmanor.otf",
             "./assets/fonts/artsakh/Artsakh.otf",

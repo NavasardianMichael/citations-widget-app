@@ -9,7 +9,7 @@ import { SignInRequired } from "@/components/sign-in-required";
 import { TopAppBar } from "@/components/ui/top-app-bar";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
-import { hasErrors, validateCitationForm, type FieldErrors } from "@/lib/validation";
+import { hasErrors, validateCitationForm, validateCitationTextMax, type FieldErrors } from "@/lib/validation";
 import { createCitation } from "@/services/api";
 
 export default function SubmitScreen() {
@@ -18,7 +18,7 @@ export default function SubmitScreen() {
   const isMd = width >= 768;
 
   const [values, setValues] = useState<CitationFormValues>(() => emptyCitationFormValues());
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"text" | "author" | "source">>({});
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<"text" | "source">>({});
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(visibility: "private" | "pending") {
@@ -30,8 +30,7 @@ export default function SubmitScreen() {
     try {
       await createCitation({
         text: values.text.trim(),
-        author: values.author.trim() || undefined,
-        source: values.source.trim() || undefined,
+        source: values.source.trim(),
         category: values.category,
         shareProfile: values.shareProfile,
         visibility,
@@ -84,15 +83,16 @@ export default function SubmitScreen() {
             values={values}
             onChange={(next) => {
               setValues(next);
-              if (fieldErrors.text || fieldErrors.author || fieldErrors.source) {
-                setFieldErrors((prev) => {
-                  const cleared = { ...prev };
-                  if (next.text !== values.text) delete cleared.text;
-                  if (next.author !== values.author) delete cleared.author;
-                  if (next.source !== values.source) delete cleared.source;
-                  return cleared;
-                });
-              }
+              setFieldErrors((prev) => {
+                const updated = { ...prev };
+                if (next.text !== values.text) {
+                  const maxError = validateCitationTextMax(next.text);
+                  if (maxError) updated.text = maxError;
+                  else delete updated.text;
+                }
+                if (next.source !== values.source) delete updated.source;
+                return updated;
+              });
             }}
             errors={fieldErrors}
             disabled={submitting}

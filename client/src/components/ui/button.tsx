@@ -4,7 +4,7 @@ import { Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost'
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 type SecondaryBorder = 'outline' | 'secondary'
 type PrimaryTone = 'secondary' | 'secondary-container'
 
@@ -25,6 +25,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-primary',
   secondary: 'border bg-transparent',
   ghost: 'bg-transparent',
+  danger: 'bg-error',
 }
 
 const secondaryBorderClasses: Record<SecondaryBorder, string> = {
@@ -36,6 +37,7 @@ const textClasses: Record<ButtonVariant, string> = {
   primary: '',
   secondary: 'text-primary',
   ghost: 'text-primary',
+  danger: 'text-on-error',
 }
 
 const primaryTextClasses: Record<PrimaryTone, string> = {
@@ -47,6 +49,7 @@ const iconColors: Record<ButtonVariant, string> = {
   primary: '',
   secondary: '#021a35',
   ghost: '#021a35',
+  danger: '#ffffff',
 }
 
 const primaryIconColors: Record<PrimaryTone, string> = {

@@ -11,8 +11,10 @@ import {
 } from "@expo/ui/swift-ui/modifiers";
 import { createWidget, type WidgetEnvironment } from "expo-widgets";
 
+import { WIDGET_DESIGN_TOKENS } from "@/constants/widget-designs";
 import {
   colorWithOpacity,
+  DEFAULT_QUOTE_FONT_SIZE,
   WIDGET_LAYOUT,
 } from "@/constants/widget-layout";
 import { toArgbHex } from "@/widgets/color";
@@ -24,24 +26,11 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   sourceText: "",
   attributionText: null,
   showActions: false,
-  designId: "classic",
+  backgroundImageIndex: 0,
   fontFamily: "DavelAghvor",
   androidFontFile: "davel-aghvor",
-  panelBg: "rgba(255, 255, 255, 0.96)",
-  panelBorderColor: "rgba(196, 198, 206, 0.45)",
-  accentBorderColor: "#735c00",
-  accentBorderWidth: 2,
-  quoteColor: "#1b1c1c",
-  metaColor: "#021a35",
-  attributionColor: "#44474d",
-  actionBg: "rgba(239, 237, 237, 0.92)",
-  actionIconColor: "#44474d",
-  ornamentColor: "#735c00",
-  ornamentOpacity: 0.2,
-  showOrnament: true,
-  showLargeQuotes: false,
-  overlayColor: null,
-  hasBackgroundImage: false,
+  fontSize: DEFAULT_QUOTE_FONT_SIZE,
+  ...WIDGET_DESIGN_TOKENS,
   emptyMessage: "",
   fetchedAt: 0,
 };
@@ -85,7 +74,7 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
   );
   // Photo bitmaps are not available in the iOS widget extension yet — use the
   // design's dark panel / overlay so text contrast still matches preview.
-  const iosBg = data.overlayColor ?? data.panelBg;
+  const iosBg = data.overlayColor || data.panelBg;
 
   return (
     <VStack
@@ -130,7 +119,7 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
       <Text
         modifiers={[
           font({
-            size: WIDGET_LAYOUT.quoteFontSize,
+            size: data.fontSize,
             weight: "regular",
             family: data.fontFamily,
           }),

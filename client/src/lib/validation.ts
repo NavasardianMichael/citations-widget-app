@@ -5,7 +5,7 @@ const PASSWORD_MIN = 8;
 const PASSWORD_MAX = 128;
 const NAME_MIN = 2;
 const NAME_MAX = 100;
-const CITATION_TEXT_MAX = 2000;
+const CITATION_TEXT_MAX = 400;
 const CITATION_META_MAX = 200;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -63,12 +63,16 @@ export function validateCitationText(value: string): string | null {
   return null;
 }
 
-export function validateCitationMeta(value: string, field: "author" | "source"): string | null {
+/** Live typing feedback: max-length only (required is enforced on submit). */
+export function validateCitationTextMax(value: string): string | null {
+  return value.trim().length > CITATION_TEXT_MAX ? t("validation.citationTextMax") : null;
+}
+
+export function validateSource(value: string): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (trimmed.length > CITATION_META_MAX) {
-    return field === "author" ? t("validation.authorMax") : t("validation.sourceMax");
-  }
+  const missing = required(trimmed, "validation.sourceRequired");
+  if (missing) return missing;
+  if (trimmed.length > CITATION_META_MAX) return t("validation.sourceMax");
   return null;
 }
 
@@ -127,15 +131,12 @@ export function validateResetPassword(fields: {
 
 export function validateCitationForm(fields: {
   text: string;
-  author: string;
   source: string;
-}): FieldErrors<"text" | "author" | "source"> {
-  const errors: FieldErrors<"text" | "author" | "source"> = {};
+}): FieldErrors<"text" | "source"> {
+  const errors: FieldErrors<"text" | "source"> = {};
   const text = validateCitationText(fields.text);
-  const author = validateCitationMeta(fields.author, "author");
-  const source = validateCitationMeta(fields.source, "source");
+  const source = validateSource(fields.source);
   if (text) errors.text = text;
-  if (author) errors.author = author;
   if (source) errors.source = source;
   return errors;
 }

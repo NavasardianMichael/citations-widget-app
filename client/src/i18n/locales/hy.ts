@@ -155,8 +155,6 @@ export const hy = {
 
   'form.citationText': 'Մեջբերման տեքստ',
   'form.citationPlaceholder': 'Մուտքագրեք տեքստը',
-  'form.author': 'Հեղինակ',
-  'form.authorPlaceholder': 'օր․՝ Ավետիք Իսահակյան',
   'form.source': 'Աղբյուր',
   'form.sourcePlaceholder': 'օր․՝ Ծննդոց 1:1',
   'form.category': 'Կատեգորիա',
@@ -171,11 +169,10 @@ export const hy = {
   'category.fiction': 'Գրականություն',
 
   'profile.title': 'Պրոֆիլ',
-  'profile.scholarTitle': 'Գիտնականի պրոֆիլ',
+  'profile.avatarAlt': 'Օգտատիրոջ նկարը',
   'profile.name': 'Անուն',
   'profile.socialUrl': 'Սոց․ / հղում',
   'profile.saveChanges': 'Պահպանել փոփոխությունները',
-  'profile.signedInAs': 'Մուտք գործած՝ {email}',
   'profile.signOut': 'Դուրս գալ',
   'profile.signOutConfirmTitle': 'Դուրս գա՞լ հաշվից',
   'profile.signOutConfirmBody': 'Դուք կդուրս գաք Ձեր հաշվից այս սարքում։',
@@ -192,6 +189,7 @@ export const hy = {
   'settings.sourcePool': 'Աղբյուրների ընտրություն',
   'settings.refreshRate': 'Թարմացման հաճախականություն',
   'settings.typography': 'Տառատեսակ',
+  'settings.fontSize': 'Տառաչափ',
   'settings.displayOptions': 'Ցուցադրման կարգավորումներ',
   'settings.attribution': 'Ցույց տալ մեջբերումն ավելացրած օգտատիրոջ անունը',
   'settings.showActions': 'Ցույց տալ գործողությունները կոճակները',
@@ -212,18 +210,7 @@ export const hy = {
   'settings.livePreview': 'Նախադիտում',
   'settings.previewLoading': 'Նախադիտումը բեռնվում է…',
   'settings.previewEmpty': 'Այս ընտրության համար մեջբերումներ չկան։',
-  'settings.designLabel': 'Վիջեթի դիզայն',
-  'settings.designClassic': 'Դասական',
-  'settings.designParchment': 'Մագաղաթ',
-  'settings.designMidnight': 'Կեսգիշեր',
-  'settings.designGlass': 'Ապակի',
-  'settings.designInk': 'Թանաք',
-  'settings.designManuscript': 'Ձեռագիր',
-  'settings.designVista': 'Տեսարան',
   'settings.designSanctuary': 'Սրբավայր',
-  'settings.designHorizon': 'Հորիզոն',
-  'settings.designPrev': 'Նախորդ դիզայն',
-  'settings.designNext': 'Հաջորդ դիզայն',
   'settings.addedBy': 'Ավելացրել է {name}',
   'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',
@@ -239,9 +226,11 @@ export const hy = {
   'status.private': 'Մասնավոր',
 
   'card.removeSaved': 'Հեռացնել պահվածներից',
+  'card.removeSavedConfirmTitle': 'Հեռացնե՞լ մեջբերումը',
+  'card.removeSavedConfirmBody': 'Այն կհեռացվի Ձեր պահվածների ցանկից։',
   'card.saveCitation': 'Պահել մեջբերումը',
   'card.remove': 'ՀԵՌԱՑՆԵԼ',
-  'card.unknownAuthor': 'Անհայտ',
+  'card.unknownSource': 'Անհայտ աղբյուր',
   'card.submittedRecent': 'Ուղարկված է վերջերս',
   'card.submittedOn': 'Ուղարկված՝ {date}',
   'card.removableNote': 'Հնարավոր է հեռացնել հանրային շտեմարանից՝ ըստ խնդրանքի',
@@ -266,9 +255,9 @@ export const hy = {
   'validation.namePattern':
     'Անունը կարող է պարունակել միայն տառեր, բացատներ, գծիկներ և ապաթարցեր',
   'validation.citationTextRequired': 'Մուտքագրեք մեջբերման տեքստը',
-  'validation.citationTextMax': 'Մեջբերումը չի կարող գերազանցել 2000 նիշը',
-  'validation.authorMax': 'Հեղինակի անունը չի կարող գերազանցել 200 նիշը',
+  'validation.citationTextMax': 'Մեջբերումը չի կարող գերազանցել 400 նիշը',
+  'validation.sourceRequired': 'Մուտքագրեք աղբյուրը',
   'validation.sourceMax': 'Աղբյուրը չի կարող գերազանցել 200 նիշը',
-} as const
+} as const;
 
-export type HyMessages = typeof hy
+export type HyMessages = typeof hy;

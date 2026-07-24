@@ -15,7 +15,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "envtobase64": "node scripts/env-to-base64.cjs",
-    "postinstall": "prisma generate"
+    "postinstall": "node scripts/postinstall.cjs"
   },
   "dependencies": {
     "@prisma/client": "~6.19.0",

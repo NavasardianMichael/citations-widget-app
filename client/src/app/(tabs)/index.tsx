@@ -1,6 +1,6 @@
 ﻿import { useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native'
 
 import {
   CitationCard,
@@ -62,6 +62,13 @@ export default function SavedScreen() {
     setCitations((prev) => prev.filter((c) => c.id !== id))
   }
 
+  function confirmUnsave(id: string) {
+    Alert.alert(t('card.removeSavedConfirmTitle'), t('card.removeSavedConfirmBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('card.remove'), style: 'destructive', onPress: () => handleUnsave(id) },
+    ])
+  }
+
   return (
     <View className='flex-1 bg-background'>
       <TopAppBar title={t('saved.title')} showBrandIcon />
@@ -102,7 +109,7 @@ export default function SavedScreen() {
                     citation={citation}
                     variant={variant}
                     className={spanClass}
-                    onUnsave={() => handleUnsave(citation.id)}
+                    onUnsave={() => confirmUnsave(citation.id)}
                   />
                 )
               })}

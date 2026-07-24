@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 
 import { FormField } from "@/components/ui/form-field";
@@ -9,7 +9,6 @@ import type { CitationCategory } from "@/types/citation";
 
 export type CitationFormValues = {
   text: string;
-  author: string;
   source: string;
   category: CitationCategory;
   shareProfile: boolean;
@@ -17,7 +16,6 @@ export type CitationFormValues = {
 
 export const emptyCitationFormValues = (): CitationFormValues => ({
   text: "",
-  author: "",
   source: "",
   category: "bible",
   shareProfile: true,
@@ -25,14 +23,12 @@ export const emptyCitationFormValues = (): CitationFormValues => ({
 
 export const citationToFormValues = (citation: {
   text: string;
-  author: string | null;
-  source: string | null;
+  source: string;
   category: CitationCategory;
   shareProfile: boolean;
 }): CitationFormValues => ({
   text: citation.text,
-  author: citation.author ?? "",
-  source: citation.source ?? "",
+  source: citation.source,
   category: citation.category,
   shareProfile: citation.shareProfile,
 });
@@ -42,7 +38,7 @@ type CitationFormProps = {
   onChange: (values: CitationFormValues) => void;
   footer?: ReactNode;
   disabled?: boolean;
-  errors?: Partial<Record<"text" | "author" | "source", string>>;
+  errors?: Partial<Record<"text" | "source", string>>;
 };
 
 export function CitationForm({ values, onChange, footer, disabled = false, errors }: CitationFormProps) {
@@ -66,32 +62,15 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
         error={errors?.text}
       />
 
-      <View className="flex-col gap-8 md:flex-row">
-        <View className="flex-1">
-          <FormField
-            label={t("form.author")}
-            value={values.author}
-            onChangeText={(author) => patch("author", author)}
-            placeholder={t("form.authorPlaceholder")}
-            variant="paper"
-            editable={!disabled}
-            optional
-            error={errors?.author}
-          />
-        </View>
-        <View className="flex-1">
-          <FormField
-            label={t("form.source")}
-            value={values.source}
-            onChangeText={(source) => patch("source", source)}
-            placeholder={t("form.sourcePlaceholder")}
-            variant="paper"
-            editable={!disabled}
-            optional
-            error={errors?.source}
-          />
-        </View>
-      </View>
+      <FormField
+        label={t("form.source")}
+        value={values.source}
+        onChangeText={(source) => patch("source", source)}
+        placeholder={t("form.sourcePlaceholder")}
+        variant="paper"
+        editable={!disabled}
+        error={errors?.source}
+      />
 
       <View className="gap-2">
         <Text className="font-label-sm text-label-sm text-primary">{t("form.category")}</Text>

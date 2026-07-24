@@ -13,7 +13,6 @@ function toPublicCitation(row: Citation) {
   return {
     id: row.id,
     text: row.text,
-    author: row.author,
     source: row.source,
     category: row.category,
     createdAt: row.createdAt.toISOString(),
@@ -76,9 +75,8 @@ citationsRouter.get("/citations/:id", async (req, res) => {
 });
 
 const createSchema = z.object({
-  text: z.string().min(1).max(2000),
-  author: z.string().min(1).max(200).optional(),
-  source: z.string().min(1).max(200).optional(),
+  text: z.string().min(1).max(400),
+  source: z.string().min(1).max(200),
   category: z.enum(["bible", "fiction"]),
   shareProfile: z.boolean().default(false),
   visibility: z.enum(["private", "pending"]),
@@ -90,8 +88,7 @@ citationsRouter.post("/citations", requireAuth, async (req, res) => {
     data: {
       id: randomUUID(),
       text: body.text,
-      author: body.author ?? null,
-      source: body.source ?? null,
+      source: body.source,
       category: body.category,
       status: body.visibility,
       submittedByUserId: req.userId!,
@@ -102,9 +99,8 @@ citationsRouter.post("/citations", requireAuth, async (req, res) => {
 });
 
 const patchSchema = z.object({
-  text: z.string().min(1).max(2000).optional(),
-  author: z.string().min(1).max(200).nullable().optional(),
-  source: z.string().min(1).max(200).nullable().optional(),
+  text: z.string().min(1).max(400).optional(),
+  source: z.string().min(1).max(200).optional(),
   category: z.enum(["bible", "fiction"]).optional(),
   shareProfile: z.boolean().optional(),
 });

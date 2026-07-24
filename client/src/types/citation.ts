@@ -1,4 +1,3 @@
-import type { WidgetDesignId } from '@/constants/widget-designs'
 import type { WidgetFontId } from '@/fonts/registry'
 
 export type CitationCategory = 'bible' | 'fiction'
@@ -6,14 +5,12 @@ export type SourceSelection = CitationCategory | 'mixed' | 'saved'
 export type CitationStatus = 'approved' | 'pending' | 'rejected' | 'private'
 
 export type FontStyle = WidgetFontId
-export type WidgetDesign = WidgetDesignId
 export type RefreshRateHours = 6 | 12 | 24
 
 export type Citation = {
   id: string
   text: string
-  author: string | null
-  source: string | null
+  source: string
   category: CitationCategory
   createdAt?: string
 }
@@ -28,6 +25,8 @@ export type OwnedCitation = Citation & {
 
 export type WidgetCitation = Citation & {
   addedBy: string | null
+  /** Which of WIDGET_BACKGROUND_IMAGES this pick uses — kept stable until the next fetch. */
+  backgroundImageIndex: number
 }
 
 export type WidgetSettings = {
@@ -35,7 +34,7 @@ export type WidgetSettings = {
   sourceSelection: SourceSelection
   refreshRateHours: RefreshRateHours
   fontStyle: FontStyle
-  widgetDesign: WidgetDesign
+  fontSize: number
   showAttribution: boolean
   showActions: boolean
   currentCitationId: string | null
@@ -48,14 +47,14 @@ export type WidgetSettingsDraft = Pick<
   | 'sourceSelection'
   | 'refreshRateHours'
   | 'fontStyle'
-  | 'widgetDesign'
+  | 'fontSize'
   | 'showAttribution'
   | 'showActions'
 >
 
 export type WidgetPreviewDraft = Pick<
   WidgetSettings,
-  'sourceSelection' | 'fontStyle' | 'widgetDesign' | 'showAttribution'
+  'sourceSelection' | 'fontStyle' | 'showAttribution'
 >
 
 export type UserProfile = {
@@ -63,14 +62,14 @@ export type UserProfile = {
   email?: string
   name: string
   socialUrl: string | null
+  avatarUrl: string | null
   createdAt: string
   updatedAt: string
 }
 
 export type CreateCitationInput = {
   text: string
-  author?: string
-  source?: string
+  source: string
   category: CitationCategory
   shareProfile: boolean
   visibility: 'private' | 'pending'
@@ -78,8 +77,7 @@ export type CreateCitationInput = {
 
 export type UpdateCitationInput = {
   text?: string
-  author?: string | null
-  source?: string | null
+  source?: string
   category?: CitationCategory
   shareProfile?: boolean
 }

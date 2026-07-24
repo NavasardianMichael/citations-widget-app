@@ -18,7 +18,7 @@ Hand-translated Eastern Armenian literary/philosophical quotes.
 ## Shape
 
 ```json
-{ "id": "...", "category": "bible" | "fiction", "text": "...", "author": null | "...", "source": "..." }
+{ "id": "...", "category": "bible" | "fiction", "text": "...", "source": "..." }
 ```
 
 ## Note

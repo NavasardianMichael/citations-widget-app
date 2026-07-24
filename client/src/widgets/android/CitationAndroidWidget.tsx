@@ -10,6 +10,7 @@ import type { ColorProp } from "react-native-android-widget";
 import { getWidgetBackgroundImage } from "@/constants/widget-designs";
 import {
   colorWithOpacity,
+  getQuoteLineHeight,
   WIDGET_ICON_FONT_FAMILY,
   WIDGET_ICON_GLYPH,
   WIDGET_LAYOUT,
@@ -79,59 +80,60 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
         height: "match_parent",
         width: "match_parent",
         flexDirection: "column",
-        justifyContent: "flex-start",
+        // Two groups (top content, bottom meta/actions) pushed to opposite ends — a
+        // flex:1 spacer between siblings isn't reliably honored by RemoteViews' weight
+        // translation, so the action row must always sit at the bottom of the widget.
+        justifyContent: "space-between",
         padding: WIDGET_LAYOUT.padding,
       }}
     >
-      {snapshot.showOrnament ? (
-        <FlexWidget
-          style={{
-            width: "match_parent",
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            marginBottom: 4,
-          }}
-        >
-          <IconWidget
-            icon={WIDGET_ICON_GLYPH.flare}
-            size={WIDGET_LAYOUT.ornamentIconSize}
-            font={WIDGET_ICON_FONT_FAMILY}
-            style={{ color: asColor(ornamentColor) }}
-          />
-        </FlexWidget>
-      ) : null}
+      <FlexWidget style={{ width: "match_parent", flexDirection: "column" }}>
+        {snapshot.showOrnament ? (
+          <FlexWidget
+            style={{
+              width: "match_parent",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              marginBottom: 4,
+            }}
+          >
+            <IconWidget
+              icon={WIDGET_ICON_GLYPH.flare}
+              size={WIDGET_LAYOUT.ornamentIconSize}
+              font={WIDGET_ICON_FONT_FAMILY}
+              style={{ color: asColor(ornamentColor) }}
+            />
+          </FlexWidget>
+        ) : null}
 
-      {snapshot.showLargeQuotes ? (
+        {snapshot.showLargeQuotes ? (
+          <TextWidget
+            text="“"
+            allowFontScaling={false}
+            style={{
+              fontSize: WIDGET_LAYOUT.largeQuoteFontSize,
+              color: asColor(largeQuoteColor),
+              fontFamily: snapshot.androidFontFile,
+              lineHeight: WIDGET_LAYOUT.largeQuoteFontSize,
+              marginBottom: -8,
+            }}
+          />
+        ) : null}
+
         <TextWidget
-          text="“"
+          text={content}
+          maxLines={8}
+          truncate="END"
           allowFontScaling={false}
           style={{
-            fontSize: WIDGET_LAYOUT.largeQuoteFontSize,
-            color: asColor(largeQuoteColor),
+            fontSize: snapshot.fontSize,
+            lineHeight: getQuoteLineHeight(snapshot.fontSize),
+            color: asColor(snapshot.quoteColor),
             fontFamily: snapshot.androidFontFile,
-            lineHeight: WIDGET_LAYOUT.largeQuoteFontSize,
-            marginBottom: -8,
+            width: "match_parent",
           }}
         />
-      ) : null}
-
-      <TextWidget
-        text={content}
-        maxLines={8}
-        truncate="END"
-        allowFontScaling={false}
-        style={{
-          fontSize: WIDGET_LAYOUT.quoteFontSize,
-          lineHeight: WIDGET_LAYOUT.quoteLineHeight,
-          color: asColor(snapshot.quoteColor),
-          fontFamily: snapshot.androidFontFile,
-          width: "match_parent",
-        }}
-      />
-
-      {/* RemoteViews has no margin:"auto" — a flex:1 spacer is the LinearLayout-weight
-          equivalent, so this block sits at the bottom regardless of quote length. */}
-      <FlexWidget style={{ flex: 1 }} />
+      </FlexWidget>
 
       <FlexWidget
         style={{
@@ -232,13 +234,11 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
 
 /** Home-screen widget — layout/typography mirrors settings `WidgetPreview`. */
 export function CitationAndroidWidget({ snapshot, width, height }: Props) {
-  const bgImage = snapshot.hasBackgroundImage
-    ? getWidgetBackgroundImage(snapshot.designId)
-    : undefined;
+  const bgImage = getWidgetBackgroundImage(snapshot.backgroundImageIndex);
   const imgW = Math.max(1, Math.round(width));
   const imgH = Math.max(1, Math.round(height));
 
-  if (bgImage && typeof bgImage === "number") {
+  if (typeof bgImage === "number") {
     return (
       <OverlapWidget
         clickAction="OPEN_APP"
@@ -269,9 +269,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
           style={{
             width: "match_parent",
             height: "match_parent",
-            backgroundColor: asColor(
-              snapshot.overlayColor ?? "rgba(0,0,0,0.55)",
-            ),
+            backgroundColor: asColor(snapshot.overlayColor),
           }}
         >
           <WidgetBody snapshot={snapshot} />

@@ -7,7 +7,7 @@ import { CitationForm, citationToFormValues, type CitationFormValues } from "@/c
 import { FilterPill } from "@/components/ui/filter-pill";
 import { SubmissionCard } from "@/components/submission-card";
 import { t } from "@/i18n";
-import { hasErrors, validateCitationForm, type FieldErrors } from "@/lib/validation";
+import { hasErrors, validateCitationForm, validateCitationTextMax, type FieldErrors } from "@/lib/validation";
 import { deleteCitation, fetchMyCitations, updateCitation } from "@/services/api";
 import type { CitationStatus, OwnedCitation } from "@/types/citation";
 
@@ -28,7 +28,7 @@ export function MySubmissions() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<CitationFormValues | null>(null);
-  const [editErrors, setEditErrors] = useState<FieldErrors<"text" | "author" | "source">>({});
+  const [editErrors, setEditErrors] = useState<FieldErrors<"text" | "source">>({});
   const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async () => {
@@ -85,8 +85,7 @@ export function MySubmissions() {
     try {
       const updated = await updateCitation(id, {
         text: editValues.text.trim(),
-        author: editValues.author.trim() || null,
-        source: editValues.source.trim() || null,
+        source: editValues.source.trim(),
         category: editValues.category,
         shareProfile: editValues.shareProfile,
       });
@@ -135,15 +134,16 @@ export function MySubmissions() {
                 values={editValues}
                 onChange={(next) => {
                   setEditValues(next);
-                  if (editErrors.text || editErrors.author || editErrors.source) {
-                    setEditErrors((prev) => {
-                      const cleared = { ...prev };
-                      if (next.text !== editValues.text) delete cleared.text;
-                      if (next.author !== editValues.author) delete cleared.author;
-                      if (next.source !== editValues.source) delete cleared.source;
-                      return cleared;
-                    });
-                  }
+                  setEditErrors((prev) => {
+                    const updated = { ...prev };
+                    if (next.text !== editValues.text) {
+                      const maxError = validateCitationTextMax(next.text);
+                      if (maxError) updated.text = maxError;
+                      else delete updated.text;
+                    }
+                    if (next.source !== editValues.source) delete updated.source;
+                    return updated;
+                  });
                 }}
                 errors={editErrors}
                 disabled={savingEdit}

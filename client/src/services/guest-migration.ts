@@ -1,3 +1,4 @@
+import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { fetchSavedCitations, getWidgetSettings, saveCitation, saveWidgetSettings } from "@/services/api";
 import { clearGuestData, getGuestSavedCitations, getGuestWidgetSettings, hasGuestData } from "@/services/local-storage";
 import type { WidgetSettingsDraft } from "@/types/citation";
@@ -6,7 +7,7 @@ const DEFAULT_ACCOUNT_SETTINGS: WidgetSettingsDraft = {
   sourceSelection: "mixed",
   refreshRateHours: 24,
   fontStyle: "davel_aghvor",
-  widgetDesign: "classic",
+  fontSize: DEFAULT_QUOTE_FONT_SIZE,
   showAttribution: true,
   showActions: true,
 };
@@ -16,7 +17,7 @@ function isUnchanged(draft: WidgetSettingsDraft): boolean {
     draft.sourceSelection === DEFAULT_ACCOUNT_SETTINGS.sourceSelection &&
     draft.refreshRateHours === DEFAULT_ACCOUNT_SETTINGS.refreshRateHours &&
     draft.fontStyle === DEFAULT_ACCOUNT_SETTINGS.fontStyle &&
-    draft.widgetDesign === DEFAULT_ACCOUNT_SETTINGS.widgetDesign &&
+    draft.fontSize === DEFAULT_ACCOUNT_SETTINGS.fontSize &&
     draft.showAttribution === DEFAULT_ACCOUNT_SETTINGS.showAttribution &&
     draft.showActions === DEFAULT_ACCOUNT_SETTINGS.showActions
   );

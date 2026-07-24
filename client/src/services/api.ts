@@ -69,6 +69,11 @@ async function tryRefreshToken(): Promise<boolean> {
   return refreshPromise;
 }
 
+/** Widget background tasks run on a tight OS execution budget — never let a dead/unreachable
+ *  server hang a request past this, or the widget's headless task can get killed before it
+ *  ever renders anything. */
+const REQUEST_TIMEOUT_MS = 8000;
+
 export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const { auth = true, headers = {}, ...init } = options;
 
@@ -85,10 +90,24 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
       }
     }
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...init,
-      headers: requestHeaders,
-    });
+    const timeoutController = new AbortController();
+    const timeout = setTimeout(() => timeoutController.abort(), REQUEST_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}${path}`, {
+        ...init,
+        headers: requestHeaders,
+        signal: init.signal ?? timeoutController.signal,
+      });
+    } catch (e) {
+      if (e instanceof Error && e.name === "AbortError") {
+        throw new ApiError(`Request timed out after ${REQUEST_TIMEOUT_MS}ms: ${path}`, 0);
+      }
+      throw e;
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (response.status === 401 && auth && retryOnUnauthorized) {
       const refreshed = await tryRefreshToken();

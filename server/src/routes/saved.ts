@@ -11,7 +11,6 @@ function toPublicCitation(row: Citation) {
   return {
     id: row.id,
     text: row.text,
-    author: row.author,
     source: row.source,
     category: row.category,
     createdAt: row.createdAt.toISOString(),

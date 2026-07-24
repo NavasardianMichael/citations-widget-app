@@ -49,18 +49,6 @@ enum FontStyle {
   armeniapedia_jhapaven
 }
 
-enum WidgetDesign {
-  classic
-  parchment
-  midnight
-  glass
-  ink
-  manuscript
-  vista
-  sanctuary
-  horizon
-}
-
 model User {
   id            String       @id @default(uuid())
   email         String       @unique
@@ -149,8 +137,7 @@ model EmailVerificationToken {
 model Citation {
   id                String           @id @default(uuid())
   text              String
-  author            String?
-  source            String?
+  source            String
   category          CitationCategory
   status            CitationStatus   @default(pending)
   submittedByUserId String?          @map("submitted_by_user_id")
@@ -160,7 +147,7 @@ model Citation {
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
 
-  submittedBy User?           @relation("SubmittedCitations", fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  submittedBy User?            @relation("SubmittedCitations", fields: [submittedByUserId], references: [id], onDelete: SetNull)
   savedBy     SavedCitation[]
   widgetRefs  WidgetSettings[] @relation("CurrentCitation")
 
@@ -181,16 +168,17 @@ model SavedCitation {
 }
 
 model WidgetSettings {
-  userId               String          @id @map("user_id")
-  sourceSelection      SourceSelection @default(mixed) @map("source_selection")
-  refreshRateHours     Int             @default(24) @map("refresh_rate_hours")
-  fontStyle            FontStyle       @default(davel_aghvor) @map("font_style")
-  widgetDesign         WidgetDesign    @default(classic) @map("widget_design")
-  showAttribution      Boolean         @default(true) @map("show_attribution")
-  showActions          Boolean         @default(true) @map("show_actions")
-  currentCitationId    String?         @map("current_citation_id")
-  currentCitationSetAt DateTime?       @map("current_citation_set_at")
-  updatedAt            DateTime        @updatedAt @map("updated_at")
+  userId                      String          @id @map("user_id")
+  sourceSelection             SourceSelection @default(mixed) @map("source_selection")
+  refreshRateHours            Int             @default(24) @map("refresh_rate_hours")
+  fontStyle                   FontStyle       @default(davel_aghvor) @map("font_style")
+  fontSize                    Int             @default(16) @map("font_size")
+  showAttribution             Boolean         @default(true) @map("show_attribution")
+  showActions                 Boolean         @default(true) @map("show_actions")
+  currentCitationId           String?         @map("current_citation_id")
+  currentCitationSetAt        DateTime?       @map("current_citation_set_at")
+  currentBackgroundImageIndex Int             @default(0) @map("current_background_image_index")
+  updatedAt                   DateTime        @updatedAt @map("updated_at")
 
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   currentCitation Citation? @relation("CurrentCitation", fields: [currentCitationId], references: [id], onDelete: SetNull)

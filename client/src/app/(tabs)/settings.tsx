@@ -1,22 +1,16 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Alert, Pressable, ScrollView, Share, Text, View } from 'react-native'
+import { Alert, ScrollView, Share, Text, View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
 import { RadioListRow } from '@/components/ui/radio-list-row'
 import { RadioOptionCard } from '@/components/ui/radio-option-card'
+import { RangeSlider } from '@/components/ui/range-slider'
 import { SelectField } from '@/components/ui/select-field'
 import { SettingsSection } from '@/components/ui/settings-section'
 import { ToggleRow } from '@/components/ui/toggle-row'
 import { TopAppBar } from '@/components/ui/top-app-bar'
 import { WidgetPreview } from '@/components/widget-preview'
-import { pressableNoRipple } from '@/constants/pressable'
-import {
-  DEFAULT_WIDGET_DESIGN,
-  getWidgetDesign,
-  shiftWidgetDesign,
-  WIDGET_DESIGN_IDS,
-} from '@/constants/widget-designs'
+import { DEFAULT_QUOTE_FONT_SIZE, FONT_SIZE_MAX, FONT_SIZE_MIN } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
 import {
   DEFAULT_WIDGET_FONT,
@@ -25,7 +19,11 @@ import {
 } from '@/fonts/registry'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { t } from '@/i18n'
-import { fetchWidgetCitation, saveCitation } from '@/services/api'
+import {
+  fetchWidgetCitation,
+  previewWidgetCitation,
+  saveCitation,
+} from '@/services/api'
 import { pickGuestWidgetCitation } from '@/services/guest-citation-picker'
 import {
   getCachedWidgetCitation,
@@ -80,7 +78,7 @@ const DEFAULT_DRAFT: WidgetSettingsDraft = {
   sourceSelection: 'bible',
   refreshRateHours: 24,
   fontStyle: DEFAULT_WIDGET_FONT,
-  widgetDesign: DEFAULT_WIDGET_DESIGN,
+  fontSize: DEFAULT_QUOTE_FONT_SIZE,
   showAttribution: true,
   showActions: true,
 }
@@ -94,6 +92,7 @@ export default function SettingsScreen() {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const isFirstSourceRender = useRef(true)
+  const suppressNextSourceEffect = useRef(false)
 
   const loadWidgetCitation = useCallback(
     async (
@@ -132,6 +131,32 @@ export default function SettingsScreen() {
     [isGuest],
   )
 
+  /**
+   * Shows what a different (not-yet-saved) source pool would look like without touching
+   * the real widget's committed state — unlike `loadWidgetCitation(force=true)`, this never
+   * persists a new "current citation" server-side or into the shared cache.
+   */
+  const previewDraftPool = useCallback(
+    async (source: SourceSelection) => {
+      setPreviewLoading(true)
+      try {
+        const result = isGuest
+          ? await pickGuestWidgetCitation(source)
+          : await previewWidgetCitation({
+              sourceSelection: source,
+              fontStyle: draft.fontStyle,
+              showAttribution: draft.showAttribution,
+            })
+        setPreview(result.citation)
+      } catch {
+        setPreview(null)
+      } finally {
+        setPreviewLoading(false)
+      }
+    },
+    [isGuest, draft.fontStyle, draft.showAttribution],
+  )
+
   const loadSettings = useCallback(async () => {
     const settings = isGuest
       ? await getGuestWidgetSettings()
@@ -140,13 +165,14 @@ export default function SettingsScreen() {
       sourceSelection: settings.sourceSelection,
       refreshRateHours: settings.refreshRateHours,
       fontStyle: settings.fontStyle,
-      widgetDesign: settings.widgetDesign ?? DEFAULT_WIDGET_DESIGN,
+      fontSize: settings.fontSize,
       showAttribution: settings.showAttribution,
       showActions: settings.showActions,
     }
     setSaved(next)
     setDraft(next)
     isFirstSourceRender.current = true
+    // The default state always mirrors today's real widget citation — never rolls a new one.
     await loadWidgetCitation(next.sourceSelection, next.refreshRateHours)
     const cached = await getCachedWidgetCitation()
     await syncHomeWidget(next, cached?.citation ?? null).catch(() => undefined)
@@ -169,11 +195,11 @@ export default function SettingsScreen() {
       isFirstSourceRender.current = false
       return
     }
-    loadWidgetCitation(
-      draft.sourceSelection,
-      draft.refreshRateHours,
-      true,
-    ).catch(() => undefined)
+    if (suppressNextSourceEffect.current) {
+      suppressNextSourceEffect.current = false
+      return
+    }
+    previewDraftPool(draft.sourceSelection).catch(() => undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.sourceSelection])
 
@@ -194,13 +220,19 @@ export default function SettingsScreen() {
         sourceSelection: updated.sourceSelection,
         refreshRateHours: updated.refreshRateHours,
         fontStyle: updated.fontStyle,
-        widgetDesign: updated.widgetDesign ?? DEFAULT_WIDGET_DESIGN,
+        fontSize: updated.fontSize,
         showAttribution: updated.showAttribution,
         showActions: updated.showActions,
       }
+      const poolChanged = saved?.sourceSelection !== next.sourceSelection
+      suppressNextSourceEffect.current = true
       setSaved(next)
       setDraft(next)
-      await syncHomeWidget(next, preview).catch(() => undefined)
+      // Re-anchor on a real, committed citation for the saved pool — while editing, the
+      // preview may have only shown an ephemeral, non-committing pool preview pick.
+      await loadWidgetCitation(next.sourceSelection, next.refreshRateHours, poolChanged)
+      const cached = await getCachedWidgetCitation()
+      await syncHomeWidget(next, cached?.citation ?? null).catch(() => undefined)
       Alert.alert(t('common.save'), t('settings.saved'))
     } catch (e) {
       Alert.alert(
@@ -213,7 +245,10 @@ export default function SettingsScreen() {
   }
 
   function handleDiscard() {
-    if (saved) setDraft(saved)
+    if (!saved) return
+    suppressNextSourceEffect.current = true
+    setDraft(saved)
+    loadWidgetCitation(saved.sourceSelection, saved.refreshRateHours).catch(() => undefined)
   }
 
   function handleRefreshWidget() {
@@ -238,7 +273,6 @@ export default function SettingsScreen() {
         await saveGuestSavedCitation({
           id: preview.id,
           text: preview.text,
-          author: preview.author,
           source: preview.source,
           category: preview.category,
         })
@@ -310,90 +344,50 @@ export default function SettingsScreen() {
       </SettingsSection>
 
       <SettingsSection title={t('settings.typography')} icon='format-size'>
-        <SelectField
-          options={FONT_OPTIONS}
-          value={draft.fontStyle}
-          onChange={(v) => updateDraft('fontStyle', v)}
-        />
+        <View className='gap-6'>
+          <SelectField
+            options={FONT_OPTIONS}
+            value={draft.fontStyle}
+            onChange={(v) => updateDraft('fontStyle', v)}
+          />
+          <View className='gap-2'>
+            <View className='flex-row items-center justify-between'>
+              <Text className='font-label-sm text-label-sm text-on-surface-variant'>
+                {t('settings.fontSize')}
+              </Text>
+              <Text className='font-label-sm text-label-sm text-primary'>
+                {draft.fontSize}
+              </Text>
+            </View>
+            <RangeSlider
+              value={draft.fontSize}
+              min={FONT_SIZE_MIN}
+              max={FONT_SIZE_MAX}
+              onChange={(v) => updateDraft('fontSize', v)}
+              accessibilityLabel={t('settings.fontSize')}
+            />
+          </View>
+        </View>
       </SettingsSection>
     </View>
   )
 
-  const activeDesign = getWidgetDesign(draft.widgetDesign)
-  const designIndex = WIDGET_DESIGN_IDS.indexOf(draft.widgetDesign)
-
   const previewColumn = (
     <View className='gap-8'>
-      <View className='gap-4'>
-        <View className='flex-row items-center gap-2'>
-          <Pressable
-            {...pressableNoRipple}
-            onPress={() =>
-              updateDraft(
-                'widgetDesign',
-                shiftWidgetDesign(draft.widgetDesign, -1),
-              )
-            }
-            accessibilityRole='button'
-            accessibilityLabel={t('settings.designPrev')}
-            className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
-          >
-            <MaterialIcons name='chevron-left' size={28} color='#021a35' />
-          </Pressable>
-
-          <View className='min-w-0 flex-1'>
-            <WidgetPreview
-              citation={preview}
-              fontStyle={draft.fontStyle}
-              design={draft.widgetDesign}
-              loading={previewLoading}
-              showActions={draft.showActions}
-              onRefresh={handleRefreshWidget}
-              onSave={handleSaveWidgetCitation}
-              onShare={handleShareWidgetCitation}
-            />
-          </View>
-
-          <Pressable
-            {...pressableNoRipple}
-            onPress={() =>
-              updateDraft(
-                'widgetDesign',
-                shiftWidgetDesign(draft.widgetDesign, 1),
-              )
-            }
-            accessibilityRole='button'
-            accessibilityLabel={t('settings.designNext')}
-            className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
-          >
-            <MaterialIcons name='chevron-right' size={28} color='#021a35' />
-          </Pressable>
-        </View>
-
-        <View className='items-center gap-2 px-2'>
-          <Text className='text-center font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
-            {t('settings.designLabel')}
-          </Text>
-          <Text
-            className='text-center font-headline-md text-primary'
-            style={{ fontSize: 20, lineHeight: 28, fontWeight: '600' }}
-          >
-            {t(activeDesign.labelKey)}
-          </Text>
-          <View className='flex-row items-center gap-2 pt-1'>
-            {WIDGET_DESIGN_IDS.map((id, index) => (
-              <Pressable
-                key={id}
-                {...pressableNoRipple}
-                onPress={() => updateDraft('widgetDesign', id)}
-                accessibilityRole='button'
-                accessibilityLabel={t(getWidgetDesign(id).labelKey)}
-                accessibilityState={{ selected: index === designIndex }}
-                className={`h-2 rounded-full ${index === designIndex ? 'w-5 bg-primary' : 'w-2 bg-outline-variant'}`}
-              />
-            ))}
-          </View>
-        </View>
+      <View className='gap-3'>
+        <WidgetPreview
+          citation={preview}
+          fontStyle={draft.fontStyle}
+          fontSize={draft.fontSize}
+          loading={previewLoading}
+          showActions={draft.showActions}
+          onRefresh={handleRefreshWidget}
+          onSave={handleSaveWidgetCitation}
+          onShare={handleShareWidgetCitation}
+        />
+        <Text className='text-center font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
+          {t('settings.designSanctuary')}
+        </Text>
       </View>
 
       <View className='flex-row flex-wrap justify-end gap-4'>
