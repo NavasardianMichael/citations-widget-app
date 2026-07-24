@@ -36,4 +36,21 @@ if (googleSchemes.length > 0) {
   expo.android.intentFilters = [...existingFilters, ...extraFilters];
 }
 
+// Sentry source-map / debug-symbol upload during native builds (EAS / prebuild).
+// Auth uses SENTRY_AUTH_TOKEN from the environment — never put authToken in this file.
+const sentryOrganization = process.env.SENTRY_ORG?.trim();
+const sentryProject = process.env.SENTRY_PROJECT?.trim();
+
+expo.plugins = [
+  ...(expo.plugins ?? []),
+  [
+    "@sentry/react-native/expo",
+    {
+      url: "https://sentry.io/",
+      organization: sentryOrganization || undefined,
+      project: sentryProject || undefined,
+    },
+  ],
+];
+
 module.exports = { expo };

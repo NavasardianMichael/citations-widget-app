@@ -1,5 +1,4 @@
 # Maps W: to the repo root so Node/Metro/Gradle all see short paths on Windows.
-# Junctions (C:\cwa) do NOT work - Node still resolves to the long canonical path.
 
 param(
   [string]$ClientDir = $PSScriptRoot

@@ -1,18 +1,15 @@
 import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 
 import { googleMobileRequest } from "@/services/auth-api";
 import { setTokens } from "@/services/auth-storage";
 import type { UserPublic } from "@/types/auth";
 
-WebBrowser.maybeCompleteAuthSession();
-
 function isGoogleClientId(value: string | undefined): value is string {
   return Boolean(value?.endsWith(".apps.googleusercontent.com"));
 }
 
-/** Google Android/iOS clients expect this reverse-client-id redirect, not the app package scheme. */
+/** Google Android/iOS clients expect this reverse-client-id redirect, not the app scheme. */
 function getNativeRedirectUri(): string | undefined {
   const clientId =
     Platform.OS === "ios"
@@ -32,17 +29,17 @@ export function useGoogleSignIn() {
   const iosClientId = isGoogleClientId(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID)
     ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
     : undefined;
-  const nativeRedirect = getNativeRedirectUri();
+  // Set redirectUri on the config (not only makeRedirectUri's `native` option) so
+  // release / dev-client builds always use Google's reverse-client-id scheme.
+  const redirectUri = getNativeRedirectUri();
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest(
-    {
-      clientId: clientId ?? "unused",
-      iosClientId,
-      androidClientId,
-      webClientId: clientId,
-    },
-    nativeRedirect ? { native: nativeRedirect } : undefined,
-  );
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: clientId ?? "unused",
+    iosClientId,
+    androidClientId,
+    webClientId: clientId,
+    ...(redirectUri ? { redirectUri } : {}),
+  });
 
   async function signInWithGoogle(
     forceLogin = false,

@@ -1,14 +1,11 @@
-import { useRouter } from 'expo-router'
-import { useEffect } from 'react'
+import { View } from 'react-native'
 
-/** Google OAuth lands here (`citationswidget://oauthredirect`) after expo-web-browser
- * resolves the sign-in promise; bounce back so expo-router doesn't show Unmatched Route. */
+/**
+ * Landing route for Google OAuth (`…://oauthredirect`).
+ * AuthSession / WebBrowser completes the session via maybeCompleteAuthSession;
+ * this screen only prevents Expo Router from showing Unmatched Route.
+ * Login flow navigates away once promptAsync resolves.
+ */
 export default function OAuthRedirectScreen() {
-  const router = useRouter()
-
-  useEffect(() => {
-    router.replace('/')
-  }, [router])
-
-  return null
+  return <View style={{ flex: 1, backgroundColor: '#fbf9f8' }} />
 }

@@ -1,5 +1,12 @@
 import { useFonts } from 'expo-font'
-import { DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router'
+import {
+  DefaultTheme,
+  Stack,
+  ThemeProvider,
+  usePathname,
+  useRouter,
+  useSegments,
+} from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
@@ -11,18 +18,24 @@ import '../global.css'
 import { AnimatedSplashOverlay } from '@/components/animated-icon'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { APP_FONT_SOURCES } from '@/fonts/registry'
+import { initSentry, Sentry } from '@/lib/sentry'
+
+initSentry()
 
 SplashScreen.preventAutoHideAsync()
 
 function useProtectedRoute() {
   const { user, isGuest, isLoading, pendingAuthRoute, consumePendingAuthRoute } = useAuth()
   const segments = useSegments()
+  const pathname = usePathname()
   const router = useRouter()
 
   useEffect(() => {
     if (isLoading) return
 
     const inAuthGroup = segments[0] === 'auth'
+    // OAuth callback must not be redirected away while AuthSession completes.
+    if (pathname.includes('oauthredirect')) return
 
     // Guests may open auth screens to sign in later; only signed-in users are kept out of /auth.
     if (!user && !isGuest && !inAuthGroup) {
@@ -33,7 +46,16 @@ function useProtectedRoute() {
     } else if (!user && inAuthGroup && pendingAuthRoute) {
       consumePendingAuthRoute()
     }
-  }, [user, isGuest, isLoading, segments, router, pendingAuthRoute, consumePendingAuthRoute])
+  }, [
+    user,
+    isGuest,
+    isLoading,
+    segments,
+    pathname,
+    router,
+    pendingAuthRoute,
+    consumePendingAuthRoute,
+  ])
 }
 
 function RootNavigator() {
@@ -48,12 +70,13 @@ function RootNavigator() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name='(tabs)' />
         <Stack.Screen name='auth' />
+        <Stack.Screen name='oauthredirect' options={{ headerShown: false }} />
       </Stack>
     </>
   )
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(APP_FONT_SOURCES)
 
   useEffect(() => {
@@ -79,3 +102,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   )
 }
+
+export default Sentry.wrap(RootLayout)
