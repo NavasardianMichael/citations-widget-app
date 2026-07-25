@@ -134,19 +134,12 @@ On container start, the entrypoint runs:
 
 Seed JSON lives in `data/seed/` and is baked into the image. Re-deploys skip empty-seed when rows already exist.
 
-#### Add more seed citations later (production)
-
-1. Append rows to `server/data/seed/*.json` with **new unique `id`s**.
-2. Deploy so the image includes the updated JSON.
-3. On the VPS, sync into the live DB (uses `DATABASE_URL` already inside the container):
+**Production seeding (empty DB + manual `--sync`):** see [docs/production-seeding.md](./docs/production-seeding.md).
 
 ```bash
+# Add new seed IDs after a deploy (most common ops command)
 docker exec citations-server node dist/scripts/seed-citations.js --sync
 ```
-
-This inserts only missing IDs (`skipDuplicates`). It does not wipe existing citations.
-
-Local equivalent: `npm run db:seed:sync`.
 
 Health: `GET /api/health`.
 

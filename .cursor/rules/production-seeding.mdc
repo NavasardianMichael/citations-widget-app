@@ -1,0 +1,18 @@
+---
+description: How to seed or sync citations on production
+alwaysApply: true
+---
+
+# Production citation seeding
+
+When the user asks how to seed (or sync) citations on production / the VPS / `citations-server`, read and follow:
+
+`server/docs/production-seeding.md`
+
+Default ops command after deploying new seed JSON:
+
+```bash
+docker exec citations-server node dist/scripts/seed-citations.js --sync
+```
+
+Empty DB is seeded automatically on container boot; `--sync` adds new IDs only.

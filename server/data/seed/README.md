@@ -24,3 +24,7 @@ Hand-translated Eastern Armenian literary/philosophical quotes.
 ## Note
 
 English `kjv.json` is no longer used or shipped; seed only loads `bible-hy.json` + `fiction-quotes.json`.
+
+## Production
+
+How to seed or sync on the deployed server: [docs/production-seeding.md](../../docs/production-seeding.md).
