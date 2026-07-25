@@ -1,8 +1,7 @@
 const path = require('path')
 const fs = require('fs')
-const { getDefaultConfig } = require('expo/metro-config')
 const { withNativeWind } = require('nativewind/metro')
-const { withSentryConfig } = require('@sentry/react-native/metro')
+const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 
 // subst W: -> repo root (see ensure-windows-path.ps1).
 const SHORT_WINDOWS_ROOT = 'W:\\client'
@@ -64,7 +63,12 @@ if (process.platform === 'win32' && projectRoot === SHORT_WINDOWS_ROOT) {
   process.chdir(projectRoot)
 }
 
-const config = getDefaultConfig(projectRoot)
+// Use getSentryExpoConfig (not withSentryConfig) so Debug IDs use Expo's
+// beforeAssetSerialization plugins. withSentryConfig's custom serializer
+// crashes release bundling with NativeWind ("Cannot read properties of undefined (reading 'match')").
+const config = getSentryExpoConfig(projectRoot, {
+  includeWebReplay: false,
+})
 
 config.projectRoot = projectRoot
 config.watchFolders = [projectRoot]
@@ -94,8 +98,4 @@ nativeWindConfig.transformer = {
   cssInterop_transformerPath: innerTransformerPath,
 }
 
-// Apply last so Debug IDs / source maps work with NativeWind + custom transformer.
-module.exports = withSentryConfig(nativeWindConfig, {
-  // Mobile builds don't need web replay packages in the JS bundle.
-  includeWebReplay: false,
-})
+module.exports = nativeWindConfig

@@ -1,4 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { useEffect } from 'react'
 import { ImageBackground, Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
@@ -103,6 +104,17 @@ export function WidgetPreview({
   ]
 
   const showLoading = loading || (!!citation && !fontReady)
+
+  useEffect(() => {
+    console.log('[widget-citation] WidgetPreview render', {
+      loading,
+      fontReady,
+      showLoading,
+      citationId: citation?.id ?? null,
+      textPreview: citation?.text?.slice(0, 80) ?? null,
+      ui: showLoading ? 'loading' : citation ? 'citation' : 'empty',
+    })
+  }, [loading, fontReady, showLoading, citation])
 
   const frameStyle = {
     minHeight: WIDGET_LAYOUT.previewMinHeight,

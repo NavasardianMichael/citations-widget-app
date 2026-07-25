@@ -100,29 +100,61 @@ export default function SettingsScreen() {
       refreshRateHours: RefreshRateHours,
       forceFresh = false,
     ) => {
+      console.log('[widget-citation] loadWidgetCitation start', {
+        source,
+        refreshRateHours,
+        forceFresh,
+        isGuest,
+      })
       setPreviewLoading(true)
       try {
         if (!forceFresh) {
           const cached = await getCachedWidgetCitation()
           if (cached && cached.sourceSelection === source) {
             const rotationMs = refreshRateHours * 60 * 60 * 1000
-            if (Date.now() - cached.fetchedAt < rotationMs) {
+            const ageMs = Date.now() - cached.fetchedAt
+            // Never treat a null citation as a warm cache hit — that freezes an empty
+            // preview for the whole refresh window (e.g. after an empty/unseeded pool).
+            if (cached.citation && ageMs < rotationMs) {
+              console.log('[widget-citation] using cache', {
+                ageMs,
+                rotationMs,
+                citationId: cached.citation.id,
+                textPreview: cached.citation.text?.slice(0, 80) ?? null,
+              })
               setPreview(cached.citation)
               return
             }
+            console.log('[widget-citation] cache skipped', {
+              ageMs,
+              rotationMs,
+              hasCitation: Boolean(cached.citation),
+            })
+          } else {
+            console.log('[widget-citation] cache miss', {
+              hasCached: Boolean(cached),
+              cachedSource: cached?.sourceSelection ?? null,
+            })
           }
         }
 
         const result = isGuest
           ? await pickGuestWidgetCitation(source)
           : await fetchWidgetCitation(forceFresh)
+        console.log('[widget-citation] fetch result', {
+          path: isGuest ? 'guest' : 'auth',
+          citationId: result.citation?.id ?? null,
+          reason: result.reason ?? null,
+          textPreview: result.citation?.text?.slice(0, 80) ?? null,
+        })
         setPreview(result.citation)
         await setCachedWidgetCitation({
           citation: result.citation,
           fetchedAt: Date.now(),
           sourceSelection: source,
         })
-      } catch {
+      } catch (error) {
+        console.warn('[widget-citation] loadWidgetCitation failed', error)
         setPreview(null)
       } finally {
         setPreviewLoading(false)
@@ -138,6 +170,11 @@ export default function SettingsScreen() {
    */
   const previewDraftPool = useCallback(
     async (source: SourceSelection) => {
+      console.log('[widget-citation] previewDraftPool start', {
+        source,
+        isGuest,
+        fontStyle: draft.fontStyle,
+      })
       setPreviewLoading(true)
       try {
         const result = isGuest
@@ -147,8 +184,15 @@ export default function SettingsScreen() {
               fontStyle: draft.fontStyle,
               showAttribution: draft.showAttribution,
             })
+        console.log('[widget-citation] previewDraftPool result', {
+          path: isGuest ? 'guest' : 'auth-preview',
+          citationId: result.citation?.id ?? null,
+          reason: result.reason ?? null,
+          textPreview: result.citation?.text?.slice(0, 80) ?? null,
+        })
         setPreview(result.citation)
-      } catch {
+      } catch (error) {
+        console.warn('[widget-citation] previewDraftPool failed', error)
         setPreview(null)
       } finally {
         setPreviewLoading(false)
@@ -158,6 +202,7 @@ export default function SettingsScreen() {
   )
 
   const loadSettings = useCallback(async () => {
+    console.log('[widget-citation] loadSettings start', { isGuest })
     const settings = isGuest
       ? await getGuestWidgetSettings()
       : await getWidgetSettings()
@@ -169,17 +214,29 @@ export default function SettingsScreen() {
       showAttribution: settings.showAttribution,
       showActions: settings.showActions,
     }
+    console.log('[widget-citation] settings loaded', {
+      sourceSelection: next.sourceSelection,
+      refreshRateHours: next.refreshRateHours,
+      fontStyle: next.fontStyle,
+    })
     setSaved(next)
     setDraft(next)
     isFirstSourceRender.current = true
     // The default state always mirrors today's real widget citation — never rolls a new one.
     await loadWidgetCitation(next.sourceSelection, next.refreshRateHours)
     const cached = await getCachedWidgetCitation()
-    await syncHomeWidget(next, cached?.citation ?? null).catch(() => undefined)
+    console.log('[widget-citation] syncHomeWidget after load', {
+      cachedCitationId: cached?.citation?.id ?? null,
+    })
+    await syncHomeWidget(next, cached?.citation ?? null).catch((error) => {
+      console.warn('[widget-citation] syncHomeWidget failed', error)
+    })
   }, [isGuest, loadWidgetCitation])
 
   useEffect(() => {
-    loadSettings().catch(() => undefined)
+    loadSettings().catch((error) => {
+      console.warn('[widget-citation] loadSettings failed', error)
+    })
   }, [loadSettings])
 
   useEffect(() => {

@@ -43,7 +43,8 @@ On a VPS that also runs regionify, prod compose uses host **5434** for Postgres 
 | `npm run dev` | Dev server with hot reload |
 | `npm run build` / `start` | Production compile + run |
 | `npm run db:migrate` | Apply Prisma migrations |
-| `npm run db:seed` | Seed citation data |
+| `npm run db:seed` | Seed citations only if the table is empty |
+| `npm run db:seed:sync` | Upsert seed JSON (adds new IDs; skips existing) |
 | `npm run db:studio` | Prisma Studio |
 | `npm run envtobase64` | Encode `.env` → base64 for `ENV_FILE_BASE64` |
 
@@ -125,4 +126,37 @@ $APP_DIR/server/releases/<sha>/   # release contents (server/ + docker-compose.p
 $APP_DIR/server/current -> releases/<sha>
 ```
 
-Migrations run in the container entrypoint (`prisma migrate deploy`) before the API listens. Health: `GET /api/health`.
+On container start, the entrypoint runs:
+
+1. `prisma migrate deploy`
+2. Citation seed **only if** `citations` is empty (`node dist/scripts/seed-citations.js`)
+3. `node dist/index.js`
+
+Seed JSON lives in `data/seed/` and is baked into the image. Re-deploys skip empty-seed when rows already exist.
+
+#### Add more seed citations later (production)
+
+1. Append rows to `server/data/seed/*.json` with **new unique `id`s**.
+2. Deploy so the image includes the updated JSON.
+3. On the VPS, sync into the live DB (uses `DATABASE_URL` already inside the container):
+
+```bash
+docker exec citations-server node dist/scripts/seed-citations.js --sync
+```
+
+This inserts only missing IDs (`skipDuplicates`). It does not wipe existing citations.
+
+Local equivalent: `npm run db:seed:sync`.
+
+Health: `GET /api/health`.
+
+### Deploy bundle notes
+
+| Path | Deployed? | Notes |
+|------|-----------|--------|
+| `prisma/` | yes | schema + migrations |
+| `src/` | yes | Docker build compiles to `dist/` |
+| `data/seed/` | yes | bible + fiction JSON for first-boot seed |
+| `drizzle/` | **no** | legacy; app uses Prisma only |
+| `scripts/` | **no** | local/dev helpers only |
+| `node_modules/`, `dist/`, `.env*` | **no** | rebuilt/injected on host |

@@ -115,12 +115,17 @@ jobs:
 
       - name: Create server archive
         run: |
+          # Include server/data/seed for first-boot citation seeding in the image.
+          # Exclude legacy drizzle/ (Prisma is the ORM) and local/dev-only paths.
           tar -czf server-build.tar.gz \
             --exclude='server/node_modules' \
             --exclude='server/dist' \
             --exclude='server/.env' \
             --exclude='server/.env.*' \
-            --exclude='server/data' \
+            --exclude='server/drizzle' \
+            --exclude='server/scripts' \
+            --exclude='server/data/citations.db' \
+            --exclude='server/data/seed/README.md' \
             --exclude='server/*.md' \
             --exclude='server/.gitignore' \
             --anchored \
@@ -288,3 +293,4 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Server (Docker under \`server/current\`)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Database migrations (container entrypoint)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Citation seed if DB empty (container entrypoint; skipped when citations already exist)" >> "$GITHUB_STEP_SUMMARY"

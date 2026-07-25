@@ -15,9 +15,15 @@ function toWidgetCitation(citation: Citation): WidgetCitation {
 export async function pickGuestWidgetCitation(
   sourceSelection: SourceSelection,
 ): Promise<{ citation: WidgetCitation | null; reason?: string }> {
+  console.log("[widget-citation] pickGuestWidgetCitation", { sourceSelection });
+
   if (sourceSelection === "saved") {
     const saved = await getGuestSavedCitations();
     const picked = pickRandom(saved);
+    console.log("[widget-citation] guest saved pool", {
+      poolSize: saved.length,
+      pickedId: picked?.id ?? null,
+    });
     if (!picked) return { citation: null, reason: "empty_pool" };
     return { citation: toWidgetCitation(picked) };
   }
@@ -25,6 +31,12 @@ export async function pickGuestWidgetCitation(
   const category = sourceSelection === "mixed" ? undefined : sourceSelection;
   const pool = await fetchCitations({ category, limit: 50 });
   const picked = pickRandom(pool);
+  console.log("[widget-citation] guest API pool", {
+    category: category ?? "all",
+    poolSize: pool.length,
+    pickedId: picked?.id ?? null,
+    textPreview: picked?.text?.slice(0, 80) ?? null,
+  });
   if (!picked) return { citation: null, reason: "empty_pool" };
   return { citation: toWidgetCitation(picked) };
 }

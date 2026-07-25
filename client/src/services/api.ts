@@ -144,7 +144,14 @@ export async function fetchCitations(params?: { category?: "bible" | "fiction"; 
   if (params?.limit) search.set("limit", String(params.limit));
   if (params?.offset) search.set("offset", String(params.offset));
   const qs = search.toString();
-  return apiFetch<Citation[]>(`/api/citations${qs ? `?${qs}` : ""}`, { auth: false });
+  const path = `/api/citations${qs ? `?${qs}` : ""}`;
+  console.log("[widget-citation] GET", path);
+  const citations = await apiFetch<Citation[]>(path, { auth: false });
+  console.log("[widget-citation] GET /api/citations result", {
+    count: citations.length,
+    firstId: citations[0]?.id ?? null,
+  });
+  return citations;
 }
 
 export async function fetchCitation(id: string) {
@@ -209,12 +216,30 @@ export async function saveWidgetSettings(input: WidgetSettingsDraft) {
 
 export async function fetchWidgetCitation(force = false) {
   const qs = force ? "?force=true" : "";
-  return apiFetch<{ citation: WidgetCitation | null; reason?: string }>(`/api/widget/citation${qs}`);
+  const path = `/api/widget/citation${qs}`;
+  console.log("[widget-citation] GET", path);
+  const result = await apiFetch<{ citation: WidgetCitation | null; reason?: string }>(path);
+  console.log("[widget-citation] GET /api/widget/citation result", {
+    citationId: result.citation?.id ?? null,
+    reason: result.reason ?? null,
+    textPreview: result.citation?.text?.slice(0, 80) ?? null,
+  });
+  return result;
 }
 
 export async function previewWidgetCitation(input: WidgetPreviewDraft) {
-  return apiFetch<{ citation: WidgetCitation | null; reason?: string }>("/api/widget/preview", {
+  console.log("[widget-citation] POST /api/widget/preview", {
+    sourceSelection: input.sourceSelection,
+    fontStyle: input.fontStyle,
+  });
+  const result = await apiFetch<{ citation: WidgetCitation | null; reason?: string }>("/api/widget/preview", {
     method: "POST",
     body: JSON.stringify(input),
   });
+  console.log("[widget-citation] POST /api/widget/preview result", {
+    citationId: result.citation?.id ?? null,
+    reason: result.reason ?? null,
+    textPreview: result.citation?.text?.slice(0, 80) ?? null,
+  });
+  return result;
 }

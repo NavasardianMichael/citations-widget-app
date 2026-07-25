@@ -3,8 +3,18 @@ dist
 .env
 .env.*
 !.env.example
-data
+
+# Legacy Drizzle migrations — app uses Prisma only
+drizzle
+
+# Keep seed JSON; ignore other data artifacts
+data/*
+!data/seed/
+!data/seed/**
+
+# Dev-only tooling (not needed in image build context)
 scripts
 *.md
 *.log
 .DS_Store
+.gitignore
