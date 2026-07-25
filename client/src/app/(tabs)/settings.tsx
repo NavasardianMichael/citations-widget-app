@@ -1,6 +1,19 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Alert, ScrollView, Share, Text, View } from 'react-native'
+import {
+  Alert,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native'
 
+import {
+  CitationShareCard,
+  CITATION_SHARE_CARD_HEIGHT,
+  CITATION_SHARE_CARD_WIDTH,
+} from '@/components/citation-share-card'
 import { Button } from '@/components/ui/button'
 import { RadioListRow } from '@/components/ui/radio-list-row'
 import { RadioOptionCard } from '@/components/ui/radio-option-card'
@@ -10,6 +23,16 @@ import { SettingsSection } from '@/components/ui/settings-section'
 import { ToggleRow } from '@/components/ui/toggle-row'
 import { TopAppBar } from '@/components/ui/top-app-bar'
 import { WidgetPreview } from '@/components/widget-preview'
+import { pressableNoRipple } from '@/constants/pressable'
+import {
+  DEFAULT_WIDGET_DESIGN,
+  designUsesRandomBackground,
+  getWidgetDesign,
+  normalizeWidgetDesignId,
+  pickBackgroundImageIndex,
+  shiftWidgetDesign,
+  WIDGET_DESIGN_IDS,
+} from '@/constants/widget-designs'
 import { DEFAULT_QUOTE_FONT_SIZE, FONT_SIZE_MAX, FONT_SIZE_MIN } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
 import {
@@ -33,6 +56,7 @@ import {
   setCachedWidgetCitation,
 } from '@/services/local-storage'
 import { syncHomeWidget } from '@/services/home-widget-sync'
+import { shareCitationCard } from '@/services/share-citation-card'
 import {
   getWidgetSettings,
   saveWidgetSettings,
@@ -79,6 +103,7 @@ const DEFAULT_DRAFT: WidgetSettingsDraft = {
   refreshRateHours: 24,
   fontStyle: DEFAULT_WIDGET_FONT,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
+  widgetDesign: DEFAULT_WIDGET_DESIGN,
   showAttribution: true,
   showActions: true,
 }
@@ -93,6 +118,10 @@ export default function SettingsScreen() {
   const [saving, setSaving] = useState(false)
   const isFirstSourceRender = useRef(true)
   const suppressNextSourceEffect = useRef(false)
+  const draftRef = useRef(draft)
+  const shareCardRef = useRef<View>(null)
+  const shareLogoReadyRef = useRef(false)
+  draftRef.current = draft
 
   const loadWidgetCitation = useCallback(
     async (
@@ -139,7 +168,7 @@ export default function SettingsScreen() {
         }
 
         const result = isGuest
-          ? await pickGuestWidgetCitation(source)
+          ? await pickGuestWidgetCitation(source, draftRef.current.widgetDesign)
           : await fetchWidgetCitation(forceFresh)
         console.log('[widget-citation] fetch result', {
           path: isGuest ? 'guest' : 'auth',
@@ -178,10 +207,11 @@ export default function SettingsScreen() {
       setPreviewLoading(true)
       try {
         const result = isGuest
-          ? await pickGuestWidgetCitation(source)
+          ? await pickGuestWidgetCitation(source, draft.widgetDesign)
           : await previewWidgetCitation({
               sourceSelection: source,
               fontStyle: draft.fontStyle,
+              widgetDesign: draft.widgetDesign,
               showAttribution: draft.showAttribution,
             })
         console.log('[widget-citation] previewDraftPool result', {
@@ -198,7 +228,7 @@ export default function SettingsScreen() {
         setPreviewLoading(false)
       }
     },
-    [isGuest, draft.fontStyle, draft.showAttribution],
+    [isGuest, draft.fontStyle, draft.widgetDesign, draft.showAttribution],
   )
 
   const loadSettings = useCallback(async () => {
@@ -211,6 +241,7 @@ export default function SettingsScreen() {
       refreshRateHours: settings.refreshRateHours,
       fontStyle: settings.fontStyle,
       fontSize: settings.fontSize,
+      widgetDesign: normalizeWidgetDesignId(settings.widgetDesign),
       showAttribution: settings.showAttribution,
       showActions: settings.showActions,
     }
@@ -218,6 +249,7 @@ export default function SettingsScreen() {
       sourceSelection: next.sourceSelection,
       refreshRateHours: next.refreshRateHours,
       fontStyle: next.fontStyle,
+      widgetDesign: next.widgetDesign,
     })
     setSaved(next)
     setDraft(next)
@@ -260,12 +292,49 @@ export default function SettingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.sourceSelection])
 
+  // Sanctuary needs a display-only random index for the current preview — not citation-owned.
+  useEffect(() => {
+    if (!designUsesRandomBackground(draft.widgetDesign)) return
+    setPreview((prev) => {
+      if (!prev || prev.backgroundImageIndex !== undefined) return prev
+      return { ...prev, backgroundImageIndex: pickBackgroundImageIndex() }
+    })
+  }, [draft.widgetDesign, preview?.id])
+
+  useEffect(() => {
+    shareLogoReadyRef.current = false
+  }, [preview?.id])
+
   function updateDraft<K extends keyof WidgetSettingsDraft>(
     key: K,
     value: WidgetSettingsDraft[K],
   ) {
     setDraft((prev) => ({ ...prev, [key]: value }))
   }
+
+  const shiftDesign = useCallback((delta: number) => {
+    setDraft((prev) => ({
+      ...prev,
+      widgetDesign: shiftWidgetDesign(prev.widgetDesign, delta),
+    }))
+  }, [])
+
+  const shiftDesignRef = useRef(shiftDesign)
+  shiftDesignRef.current = shiftDesign
+
+  const swipeResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+      onMoveShouldSetPanResponderCapture: (_, gesture) =>
+        Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dx <= -40) shiftDesignRef.current(1)
+        else if (gesture.dx >= 40) shiftDesignRef.current(-1)
+      },
+    }),
+  ).current
 
   async function handleSave() {
     setSaving(true)
@@ -278,6 +347,7 @@ export default function SettingsScreen() {
         refreshRateHours: updated.refreshRateHours,
         fontStyle: updated.fontStyle,
         fontSize: updated.fontSize,
+        widgetDesign: normalizeWidgetDesignId(updated.widgetDesign),
         showAttribution: updated.showAttribution,
         showActions: updated.showActions,
       }
@@ -348,9 +418,16 @@ export default function SettingsScreen() {
   async function handleShareWidgetCitation() {
     if (!preview) return
     try {
-      await Share.share({ message: preview.text })
+      // Give the off-screen card a frame (and logo decode) before capturing.
+      if (!shareLogoReadyRef.current) {
+        await new Promise((resolve) => setTimeout(resolve, 120))
+      }
+      const message = preview.source
+        ? `${preview.text}\n\n— ${preview.source}`
+        : preview.text
+      await shareCitationCard({ viewRef: shareCardRef, message })
     } catch {
-      // user dismissed the share sheet
+      Alert.alert(t('common.error'), t('settings.shareFailed'))
     }
   }
 
@@ -429,22 +506,71 @@ export default function SettingsScreen() {
     </View>
   )
 
+  const activeDesign = getWidgetDesign(draft.widgetDesign)
+  const designIndex = WIDGET_DESIGN_IDS.indexOf(draft.widgetDesign)
+
   const previewColumn = (
     <View className='gap-8'>
-      <View className='gap-3'>
-        <WidgetPreview
-          citation={preview}
-          fontStyle={draft.fontStyle}
-          fontSize={draft.fontSize}
-          loading={previewLoading}
-          showActions={draft.showActions}
-          onRefresh={handleRefreshWidget}
-          onSave={handleSaveWidgetCitation}
-          onShare={handleShareWidgetCitation}
-        />
-        <Text className='text-center font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
-          {t('settings.designSanctuary')}
-        </Text>
+      <View className='gap-4'>
+        <View className='flex-row items-center gap-2'>
+          <Pressable
+            {...pressableNoRipple}
+            onPress={() => shiftDesign(-1)}
+            accessibilityRole='button'
+            accessibilityLabel={t('settings.designPrev')}
+            className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
+          >
+            <MaterialIcons name='chevron-left' size={28} color='#021a35' />
+          </Pressable>
+
+          <View className='min-w-0 flex-1' {...swipeResponder.panHandlers}>
+            <WidgetPreview
+              citation={preview}
+              fontStyle={draft.fontStyle}
+              fontSize={draft.fontSize}
+              design={draft.widgetDesign}
+              loading={previewLoading}
+              showActions={draft.showActions}
+              onRefresh={handleRefreshWidget}
+              onSave={handleSaveWidgetCitation}
+              onShare={handleShareWidgetCitation}
+            />
+          </View>
+
+          <Pressable
+            {...pressableNoRipple}
+            onPress={() => shiftDesign(1)}
+            accessibilityRole='button'
+            accessibilityLabel={t('settings.designNext')}
+            className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
+          >
+            <MaterialIcons name='chevron-right' size={28} color='#021a35' />
+          </Pressable>
+        </View>
+
+        <View className='items-center gap-2'>
+          <Text className='font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
+            {t('settings.designLabel')}
+          </Text>
+          <Text className='font-headline-md text-headline-md text-primary'>
+            {t(activeDesign.labelKey)}
+          </Text>
+          <View className='flex-row items-center gap-2 pt-1'>
+            {WIDGET_DESIGN_IDS.map((id, index) => (
+              <Pressable
+                key={id}
+                {...pressableNoRipple}
+                onPress={() => updateDraft('widgetDesign', id)}
+                accessibilityRole='button'
+                accessibilityLabel={t(getWidgetDesign(id).labelKey)}
+                accessibilityState={{ selected: index === designIndex }}
+                className={`h-2 rounded-full ${
+                  index === designIndex ? 'w-5 bg-primary' : 'w-2 bg-outline-variant'
+                }`}
+              />
+            ))}
+          </View>
+        </View>
       </View>
 
       <View className='flex-row flex-wrap justify-end gap-4'>
@@ -484,6 +610,31 @@ export default function SettingsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Off-screen social card captured as a PNG when the user taps Share. */}
+      {preview ? (
+        <View
+          pointerEvents='none'
+          style={{
+            position: 'absolute',
+            left: -CITATION_SHARE_CARD_WIDTH - 40,
+            top: 0,
+            width: CITATION_SHARE_CARD_WIDTH,
+            height: CITATION_SHARE_CARD_HEIGHT,
+            opacity: 1,
+          }}
+        >
+          <View ref={shareCardRef} collapsable={false}>
+            <CitationShareCard
+              text={preview.text}
+              source={preview.source}
+              onLogoLoad={() => {
+                shareLogoReadyRef.current = true
+              }}
+            />
+          </View>
+        </View>
+      ) : null}
     </View>
   )
 }

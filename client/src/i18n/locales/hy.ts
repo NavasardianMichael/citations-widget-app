@@ -208,14 +208,25 @@ export const hy = {
   'settings.poolSaved': 'Պահված',
   'settings.preview': 'Նախադիտում',
   'settings.livePreview': 'Նախադիտում',
-  'settings.previewLoading': 'Նախադիտումը բեռնվում է…',
+  'settings.previewLoading': 'Մեջբերումը բեռնվում է…',
   'settings.previewEmpty': 'Այս ընտրության համար մեջբերումներ չկան։',
+  'settings.designLabel': 'Վիջեթի դիզայն',
+  'settings.designClassic': 'Դասական',
+  'settings.designParchment': 'Մագաղաթ',
+  'settings.designMidnight': 'Կեսգիշեր',
+  'settings.designGlass': 'Ապակի',
+  'settings.designInk': 'Թանաք',
+  'settings.designManuscript': 'Ձեռագիր',
   'settings.designSanctuary': 'Սրբավայր',
+  'settings.designPrev': 'Նախորդ դիզայն',
+  'settings.designNext': 'Հաջորդ դիզայն',
   'settings.addedBy': 'Ավելացրել է {name}',
   'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',
   'settings.actionBookmark': 'Էջանշել',
   'settings.actionShare': 'Կիսվել',
+  'settings.shareCardFooter': 'Մեջբերումներ Աստվածաշնչից',
+  'settings.shareFailed': 'Չհաջողվեց կիսվել մեջբերմամբ',
   'settings.saved': 'Կարգավորումները պահված են։',
   'settings.saveFailed': 'Չհաջողվեց պահպանել կարգավորումները',
   'settings.loadFailed': 'Չհաջողվեց բեռնել կարգավորումները',
@@ -261,6 +272,6 @@ export const hy = {
   'validation.socialUrlInvalid':
     'Մուտքագրեք վավեր հղում (սկսած http:// կամ https://)',
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
-} as const;
+} as const
 
-export type HyMessages = typeof hy;
+export type HyMessages = typeof hy

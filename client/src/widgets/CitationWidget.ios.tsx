@@ -1,4 +1,4 @@
-import { HStack, Spacer, Text, VStack } from "@expo/ui/swift-ui";
+import { HStack, Spacer, Text, VStack } from '@expo/ui/swift-ui'
 import {
   background,
   containerBackground,
@@ -8,82 +8,111 @@ import {
   opacity,
   padding,
   shapes,
-} from "@expo/ui/swift-ui/modifiers";
-import { createWidget, type WidgetEnvironment } from "expo-widgets";
+} from '@expo/ui/swift-ui/modifiers'
+import { createWidget, type WidgetEnvironment } from 'expo-widgets'
 
-import { WIDGET_DESIGN_TOKENS } from "@/constants/widget-designs";
+import {
+  DEFAULT_WIDGET_DESIGN,
+  getWidgetDesign,
+} from '@/constants/widget-designs'
 import {
   colorWithOpacity,
   DEFAULT_QUOTE_FONT_SIZE,
   WIDGET_LAYOUT,
-} from "@/constants/widget-layout";
-import { toArgbHex } from "@/widgets/color";
-import type { HomeWidgetSnapshot } from "@/widgets/types";
-import { IOS_WIDGET_NAME } from "@/widgets/types";
+} from '@/constants/widget-layout'
+import { toArgbHex } from '@/widgets/color'
+import type { HomeWidgetSnapshot } from '@/widgets/types'
+import { IOS_WIDGET_NAME } from '@/widgets/types'
+
+const emptyDesign = getWidgetDesign(DEFAULT_WIDGET_DESIGN)
 
 const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
-  quoteText: "",
-  sourceText: "",
+  quoteText: '',
+  sourceText: '',
   attributionText: null,
   showActions: false,
+  designId: emptyDesign.id,
   backgroundImageIndex: 0,
-  fontFamily: "DavelAghvor",
-  androidFontFile: "davel-aghvor",
+  fontFamily: 'DavelAghvor',
+  androidFontFile: 'davel-aghvor',
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
-  ...WIDGET_DESIGN_TOKENS,
-  emptyMessage: "",
+  panelBg: emptyDesign.panelBg,
+  panelBorderColor: emptyDesign.panelBorderColor,
+  accentBorderColor: emptyDesign.accentBorderColor,
+  accentBorderWidth: emptyDesign.accentBorderWidth,
+  quoteColor: emptyDesign.quoteColor,
+  metaColor: emptyDesign.metaColor,
+  attributionColor: emptyDesign.attributionColor,
+  actionBg: emptyDesign.actionBg,
+  actionIconColor: emptyDesign.actionIconColor,
+  ornamentColor: emptyDesign.ornamentColor,
+  ornamentOpacity: emptyDesign.ornamentOpacity,
+  showOrnament: emptyDesign.showOrnament,
+  showLargeQuotes: emptyDesign.showLargeQuotes,
+  overlayColor: emptyDesign.overlayColor ?? null,
+  hasBackgroundImage: Boolean(emptyDesign.randomBackground),
+  emptyMessage: '',
   fetchedAt: 0,
-};
+}
 
 function ActionChip({
   label,
   iconColor,
   actionBg,
 }: {
-  label: string;
-  iconColor: string;
-  actionBg: string;
+  label: string
+  iconColor: string
+  actionBg: string
 }) {
   return (
     <Text
       modifiers={[
-        font({ size: WIDGET_LAYOUT.actionIconSize, weight: "medium" }),
+        font({ size: WIDGET_LAYOUT.actionIconSize, weight: 'medium' }),
         foregroundStyle(toArgbHex(iconColor)),
         background(
           toArgbHex(actionBg),
-          shapes.roundedRectangle({ cornerRadius: WIDGET_LAYOUT.actionSize / 2 }),
+          shapes.roundedRectangle({
+            cornerRadius: WIDGET_LAYOUT.actionSize / 2,
+          }),
         ),
         frame({
           width: WIDGET_LAYOUT.actionSize,
           height: WIDGET_LAYOUT.actionSize,
-          alignment: "center",
+          alignment: 'center',
         }),
       ]}
     >
       {label}
     </Text>
-  );
+  )
 }
 
-function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvironment) {
-  "widget";
-  const data = { ...EMPTY_SNAPSHOT, ...props };
+function CitationWidgetView(
+  props: HomeWidgetSnapshot,
+  _environment: WidgetEnvironment,
+) {
+  'widget'
+  const data = { ...EMPTY_SNAPSHOT, ...props }
   const largeQuoteColor = colorWithOpacity(
     data.ornamentColor,
     Math.min(1, data.ornamentOpacity + 0.15),
-  );
+  )
   // Photo bitmaps are not available in the iOS widget extension yet — use the
   // design's dark panel / overlay so text contrast still matches preview.
-  const iosBg = data.overlayColor || data.panelBg;
+  const iosBg = data.overlayColor || data.panelBg
 
   return (
     <VStack
       spacing={0}
-      alignment="leading"
+      alignment='leading'
       modifiers={[
-        containerBackground(toArgbHex(iosBg), "widget"),
+        containerBackground(toArgbHex(iosBg), 'widget'),
         padding({ all: WIDGET_LAYOUT.padding }),
-        frame({ maxWidth: Infinity, maxHeight: Infinity, alignment: "topLeading" }),
+        frame({
+          maxWidth: Infinity,
+          maxHeight: Infinity,
+          alignment: 'topLeading',
+        }),
       ]}
     >
       {data.showOrnament ? (
@@ -91,7 +120,7 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
           <Spacer />
           <Text
             modifiers={[
-              font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: "regular" }),
+              font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: 'regular' }),
               foregroundStyle(toArgbHex(data.ornamentColor)),
               opacity(data.ornamentOpacity),
             ]}
@@ -106,7 +135,7 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
           modifiers={[
             font({
               size: WIDGET_LAYOUT.largeQuoteFontSize,
-              weight: "bold",
+              weight: 'bold',
               family: data.fontFamily,
             }),
             foregroundStyle(toArgbHex(largeQuoteColor)),
@@ -120,11 +149,11 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
         modifiers={[
           font({
             size: data.fontSize,
-            weight: "regular",
+            weight: 'regular',
             family: data.fontFamily,
           }),
           foregroundStyle(toArgbHex(data.quoteColor)),
-          frame({ maxWidth: Infinity, alignment: "leading" }),
+          frame({ maxWidth: Infinity, alignment: 'leading' }),
         ]}
       >
         {data.quoteText || data.emptyMessage}
@@ -132,15 +161,15 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
 
       <VStack
         spacing={WIDGET_LAYOUT.metaBlockGap}
-        alignment="leading"
+        alignment='leading'
         modifiers={[
           padding({ top: WIDGET_LAYOUT.sectionGap }),
-          frame({ maxWidth: Infinity, alignment: "leading" }),
+          frame({ maxWidth: Infinity, alignment: 'leading' }),
         ]}
       >
         <HStack
           spacing={WIDGET_LAYOUT.actionGap}
-          alignment="center"
+          alignment='center'
           modifiers={[frame({ maxWidth: Infinity })]}
         >
           {data.sourceText ? (
@@ -148,11 +177,11 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
               modifiers={[
                 font({
                   size: WIDGET_LAYOUT.metaFontSize,
-                  weight: "semibold",
+                  weight: 'semibold',
                   family: data.fontFamily,
                 }),
                 foregroundStyle(toArgbHex(data.metaColor)),
-                frame({ maxWidth: Infinity, alignment: "leading" }),
+                frame({ maxWidth: Infinity, alignment: 'leading' }),
               ]}
             >
               {data.sourceText.toUpperCase()}
@@ -164,22 +193,22 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
           {data.showActions ? (
             <HStack spacing={WIDGET_LAYOUT.actionGap}>
               <ActionChip
-                label="↻"
+                label='↻'
                 iconColor={data.actionIconColor}
                 actionBg={data.actionBg}
               />
               <ActionChip
-                label="⚙"
+                label='⚙'
                 iconColor={data.actionIconColor}
                 actionBg={data.actionBg}
               />
               <ActionChip
-                label="☆"
+                label='☆'
                 iconColor={data.actionIconColor}
                 actionBg={data.actionBg}
               />
               <ActionChip
-                label="↗"
+                label='↗'
                 iconColor={data.actionIconColor}
                 actionBg={data.actionBg}
               />
@@ -192,7 +221,7 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
             modifiers={[
               font({
                 size: WIDGET_LAYOUT.attributionFontSize,
-                weight: "regular",
+                weight: 'regular',
                 family: data.fontFamily,
               }),
               foregroundStyle(toArgbHex(data.attributionColor)),
@@ -203,9 +232,12 @@ function CitationWidgetView(props: HomeWidgetSnapshot, _environment: WidgetEnvir
         ) : null}
       </VStack>
     </VStack>
-  );
+  )
 }
 
-const CitationWidget = createWidget<HomeWidgetSnapshot>(IOS_WIDGET_NAME, CitationWidgetView);
+const CitationWidget = createWidget<HomeWidgetSnapshot>(
+  IOS_WIDGET_NAME,
+  CitationWidgetView,
+)
 
-export default CitationWidget;
+export default CitationWidget

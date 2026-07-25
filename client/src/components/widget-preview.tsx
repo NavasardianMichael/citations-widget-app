@@ -3,7 +3,12 @@ import { useEffect } from 'react'
 import { ImageBackground, Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
-import { getWidgetBackgroundImage, WIDGET_DESIGN_TOKENS } from '@/constants/widget-designs'
+import {
+  DEFAULT_WIDGET_DESIGN,
+  getWidgetDesign,
+  resolveWidgetBackgroundImage,
+  type WidgetDesignId,
+} from '@/constants/widget-designs'
 import { colorWithOpacity, getQuoteLineHeight, WIDGET_LAYOUT } from '@/constants/widget-layout'
 import { getWidgetFontFamily } from '@/fonts/registry'
 import { useWidgetFont } from '@/fonts/use-widget-font'
@@ -14,6 +19,7 @@ type WidgetPreviewProps = {
   citation: WidgetCitation | null
   fontStyle: FontStyle
   fontSize: number
+  design?: WidgetDesignId
   loading?: boolean
   showActions?: boolean
   onRefresh?: () => void
@@ -81,6 +87,7 @@ export function WidgetPreview({
   citation,
   fontStyle,
   fontSize,
+  design = DEFAULT_WIDGET_DESIGN,
   loading = false,
   showActions = true,
   onRefresh,
@@ -88,8 +95,12 @@ export function WidgetPreview({
   onShare,
 }: WidgetPreviewProps) {
   const fontReady = useWidgetFont(fontStyle)
-  const tokens = WIDGET_DESIGN_TOKENS
-  const backgroundImage = getWidgetBackgroundImage(citation?.backgroundImageIndex ?? 0)
+  const tokens = getWidgetDesign(design)
+  const backgroundImage = resolveWidgetBackgroundImage(
+    design,
+    citation?.backgroundImageIndex ?? 0,
+  )
+  const hasPhoto = Boolean(backgroundImage)
   const fontFamily = getWidgetFontFamily(fontStyle)
   const quoteLineHeight = getQuoteLineHeight(fontSize)
   const previewActions: {
@@ -138,6 +149,7 @@ export function WidgetPreview({
   const topContent = showLoading ? (
     <Text
       style={{
+        fontFamily,
         fontSize,
         lineHeight: quoteLineHeight,
         color: tokens.attributionColor,
@@ -159,6 +171,7 @@ export function WidgetPreview({
   ) : (
     <Text
       style={{
+        fontFamily,
         fontSize,
         lineHeight: quoteLineHeight,
         color: tokens.attributionColor,
@@ -181,11 +194,12 @@ export function WidgetPreview({
           className='mr-auto min-w-0 uppercase'
           style={{
             color: tokens.metaColor,
+            // Same face as the quote — do not set fontWeight; synthetic bold
+            // makes Android fall back to a system font for single-face widget OTFs.
             fontFamily,
             fontSize: WIDGET_LAYOUT.metaFontSize,
             lineHeight: WIDGET_LAYOUT.metaLineHeight,
             letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
-            fontWeight: '600',
           }}
         >
           {citation.source || citation.category}
@@ -211,6 +225,7 @@ export function WidgetPreview({
       {citation.addedBy ? (
         <Text
           style={{
+            fontFamily,
             fontSize: WIDGET_LAYOUT.attributionFontSize,
             lineHeight: WIDGET_LAYOUT.attributionLineHeight,
             color: tokens.attributionColor,
@@ -262,6 +277,14 @@ export function WidgetPreview({
     </>
   )
 
+  const inner = (
+    <>
+      {ornaments}
+      {topContent}
+      {metaContent}
+    </>
+  )
+
   return (
     <View className='rounded-xl '>
       <View
@@ -273,25 +296,36 @@ export function WidgetPreview({
         </Text>
       </View>
 
-      <ImageBackground
-        source={backgroundImage}
-        resizeMode='cover'
-        className='relative mt-4'
-        style={frameStyle}
-        imageStyle={{ borderRadius: WIDGET_LAYOUT.borderRadius }}
-      >
+      {hasPhoto && backgroundImage ? (
+        <ImageBackground
+          source={backgroundImage}
+          resizeMode='cover'
+          className='relative mt-4'
+          style={frameStyle}
+          imageStyle={{ borderRadius: WIDGET_LAYOUT.borderRadius }}
+        >
+          <View
+            style={{
+              ...contentPad,
+              backgroundColor: tokens.overlayColor ?? 'rgba(0,0,0,0.42)',
+              borderRadius: WIDGET_LAYOUT.borderRadius,
+            }}
+          >
+            {inner}
+          </View>
+        </ImageBackground>
+      ) : (
         <View
+          className='relative mt-4'
           style={{
+            ...frameStyle,
             ...contentPad,
-            backgroundColor: tokens.overlayColor,
-            borderRadius: WIDGET_LAYOUT.borderRadius,
+            backgroundColor: tokens.panelBg,
           }}
         >
-          {ornaments}
-          {topContent}
-          {metaContent}
+          {inner}
         </View>
-      </ImageBackground>
+      )}
     </View>
   )
 }

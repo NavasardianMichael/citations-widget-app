@@ -1,5 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import {
+  DEFAULT_WIDGET_DESIGN,
+  normalizeWidgetDesignId,
+} from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
 import type { Citation, SourceSelection, WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
@@ -14,6 +18,7 @@ const DEFAULT_GUEST_WIDGET_SETTINGS: WidgetSettingsDraft = {
   refreshRateHours: 24,
   fontStyle: DEFAULT_WIDGET_FONT,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
+  widgetDesign: DEFAULT_WIDGET_DESIGN,
   showAttribution: true,
   showActions: true,
 };
@@ -44,6 +49,7 @@ export async function getGuestWidgetSettings(): Promise<WidgetSettingsDraft> {
     return {
       ...DEFAULT_GUEST_WIDGET_SETTINGS,
       ...parsed,
+      widgetDesign: normalizeWidgetDesignId(parsed.widgetDesign),
     };
   } catch {
     return DEFAULT_GUEST_WIDGET_SETTINGS;

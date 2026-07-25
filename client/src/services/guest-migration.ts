@@ -1,3 +1,4 @@
+import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { fetchSavedCitations, getWidgetSettings, saveCitation, saveWidgetSettings } from "@/services/api";
 import { clearGuestData, getGuestSavedCitations, getGuestWidgetSettings, hasGuestData } from "@/services/local-storage";
@@ -8,6 +9,7 @@ const DEFAULT_ACCOUNT_SETTINGS: WidgetSettingsDraft = {
   refreshRateHours: 24,
   fontStyle: "davel_aghvor",
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
+  widgetDesign: DEFAULT_WIDGET_DESIGN,
   showAttribution: true,
   showActions: true,
 };
@@ -18,6 +20,7 @@ function isUnchanged(draft: WidgetSettingsDraft): boolean {
     draft.refreshRateHours === DEFAULT_ACCOUNT_SETTINGS.refreshRateHours &&
     draft.fontStyle === DEFAULT_ACCOUNT_SETTINGS.fontStyle &&
     draft.fontSize === DEFAULT_ACCOUNT_SETTINGS.fontSize &&
+    draft.widgetDesign === DEFAULT_ACCOUNT_SETTINGS.widgetDesign &&
     draft.showAttribution === DEFAULT_ACCOUNT_SETTINGS.showAttribution &&
     draft.showActions === DEFAULT_ACCOUNT_SETTINGS.showActions
   );

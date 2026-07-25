@@ -39,5 +39,15 @@ if ($shortClient -like "W:\*") {
 
 Set-Location $shortClient
 
+# Config plugins only copy fonts on prebuild; an existing android/ tree can keep a stale
+# MaterialIcons.ttf while JS looks up WidgetGlyphs — icons then render as blank chips.
+$widgetGlyphSrc = Join-Path $shortClient "assets\fonts\widget-glyphs\WidgetGlyphs.ttf"
+$androidFontsDir = Join-Path $shortClient "android\app\src\main\assets\fonts"
+if (Test-Path $widgetGlyphSrc) {
+  New-Item -ItemType Directory -Path $androidFontsDir -Force | Out-Null
+  Copy-Item $widgetGlyphSrc (Join-Path $androidFontsDir "WidgetGlyphs.ttf") -Force
+  Remove-Item (Join-Path $androidFontsDir "MaterialIcons.ttf") -Force -ErrorAction SilentlyContinue
+}
+
 Remove-Item -Recurse -Force "android\app\.cxx", "android\app\build", "android\build" -ErrorAction SilentlyContinue
 npx expo run:android @args

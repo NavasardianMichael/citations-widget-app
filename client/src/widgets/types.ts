@@ -1,10 +1,13 @@
+import type { WidgetDesignId } from "@/constants/widget-designs";
+
 /** Flat, JSON-safe props pushed to home-screen widgets. */
 export type HomeWidgetSnapshot = {
   quoteText: string;
   sourceText: string;
   attributionText: string | null;
   showActions: boolean;
-  /** Which of WIDGET_BACKGROUND_IMAGES this citation's pick uses. */
+  designId: WidgetDesignId;
+  /** Sanctuary random-pool index; ignored for fixed/solid designs. */
   backgroundImageIndex: number;
   fontFamily: string;
   /** Android assets/fonts basename without extension. */
@@ -23,7 +26,9 @@ export type HomeWidgetSnapshot = {
   ornamentOpacity: number;
   showOrnament: boolean;
   showLargeQuotes: boolean;
-  overlayColor: string;
+  /** Dark scrim over photo backgrounds; null for solid designs. */
+  overlayColor: string | null;
+  hasBackgroundImage: boolean;
   emptyMessage: string;
   fetchedAt: number;
 };

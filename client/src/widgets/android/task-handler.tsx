@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
 
+import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
 import { fetchWidgetCitation } from "@/services/api";
@@ -25,6 +26,7 @@ const FALLBACK_SETTINGS = {
   refreshRateHours: 24 as const,
   fontStyle: DEFAULT_WIDGET_FONT,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
+  widgetDesign: DEFAULT_WIDGET_DESIGN,
   showAttribution: true,
   showActions: true,
 };
@@ -62,7 +64,7 @@ async function refreshCitationSnapshot(): Promise<HomeWidgetSnapshot> {
     const guest = await isGuestMode();
     const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
     const result = guest
-      ? await pickGuestWidgetCitation(settings.sourceSelection)
+      ? await pickGuestWidgetCitation(settings.sourceSelection, settings.widgetDesign)
       : await fetchWidgetCitation(true);
     await setCachedWidgetCitation({
       citation: result.citation,

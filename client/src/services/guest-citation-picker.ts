@@ -1,6 +1,13 @@
-import { pickBackgroundImageIndex } from "@/constants/widget-designs";
+import {
+  designUsesRandomBackground,
+  pickBackgroundImageIndex,
+  type WidgetDesignId,
+} from "@/constants/widget-designs";
 import { fetchCitations } from "@/services/api";
-import { getGuestSavedCitations } from "@/services/local-storage";
+import {
+  getGuestSavedCitations,
+  getGuestWidgetSettings,
+} from "@/services/local-storage";
 import type { Citation, SourceSelection, WidgetCitation } from "@/types/citation";
 
 function pickRandom<T>(items: T[]): T | null {
@@ -8,14 +15,32 @@ function pickRandom<T>(items: T[]): T | null {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-function toWidgetCitation(citation: Citation): WidgetCitation {
-  return { ...citation, addedBy: null, backgroundImageIndex: pickBackgroundImageIndex() };
+function toWidgetCitation(
+  citation: Citation,
+  designId: WidgetDesignId,
+): WidgetCitation {
+  return {
+    ...citation,
+    addedBy: null,
+    ...(designUsesRandomBackground(designId)
+      ? { backgroundImageIndex: pickBackgroundImageIndex() }
+      : {}),
+  };
 }
 
 export async function pickGuestWidgetCitation(
   sourceSelection: SourceSelection,
+  designId?: WidgetDesignId,
 ): Promise<{ citation: WidgetCitation | null; reason?: string }> {
-  console.log("[widget-citation] pickGuestWidgetCitation", { sourceSelection });
+  const settings = designId
+    ? { widgetDesign: designId }
+    : await getGuestWidgetSettings();
+  const widgetDesign = settings.widgetDesign;
+
+  console.log("[widget-citation] pickGuestWidgetCitation", {
+    sourceSelection,
+    widgetDesign,
+  });
 
   if (sourceSelection === "saved") {
     const saved = await getGuestSavedCitations();
@@ -25,7 +50,7 @@ export async function pickGuestWidgetCitation(
       pickedId: picked?.id ?? null,
     });
     if (!picked) return { citation: null, reason: "empty_pool" };
-    return { citation: toWidgetCitation(picked) };
+    return { citation: toWidgetCitation(picked, widgetDesign) };
   }
 
   const category = sourceSelection === "mixed" ? undefined : sourceSelection;
@@ -38,5 +63,5 @@ export async function pickGuestWidgetCitation(
     textPreview: picked?.text?.slice(0, 80) ?? null,
   });
   if (!picked) return { citation: null, reason: "empty_pool" };
-  return { citation: toWidgetCitation(picked) };
+  return { citation: toWidgetCitation(picked, widgetDesign) };
 }

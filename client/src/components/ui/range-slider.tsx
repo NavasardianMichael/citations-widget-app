@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { GestureResponderEvent } from "react-native";
+import { useRef, useState } from "react";
+import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
 import { View } from "react-native";
 
 type RangeSliderProps = {
@@ -15,18 +15,45 @@ const THUMB_SIZE = 24;
 
 /**
  * Simple drag-to-select range control — no native slider module is linked in this app.
- * Uses the raw responder props directly (rather than `PanResponder.create`, which would
- * need a persisted ref read during render) since `min`/`max`/`onChange` close over each
- * render's own values here — there is nothing stale to keep in sync.
+ *
+ * Uses `pageX` minus the track's window X (not `locationX`): during a drag the touch
+ * target can become the thumb/fill child, and `locationX` then jumps near 0 relative
+ * to that child — which looked like the value snapping to min and back.
  */
 export function RangeSlider({ value, min, max, onChange, accessibilityLabel }: RangeSliderProps) {
   const [trackWidth, setTrackWidth] = useState(0);
+  const trackPageXRef = useRef(0);
+  const trackRef = useRef<View>(null);
 
-  function updateFromEvent(evt: GestureResponderEvent) {
-    if (trackWidth <= 0) return;
-    const ratio = Math.min(1, Math.max(0, evt.nativeEvent.locationX / trackWidth));
+  function measureTrack(callback?: () => void) {
+    trackRef.current?.measureInWindow((x, _y, width) => {
+      trackPageXRef.current = x;
+      if (width > 0) setTrackWidth(width);
+      callback?.();
+    });
+  }
+
+  function updateFromPageX(pageX: number) {
+    const width = trackWidth;
+    if (width <= 0) return;
+    const x = pageX - trackPageXRef.current;
+    const ratio = Math.min(1, Math.max(0, x / width));
     const next = Math.round(min + ratio * (max - min));
     onChange(Math.min(max, Math.max(min, next)));
+  }
+
+  function handleGrant(evt: GestureResponderEvent) {
+    measureTrack(() => updateFromPageX(evt.nativeEvent.pageX));
+    updateFromPageX(evt.nativeEvent.pageX);
+  }
+
+  function handleMove(evt: GestureResponderEvent) {
+    updateFromPageX(evt.nativeEvent.pageX);
+  }
+
+  function handleLayout(e: LayoutChangeEvent) {
+    setTrackWidth(e.nativeEvent.layout.width);
+    measureTrack();
   }
 
   const ratio = max > min ? (value - min) / (max - min) : 0;
@@ -34,25 +61,32 @@ export function RangeSlider({ value, min, max, onChange, accessibilityLabel }: R
 
   return (
     <View
+      ref={trackRef}
       accessibilityRole="adjustable"
       accessibilityLabel={accessibilityLabel}
       accessibilityValue={{ min, max, now: value }}
-      onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
+      onLayout={handleLayout}
       onStartShouldSetResponder={() => true}
       onMoveShouldSetResponder={() => true}
-      onResponderGrant={updateFromEvent}
-      onResponderMove={updateFromEvent}
+      onStartShouldSetResponderCapture={() => true}
+      onMoveShouldSetResponderCapture={() => true}
+      onResponderTerminationRequest={() => false}
+      onResponderGrant={handleGrant}
+      onResponderMove={handleMove}
       className="h-11 justify-center"
     >
       <View
+        pointerEvents="none"
         className="w-full rounded-full bg-surface-container-high"
         style={{ height: TRACK_HEIGHT }}
       />
       <View
+        pointerEvents="none"
         className="absolute rounded-full bg-primary"
         style={{ height: TRACK_HEIGHT, width: Math.max(TRACK_HEIGHT, thumbCenter) }}
       />
       <View
+        pointerEvents="none"
         className="absolute rounded-full bg-primary"
         style={{
           height: THUMB_SIZE,

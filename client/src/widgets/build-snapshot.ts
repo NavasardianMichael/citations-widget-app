@@ -1,4 +1,7 @@
-import { WIDGET_DESIGN_TOKENS } from "@/constants/widget-designs";
+import {
+  DEFAULT_WIDGET_DESIGN,
+  getWidgetDesign,
+} from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import {
   DEFAULT_WIDGET_FONT,
@@ -39,8 +42,8 @@ export function buildHomeWidgetSnapshot(
   settings: WidgetSettingsDraft,
   citation: WidgetCitation | null,
 ): HomeWidgetSnapshot {
+  const design = getWidgetDesign(settings.widgetDesign ?? DEFAULT_WIDGET_DESIGN);
   const fontId = (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId;
-  const design = WIDGET_DESIGN_TOKENS;
 
   return {
     quoteText: citation?.text ? `"${citation.text}"` : "",
@@ -50,6 +53,7 @@ export function buildHomeWidgetSnapshot(
         ? t("settings.addedBy", { name: citation.addedBy })
         : null,
     showActions: settings.showActions,
+    designId: design.id,
     backgroundImageIndex: citation?.backgroundImageIndex ?? 0,
     fontFamily: getWidgetFontFamily(fontId),
     androidFontFile: FONT_FILE_BY_ID[fontId] ?? FONT_FILE_BY_ID[DEFAULT_WIDGET_FONT],
@@ -67,7 +71,8 @@ export function buildHomeWidgetSnapshot(
     ornamentOpacity: design.ornamentOpacity,
     showOrnament: design.showOrnament,
     showLargeQuotes: design.showLargeQuotes,
-    overlayColor: design.overlayColor,
+    overlayColor: design.overlayColor ?? null,
+      hasBackgroundImage: Boolean(design.randomBackground),
     emptyMessage: t("settings.previewEmpty"),
     fetchedAt: Date.now(),
   };

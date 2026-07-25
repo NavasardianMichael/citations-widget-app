@@ -1,3 +1,4 @@
+import type { WidgetDesignId } from '@/constants/widget-designs'
 import type { WidgetFontId } from '@/fonts/registry'
 
 export type CitationCategory = 'bible' | 'fiction'
@@ -6,6 +7,7 @@ export type CitationStatus = 'approved' | 'pending' | 'rejected' | 'private'
 
 export type FontStyle = WidgetFontId
 export type RefreshRateHours = 6 | 12 | 24
+export type { WidgetDesignId }
 
 export type Citation = {
   id: string
@@ -25,8 +27,11 @@ export type OwnedCitation = Citation & {
 
 export type WidgetCitation = Citation & {
   addedBy: string | null
-  /** Which of WIDGET_BACKGROUND_IMAGES this pick uses — kept stable until the next fetch. */
-  backgroundImageIndex: number
+  /**
+   * Ephemeral display index into WIDGET_BACKGROUND_IMAGES for the sanctuary
+   * (random) design only — not a permanent property of the citation.
+   */
+  backgroundImageIndex?: number
 }
 
 export type WidgetSettings = {
@@ -35,10 +40,13 @@ export type WidgetSettings = {
   refreshRateHours: RefreshRateHours
   fontStyle: FontStyle
   fontSize: number
+  widgetDesign: WidgetDesignId
   showAttribution: boolean
   showActions: boolean
   currentCitationId: string | null
   currentCitationSetAt: string | null
+  /** Current sanctuary random pick for this citation window (not citation-owned). */
+  currentBackgroundImageIndex?: number
   updatedAt: string
 }
 
@@ -48,13 +56,14 @@ export type WidgetSettingsDraft = Pick<
   | 'refreshRateHours'
   | 'fontStyle'
   | 'fontSize'
+  | 'widgetDesign'
   | 'showAttribution'
   | 'showActions'
 >
 
 export type WidgetPreviewDraft = Pick<
   WidgetSettings,
-  'sourceSelection' | 'fontStyle' | 'showAttribution'
+  'sourceSelection' | 'fontStyle' | 'widgetDesign' | 'showAttribution'
 >
 
 export type UserProfile = {

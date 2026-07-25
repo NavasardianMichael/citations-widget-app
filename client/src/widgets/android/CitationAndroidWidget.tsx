@@ -7,7 +7,7 @@ import {
 } from "react-native-android-widget";
 import type { ColorProp } from "react-native-android-widget";
 
-import { getWidgetBackgroundImage } from "@/constants/widget-designs";
+import { resolveWidgetBackgroundImage } from "@/constants/widget-designs";
 import {
   colorWithOpacity,
   getQuoteLineHeight,
@@ -164,8 +164,9 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
                   lineHeight: WIDGET_LAYOUT.metaLineHeight,
                   letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
                   color: asColor(snapshot.metaColor),
+                  // Same face as the quote — omit fontWeight so single-face
+                  // widget fonts are not replaced by a system bold fallback.
                   fontFamily: snapshot.androidFontFile,
-                  fontWeight: "600",
                 }}
               />
             </FlexWidget>
@@ -234,7 +235,9 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
 
 /** Home-screen widget — layout/typography mirrors settings `WidgetPreview`. */
 export function CitationAndroidWidget({ snapshot, width, height }: Props) {
-  const bgImage = getWidgetBackgroundImage(snapshot.backgroundImageIndex);
+  const bgImage = snapshot.hasBackgroundImage
+    ? resolveWidgetBackgroundImage(snapshot.designId, snapshot.backgroundImageIndex)
+    : undefined;
   const imgW = Math.max(1, Math.round(width));
   const imgH = Math.max(1, Math.round(height));
 
