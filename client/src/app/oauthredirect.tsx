@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
 import { useAuth } from '@/contexts/auth-context'
+import { isGoogleSignInPending } from '@/services/google-auth'
+import { getRefreshToken } from '@/services/auth-storage'
 
 /**
  * Landing route for Google OAuth (`…://oauthredirect`).
@@ -24,20 +26,45 @@ export default function OAuthRedirectScreen() {
     let cancelled = false
 
     async function finishAuth() {
-      // Let Login's in-flight promptAsync + setUser finish first when still alive.
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      if (cancelled) return
+      // Poll while Login's in-flight promptAsync + code exchange + setTokens run.
+      // Native Google returns a code; exchange + /api/auth/google/mobile can take a few seconds.
+      const deadline = Date.now() + 12_000
+      while (!cancelled && Date.now() < deadline) {
+        const refreshToken = await getRefreshToken()
+        if (refreshToken) {
+          const recovered = await refreshSession()
+          if (cancelled) return
+          if (recovered) {
+            await completeGuestSignIn()
+            router.replace('/(tabs)')
+            return
+          }
+        }
 
-      // Tokens may already be stored even if Login unmounted before setUser.
-      const recovered = await refreshSession()
-      if (cancelled) return
-      if (recovered) {
-        await completeGuestSignIn()
-        router.replace('/(tabs)')
-        return
+        // Still exchanging / calling the API — keep waiting.
+        if (isGoogleSignInPending()) {
+          await new Promise((resolve) => setTimeout(resolve, 300))
+          continue
+        }
+
+        // Brief grace period after pending clears (setUser may still be mid-flight).
+        await new Promise((resolve) => setTimeout(resolve, 400))
+        if (cancelled) return
+
+        const lateToken = await getRefreshToken()
+        if (lateToken) {
+          const recovered = await refreshSession()
+          if (cancelled) return
+          if (recovered) {
+            await completeGuestSignIn()
+            router.replace('/(tabs)')
+            return
+          }
+        }
+
+        break
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1200))
       if (cancelled) return
       router.replace('/auth/login')
     }
@@ -46,6 +73,7 @@ export default function OAuthRedirectScreen() {
     return () => {
       cancelled = true
     }
+    // `user` is read inside the effect for early exit; re-run when it appears.
   }, [user, isLoading, router, refreshSession, completeGuestSignIn])
 
   return (

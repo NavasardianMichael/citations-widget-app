@@ -21,12 +21,15 @@ import { useAuth } from '@/contexts/auth-context'
 import { t } from '@/i18n'
 import { hasErrors, validateLogin, type FieldErrors } from '@/lib/validation'
 import { AuthApiError } from '@/services/auth-api'
-import { useGoogleSignIn } from '@/services/google-auth'
 
 export default function LoginScreen() {
   const router = useRouter()
-  const { signIn, setUser, completeGuestSignIn } = useAuth()
-  const { signInWithGoogle, request, isConfigured } = useGoogleSignIn()
+  const {
+    signIn,
+    signInWithGoogle,
+    googleAuthReady,
+    isGoogleConfigured,
+  } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fieldErrors, setFieldErrors] = useState<
@@ -69,10 +72,8 @@ export default function LoginScreen() {
     setSessionLimitReached(false)
     setLoading(true)
     try {
-      const data = await signInWithGoogle(forceLogin)
-      if (!data) return
-      setUser(data.user)
-      await completeGuestSignIn()
+      const signedIn = await signInWithGoogle(forceLogin)
+      if (!signedIn) return
       router.replace('/(tabs)')
     } catch (e) {
       if (
@@ -162,13 +163,13 @@ export default function LoginScreen() {
                   disabled={loading}
                 />
 
-                {isConfigured ? (
+                {isGoogleConfigured ? (
                   <Button
                     label={t('auth.login.google')}
                     variant='secondary'
                     leading={<GoogleLogo />}
                     onPress={() => handleGoogleLogin()}
-                    disabled={loading || !request}
+                    disabled={loading || !googleAuthReady}
                   />
                 ) : null}
 

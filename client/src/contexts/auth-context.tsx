@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Href } from "expo-router";
 
 import {
@@ -9,6 +17,7 @@ import {
   registerRequest,
 } from "@/services/auth-api";
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from "@/services/auth-storage";
+import { useGoogleSignIn } from "@/services/google-auth";
 import { migrateGuestDataToAccount } from "@/services/guest-migration";
 import { isGuestMode, setGuestMode } from "@/services/local-storage";
 import type { UserPublic } from "@/types/auth";
@@ -20,6 +29,9 @@ type AuthContextValue = {
   /** One-shot post-sign-out route; consumed by the root auth gate. */
   pendingAuthRoute: Href | null;
   signIn: (email: string, password: string, forceLogin?: boolean) => Promise<void>;
+  signInWithGoogle: (forceLogin?: boolean) => Promise<boolean>;
+  googleAuthReady: boolean;
+  isGoogleConfigured: boolean;
   signUp: (email: string, password: string, name: string) => Promise<string>;
   signOut: (options?: { redirectTo?: Href }) => Promise<void>;
   consumePendingAuthRoute: () => Href | null;
@@ -31,7 +43,11 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-async function persistSession(data: { user: UserPublic; accessToken: string; refreshToken: string }) {
+async function persistSession(data: {
+  user: UserPublic;
+  accessToken: string;
+  refreshToken: string;
+}) {
   await setTokens(data.accessToken, data.refreshToken);
 }
 
@@ -40,6 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAuthRoute, setPendingAuthRoute] = useState<Href | null>(null);
+
+  // Keep Google AuthSession mounted at the root so `/oauthredirect` doesn't
+  // tear down the request (and PKCE verifier) while the browser returns.
+  const {
+    signInWithGoogle: promptGoogleSignIn,
+    request: googleAuthRequest,
+    isConfigured: isGoogleConfigured,
+  } = useGoogleSignIn();
 
   const refreshSession = useCallback(async () => {
     const refreshToken = await getRefreshToken();
@@ -91,12 +115,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsGuest(true);
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string, forceLogin = false) => {
-    const data = await loginRequest(email, password, forceLogin);
-    await persistSession(data);
-    setUser(data.user);
-    await completeGuestSignIn();
-  }, [completeGuestSignIn]);
+  const signIn = useCallback(
+    async (email: string, password: string, forceLogin = false) => {
+      const data = await loginRequest(email, password, forceLogin);
+      await persistSession(data);
+      setUser(data.user);
+      await completeGuestSignIn();
+    },
+    [completeGuestSignIn],
+  );
+
+  const signInWithGoogle = useCallback(
+    async (forceLogin = false) => {
+      const data = await promptGoogleSignIn(forceLogin);
+      if (!data) return false;
+      setUser(data.user);
+      await completeGuestSignIn();
+      return true;
+    },
+    [promptGoogleSignIn, completeGuestSignIn],
+  );
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
     const data = await registerRequest(email, password, name);
@@ -128,6 +166,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       pendingAuthRoute,
       signIn,
+      signInWithGoogle,
+      googleAuthReady: Boolean(googleAuthRequest),
+      isGoogleConfigured,
       signUp,
       signOut,
       consumePendingAuthRoute,
@@ -142,6 +183,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       pendingAuthRoute,
       signIn,
+      signInWithGoogle,
+      googleAuthRequest,
+      isGoogleConfigured,
       signUp,
       signOut,
       consumePendingAuthRoute,
