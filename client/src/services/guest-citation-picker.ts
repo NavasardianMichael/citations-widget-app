@@ -37,18 +37,9 @@ export async function pickGuestWidgetCitation(
     : await getGuestWidgetSettings();
   const widgetDesign = settings.widgetDesign;
 
-  console.log("[widget-citation] pickGuestWidgetCitation", {
-    sourceSelection,
-    widgetDesign,
-  });
-
   if (sourceSelection === "saved") {
     const saved = await getGuestSavedCitations();
     const picked = pickRandom(saved);
-    console.log("[widget-citation] guest saved pool", {
-      poolSize: saved.length,
-      pickedId: picked?.id ?? null,
-    });
     if (!picked) return { citation: null, reason: "empty_pool" };
     return { citation: toWidgetCitation(picked, widgetDesign) };
   }
@@ -56,12 +47,6 @@ export async function pickGuestWidgetCitation(
   const category = sourceSelection === "mixed" ? undefined : sourceSelection;
   const pool = await fetchCitations({ category, limit: 50 });
   const picked = pickRandom(pool);
-  console.log("[widget-citation] guest API pool", {
-    category: category ?? "all",
-    poolSize: pool.length,
-    pickedId: picked?.id ?? null,
-    textPreview: picked?.text?.slice(0, 80) ?? null,
-  });
   if (!picked) return { citation: null, reason: "empty_pool" };
   return { citation: toWidgetCitation(picked, widgetDesign) };
 }

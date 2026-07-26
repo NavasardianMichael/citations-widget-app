@@ -4,16 +4,22 @@ import type { WidgetTaskHandlerProps } from "react-native-android-widget";
 import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
-import { fetchWidgetCitation } from "@/services/api";
+import { t } from "@/i18n";
+import { fetchWidgetCitation, saveCitation, unsaveCitation } from "@/services/api";
 import { pickGuestWidgetCitation } from "@/services/guest-citation-picker";
 import {
   getCachedWidgetCitation,
   getGuestWidgetSettings,
   isGuestMode,
+  removeGuestSavedCitation,
+  saveGuestSavedCitation,
   setCachedWidgetCitation,
 } from "@/services/local-storage";
 import { getWidgetSettings } from "@/services/widget-settings";
-import { buildHomeWidgetSnapshot } from "@/widgets/build-snapshot";
+import {
+  buildHomeWidgetSnapshot,
+  buildHomeWidgetSnapshotAsync,
+} from "@/widgets/build-snapshot";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
 import {
   ANDROID_WIDGET_NAME,
@@ -30,6 +36,27 @@ const FALLBACK_SETTINGS = {
   showAttribution: true,
   showActions: true,
 };
+
+function withDefaults(snapshot: HomeWidgetSnapshot): HomeWidgetSnapshot {
+  return {
+    ...buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null),
+    ...snapshot,
+    loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
+  };
+}
+
+function renderSnapshot(
+  props: WidgetTaskHandlerProps,
+  snapshot: HomeWidgetSnapshot,
+) {
+  props.renderWidget(
+    <CitationAndroidWidget
+      snapshot={withDefaults(snapshot)}
+      width={props.widgetInfo.width}
+      height={props.widgetInfo.height}
+    />,
+  );
+}
 
 /**
  * Loads (or rebuilds) the snapshot to render. This runs on EVERY widget task invocation,
@@ -51,7 +78,7 @@ async function loadSnapshot(): Promise<HomeWidgetSnapshot> {
     const guest = await isGuestMode();
     const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
     const cached = await getCachedWidgetCitation();
-    return buildHomeWidgetSnapshot(settings, cached?.citation ?? null);
+    return buildHomeWidgetSnapshotAsync(settings, cached?.citation ?? null);
   } catch {
     // No persisted snapshot AND settings/cache unreachable (e.g. first placement with no
     // network yet) — render the empty state instead of leaving the widget host with nothing.
@@ -71,11 +98,51 @@ async function refreshCitationSnapshot(): Promise<HomeWidgetSnapshot> {
       fetchedAt: Date.now(),
       sourceSelection: settings.sourceSelection,
     });
-    const snapshot = buildHomeWidgetSnapshot(settings, result.citation);
+    const snapshot = await buildHomeWidgetSnapshotAsync(settings, result.citation);
     await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(snapshot));
     return snapshot;
   } catch {
     return loadSnapshot();
+  }
+}
+
+/** Save / unsave the current citation without opening the app. */
+async function toggleSaveCitation(
+  snapshot: HomeWidgetSnapshot,
+): Promise<HomeWidgetSnapshot> {
+  if (!snapshot.citationId || !snapshot.citationText || !snapshot.citationCategory) {
+    return snapshot;
+  }
+
+  try {
+    const guest = await isGuestMode();
+    if (snapshot.isSaved) {
+      if (guest) {
+        await removeGuestSavedCitation(snapshot.citationId);
+      } else {
+        await unsaveCitation(snapshot.citationId);
+      }
+    } else if (guest) {
+      await saveGuestSavedCitation({
+        id: snapshot.citationId,
+        text: snapshot.citationText,
+        source: snapshot.citationSource,
+        category: snapshot.citationCategory,
+      });
+    } else {
+      await saveCitation(snapshot.citationId);
+    }
+
+    const next: HomeWidgetSnapshot = {
+      ...snapshot,
+      isSaved: !snapshot.isSaved,
+      isRefreshing: false,
+      fetchedAt: Date.now(),
+    };
+    await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return snapshot;
   }
 }
 
@@ -89,25 +156,25 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
     snapshot = await loadSnapshot();
 
     if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
+      // Paint loading copy first (same string as settings preview), then fetch.
+      renderSnapshot(props, {
+        ...snapshot,
+        isRefreshing: true,
+        loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
+      });
       snapshot = await refreshCitationSnapshot();
     }
 
-    // Ensure defaults if older snapshots lack fields.
-    snapshot = {
-      ...buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null),
-      ...snapshot,
-    };
+    if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "TOGGLE_SAVE") {
+      snapshot = await toggleSaveCitation(snapshot);
+    }
+
+    snapshot = withDefaults({ ...snapshot, isRefreshing: false });
   } catch {
     // Belt-and-suspenders: loadSnapshot/refreshCitationSnapshot already catch their own
     // failures, but renderWidget must run no matter what so the widget never goes blank.
     snapshot = buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null);
   }
 
-  props.renderWidget(
-    <CitationAndroidWidget
-      snapshot={snapshot}
-      width={props.widgetInfo.width}
-      height={props.widgetInfo.height}
-    />,
-  );
+  renderSnapshot(props, snapshot);
 }

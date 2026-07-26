@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 
 import type { WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
-import { buildHomeWidgetSnapshot } from "@/widgets/build-snapshot";
+import { buildHomeWidgetSnapshotAsync } from "@/widgets/build-snapshot";
 import {
   ANDROID_WIDGET_NAME,
   HOME_WIDGET_SNAPSHOT_KEY,
@@ -16,7 +16,7 @@ export async function syncHomeWidget(
 ): Promise<void> {
   if (Platform.OS === "web") return;
 
-  const snapshot = buildHomeWidgetSnapshot(settings, citation);
+  const snapshot = await buildHomeWidgetSnapshotAsync(settings, citation);
   await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(snapshot));
 
   if (Platform.OS === "ios") {

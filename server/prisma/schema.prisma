@@ -60,6 +60,8 @@ model User {
   emailVerified Boolean      @default(false) @map("email_verified")
   locale        String       @default("hy") @db.VarChar(5)
   socialUrl     String?      @map("social_url")
+  /** When true, name (+ social link) may appear on other users' widgets. */
+  shareProfile  Boolean      @default(false) @map("share_profile")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
@@ -141,7 +143,6 @@ model Citation {
   category          CitationCategory
   status            CitationStatus   @default(pending)
   submittedByUserId String?          @map("submitted_by_user_id")
-  shareProfile      Boolean          @default(false) @map("share_profile")
   moderatorNote     String?          @map("moderator_note")
   reviewedAt        DateTime?        @map("reviewed_at")
   createdAt         DateTime         @default(now()) @map("created_at")

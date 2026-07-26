@@ -29,7 +29,6 @@ async function insertBatch(rows: SeedCitation[]) {
         ...row,
         status: "approved" as const,
         submittedByUserId: null,
-        shareProfile: false,
       })),
       skipDuplicates: true,
     });

@@ -7,15 +7,17 @@ import {
   type CitationCardVariant,
 } from '@/components/citation-card'
 import { TopAppBar } from '@/components/ui/top-app-bar'
+import { DEFAULT_QUOTE_FONT_SIZE } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
-import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { DEFAULT_WIDGET_FONT } from '@/fonts/registry'
 import { t } from '@/i18n'
-import { fetchSavedCitations, unsaveCitation } from '@/services/api'
+import { fetchSavedCitations, getWidgetSettings, unsaveCitation } from '@/services/api'
 import {
   getGuestSavedCitations,
+  getGuestWidgetSettings,
   removeGuestSavedCitation,
 } from '@/services/local-storage'
-import type { Citation } from '@/types/citation'
+import type { Citation, FontStyle } from '@/types/citation'
 
 const VARIANT_CYCLE: CitationCardVariant[] = [
   'decorative',
@@ -27,8 +29,9 @@ const VARIANT_CYCLE: CitationCardVariant[] = [
 
 export default function SavedScreen() {
   const { isGuest } = useAuth()
-  const { isMd } = useBreakpoint()
   const [citations, setCitations] = useState<Citation[]>([])
+  const [fontStyle, setFontStyle] = useState<FontStyle>(DEFAULT_WIDGET_FONT)
+  const [fontSize, setFontSize] = useState(DEFAULT_QUOTE_FONT_SIZE)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -36,10 +39,13 @@ export default function SavedScreen() {
     setLoading(true)
     setError(null)
     try {
-      const data = isGuest
-        ? await getGuestSavedCitations()
-        : await fetchSavedCitations()
+      const [data, settings] = await Promise.all([
+        isGuest ? getGuestSavedCitations() : fetchSavedCitations(),
+        isGuest ? getGuestWidgetSettings() : getWidgetSettings(),
+      ])
       setCitations(data)
+      setFontStyle(settings.fontStyle)
+      setFontSize(settings.fontSize)
     } catch (e) {
       setError(e instanceof Error ? e.message : t('saved.loadFailed'))
     } finally {
@@ -74,12 +80,6 @@ export default function SavedScreen() {
       <TopAppBar title={t('saved.title')} showBrandIcon />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] gap-12 px-margin-mobile pt-8 md:px-margin-desktop md:pt-12'>
-          <Text
-            className={`max-w-2xl font-body-lg text-body-lg text-on-surface-variant text-center font-bold`}
-          >
-            {t('saved.subtitle')}
-          </Text>
-
           {loading ? (
             <ActivityIndicator size='large' color='#021a35' className='py-12' />
           ) : error ? (
@@ -108,6 +108,8 @@ export default function SavedScreen() {
                     key={citation.id}
                     citation={citation}
                     variant={variant}
+                    fontStyle={fontStyle}
+                    fontSize={fontSize}
                     className={spanClass}
                     onUnsave={() => confirmUnsave(citation.id)}
                   />

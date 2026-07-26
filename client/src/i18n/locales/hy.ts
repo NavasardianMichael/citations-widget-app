@@ -110,7 +110,6 @@ export const hy = {
   'guest.signIn': 'Մուտք գործել',
 
   'saved.title': 'Պահված մեջբերումներ',
-  'saved.subtitle': 'Այստեղ ցուցադրված են Ձեր նախընտրած մեջբերումները',
   'saved.emptyTitle': 'Դեռ պահված մեջբերումներ չկան',
   'saved.emptyBody':
     'Նշեք հատվածներ Կարգավորումների նախադիտումից կամ պահեք Ձեր սեփական մասնավոր ուղարկումները։',
@@ -121,7 +120,6 @@ export const hy = {
   'submit.ctaBody':
     'Կիսվեք Ձեր սիրելի հատվածով, կամ վերանայեք ստորև Ձեր ուղարկումները։',
   'submit.addNew': 'Ավելացնել մեջբերում',
-  'submit.heroTitle': 'Ավելացնել մեջբերում',
   'submit.heroBody':
     'Նվիրաբերեք հանրային հավաքածուին։ Ուղարկված հարցումները վերանայվում են մինչև միանալը։',
   'submit.pendingHint': 'Հարցումները սպասում են վերանայման',
@@ -160,10 +158,6 @@ export const hy = {
   'form.category': 'Կատեգորիա',
   'form.categoryBible': 'Աստվածաշունչ',
   'form.categoryFiction': 'Գրականություն',
-  'form.shareProfile':
-    'Հաստատվելուց հետո ցույց տալ իմ պրոֆիլը այլ օգտատերերի վիջեթներում',
-  'form.shareProfileDetail':
-    '* Այլ օգտատերերի վիջեթներում ցուցադրվող Ձեր տվյալները կարող եք խմբագրել Ձեր պրոֆիլի էջում',
 
   'category.bible': 'Աստվածաշունչ',
   'category.fiction': 'Գրականություն',
@@ -195,6 +189,10 @@ export const hy = {
   'settings.showActions': 'Ցույց տալ գործողությունները կոճակները',
   'settings.showActionsDesc':
     'Ցույց տալ թարմացման, կարգավորումների, պահպանման և կիսվելու կոճակները վիջեթի նախադիտման վրա։',
+  'settings.shareProfile':
+    'Ցույց տալ իմ պրոֆիլը այլ օգտատերերի վիջեթներում',
+  'settings.shareProfileDesc':
+    'Երբ միացված է, Ձեր անունը և սոց․ հղումը կարող են երևալ այլ օգտատերերի վիջեթներում՝ Ձեր ավելացրած մեջբերումների վրա։ Խմբագրեք անունը և հղումը պրոֆիլում։',
   'settings.actionSaveSuccess': 'Մեջբերումը պահպանվեց',
   'settings.actionSaveFailed': 'Չհաջողվեց պահպանել մեջբերումը',
   'settings.attributionDesc':
@@ -218,8 +216,6 @@ export const hy = {
   'settings.designInk': 'Թանաք',
   'settings.designManuscript': 'Ձեռագիր',
   'settings.designSanctuary': 'Սրբավայր',
-  'settings.designPrev': 'Նախորդ դիզայն',
-  'settings.designNext': 'Հաջորդ դիզայն',
   'settings.addedBy': 'Ավելացրել է {name}',
   'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',

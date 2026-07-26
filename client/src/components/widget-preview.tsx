@@ -1,5 +1,4 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useEffect } from 'react'
 import { ImageBackground, Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
@@ -9,7 +8,13 @@ import {
   resolveWidgetBackgroundImage,
   type WidgetDesignId,
 } from '@/constants/widget-designs'
-import { colorWithOpacity, getQuoteLineHeight, WIDGET_LAYOUT } from '@/constants/widget-layout'
+import {
+  colorWithOpacity,
+  getQuoteLineHeight,
+  WIDGET_LAYOUT,
+  WIDGET_QUOTE_FONT_WEIGHT,
+  WIDGET_SOURCE_FONT_WEIGHT,
+} from '@/constants/widget-layout'
 import { getWidgetFontFamily } from '@/fonts/registry'
 import { useWidgetFont } from '@/fonts/use-widget-font'
 import { t } from '@/i18n'
@@ -54,7 +59,7 @@ function PreviewActionIcon({
         accessibilityElementsHidden
         importantForAccessibility='no-hide-descendants'
         className='items-center justify-center'
-        style={sizeStyle}
+        style={[sizeStyle, { opacity: 0.45 }]}
       >
         <MaterialIcons
           name={icon}
@@ -109,23 +114,11 @@ export function WidgetPreview({
     onPress?: () => void
   }[] = [
     { icon: 'refresh', label: t('settings.actionRefresh'), onPress: onRefresh },
-    { icon: 'settings', label: t('settings.actionSettings') },
     { icon: 'bookmark', label: t('settings.actionBookmark'), onPress: onSave },
     { icon: 'share', label: t('settings.actionShare'), onPress: onShare },
   ]
 
   const showLoading = loading || (!!citation && !fontReady)
-
-  useEffect(() => {
-    console.log('[widget-citation] WidgetPreview render', {
-      loading,
-      fontReady,
-      showLoading,
-      citationId: citation?.id ?? null,
-      textPreview: citation?.text?.slice(0, 80) ?? null,
-      ui: showLoading ? 'loading' : citation ? 'citation' : 'empty',
-    })
-  }, [loading, fontReady, showLoading, citation])
 
   const frameStyle = {
     minHeight: WIDGET_LAYOUT.previewMinHeight,
@@ -152,6 +145,7 @@ export function WidgetPreview({
         fontFamily,
         fontSize,
         lineHeight: quoteLineHeight,
+        fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
         color: tokens.attributionColor,
       }}
     >
@@ -163,6 +157,7 @@ export function WidgetPreview({
         fontFamily,
         fontSize,
         lineHeight: quoteLineHeight,
+        fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
         color: tokens.quoteColor,
       }}
     >
@@ -174,6 +169,7 @@ export function WidgetPreview({
         fontFamily,
         fontSize,
         lineHeight: quoteLineHeight,
+        fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
         color: tokens.attributionColor,
       }}
     >
@@ -183,45 +179,39 @@ export function WidgetPreview({
 
   const metaContent = citation ? (
     <View style={{ gap: WIDGET_LAYOUT.metaBlockGap, marginTop: WIDGET_LAYOUT.sectionGap }}>
-      <View
-        className='w-full flex-row flex-wrap items-center justify-end'
+      <Text
+        className='w-full uppercase'
         style={{
-          columnGap: WIDGET_LAYOUT.actionGap,
-          rowGap: WIDGET_LAYOUT.sourceActionsGap,
+          color: tokens.metaColor,
+          fontFamily,
+          fontSize: WIDGET_LAYOUT.metaFontSize,
+          lineHeight: WIDGET_LAYOUT.metaLineHeight,
+          letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+          fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
         }}
       >
-        <Text
-          className='mr-auto min-w-0 uppercase'
+        {citation.source || citation.category}
+      </Text>
+      {showActions ? (
+        <View
+          className='w-full flex-row flex-wrap justify-end'
           style={{
-            color: tokens.metaColor,
-            // Same face as the quote — do not set fontWeight; synthetic bold
-            // makes Android fall back to a system font for single-face widget OTFs.
-            fontFamily,
-            fontSize: WIDGET_LAYOUT.metaFontSize,
-            lineHeight: WIDGET_LAYOUT.metaLineHeight,
-            letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+            columnGap: WIDGET_LAYOUT.actionGap,
+            rowGap: WIDGET_LAYOUT.sourceActionsGap,
           }}
         >
-          {citation.source || citation.category}
-        </Text>
-        {showActions ? (
-          <View
-            className='flex-row shrink-0'
-            style={{ gap: WIDGET_LAYOUT.actionGap }}
-          >
-            {previewActions.map((action) => (
-              <PreviewActionIcon
-                key={action.icon}
-                icon={action.icon}
-                label={action.label}
-                onPress={action.onPress}
-                backgroundColor={tokens.actionBg}
-                iconColor={tokens.actionIconColor}
-              />
-            ))}
-          </View>
-        ) : null}
-      </View>
+          {previewActions.map((action) => (
+            <PreviewActionIcon
+              key={action.icon}
+              icon={action.icon}
+              label={action.label}
+              onPress={action.onPress}
+              backgroundColor={tokens.actionBg}
+              iconColor={tokens.actionIconColor}
+            />
+          ))}
+        </View>
+      ) : null}
       {citation.addedBy ? (
         <Text
           style={{

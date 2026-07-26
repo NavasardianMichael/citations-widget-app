@@ -31,6 +31,11 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   sourceText: '',
   attributionText: null,
   showActions: false,
+  citationId: null,
+  citationText: '',
+  citationSource: '',
+  citationCategory: null,
+  isSaved: false,
   designId: emptyDesign.id,
   backgroundImageIndex: 0,
   fontFamily: 'DavelAghvor',
@@ -52,6 +57,8 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   overlayColor: emptyDesign.overlayColor ?? null,
   hasBackgroundImage: Boolean(emptyDesign.randomBackground),
   emptyMessage: '',
+  loadingMessage: '',
+  isRefreshing: false,
   fetchedAt: 0,
 }
 
@@ -149,14 +156,20 @@ function CitationWidgetView(
         modifiers={[
           font({
             size: data.fontSize,
-            weight: 'regular',
+            weight: 'semibold',
             family: data.fontFamily,
           }),
-          foregroundStyle(toArgbHex(data.quoteColor)),
+          foregroundStyle(
+            toArgbHex(
+              data.isRefreshing ? data.attributionColor : data.quoteColor,
+            ),
+          ),
           frame({ maxWidth: Infinity, alignment: 'leading' }),
         ]}
       >
-        {data.quoteText || data.emptyMessage}
+        {data.isRefreshing
+          ? data.loadingMessage || data.emptyMessage
+          : data.quoteText || data.emptyMessage}
       </Text>
 
       <VStack
@@ -167,54 +180,46 @@ function CitationWidgetView(
           frame({ maxWidth: Infinity, alignment: 'leading' }),
         ]}
       >
-        <HStack
-          spacing={WIDGET_LAYOUT.actionGap}
-          alignment='center'
-          modifiers={[frame({ maxWidth: Infinity })]}
-        >
-          {data.sourceText ? (
-            <Text
-              modifiers={[
-                font({
-                  size: WIDGET_LAYOUT.metaFontSize,
-                  weight: 'semibold',
-                  family: data.fontFamily,
-                }),
-                foregroundStyle(toArgbHex(data.metaColor)),
-                frame({ maxWidth: Infinity, alignment: 'leading' }),
-              ]}
-            >
-              {data.sourceText.toUpperCase()}
-            </Text>
-          ) : (
-            <Spacer />
-          )}
+        {!data.isRefreshing && data.sourceText ? (
+          <Text
+            modifiers={[
+              font({
+                size: WIDGET_LAYOUT.metaFontSize,
+                weight: 'regular',
+                family: data.fontFamily,
+              }),
+              foregroundStyle(toArgbHex(data.metaColor)),
+              frame({ maxWidth: Infinity, alignment: 'leading' }),
+            ]}
+          >
+            {data.sourceText.toUpperCase()}
+          </Text>
+        ) : null}
 
-          {data.showActions ? (
-            <HStack spacing={WIDGET_LAYOUT.actionGap}>
-              <ActionChip
-                label='↻'
-                iconColor={data.actionIconColor}
-                actionBg={data.actionBg}
-              />
-              <ActionChip
-                label='⚙'
-                iconColor={data.actionIconColor}
-                actionBg={data.actionBg}
-              />
-              <ActionChip
-                label='☆'
-                iconColor={data.actionIconColor}
-                actionBg={data.actionBg}
-              />
-              <ActionChip
-                label='↗'
-                iconColor={data.actionIconColor}
-                actionBg={data.actionBg}
-              />
-            </HStack>
-          ) : null}
-        </HStack>
+        {data.showActions ? (
+          <HStack
+            spacing={WIDGET_LAYOUT.actionGap}
+            alignment='center'
+            modifiers={[frame({ maxWidth: Infinity, alignment: 'trailing' })]}
+          >
+            <Spacer />
+            <ActionChip
+              label='↻'
+              iconColor={data.actionIconColor}
+              actionBg={data.actionBg}
+            />
+            <ActionChip
+              label={data.isSaved ? '✕' : '☆'}
+              iconColor={data.actionIconColor}
+              actionBg={data.actionBg}
+            />
+            <ActionChip
+              label='↗'
+              iconColor={data.actionIconColor}
+              actionBg={data.actionBg}
+            />
+          </HStack>
+        ) : null}
 
         {data.attributionText ? (
           <Text

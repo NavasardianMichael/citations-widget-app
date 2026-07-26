@@ -14,6 +14,8 @@ import {
   WIDGET_ICON_FONT_FAMILY,
   WIDGET_ICON_GLYPH,
   WIDGET_LAYOUT,
+  WIDGET_QUOTE_FONT_WEIGHT,
+  WIDGET_SOURCE_FONT_WEIGHT,
 } from "@/constants/widget-layout";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
 
@@ -37,7 +39,7 @@ function ActionChip({
   icon: string;
   color: string;
   backgroundColor: string;
-  clickAction: string;
+  clickAction?: string;
   clickActionData?: Record<string, string>;
 }) {
   return (
@@ -57,14 +59,49 @@ function ActionChip({
         icon={icon}
         size={WIDGET_LAYOUT.actionIconSize}
         font={WIDGET_ICON_FONT_FAMILY}
-        style={{ color: asColor(color) }}
+        style={{
+          color: asColor(clickAction ? color : colorWithOpacity(color, 0.45)),
+        }}
       />
     </FlexWidget>
   );
 }
 
-function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
-  const content = snapshot.quoteText || snapshot.emptyMessage;
+type WidgetAction = {
+  icon: string;
+  clickAction?: string;
+  clickActionData?: Record<string, string>;
+};
+
+function actionsPerRow(widgetWidth: number): number {
+  const inner = Math.max(0, widgetWidth - WIDGET_LAYOUT.padding * 2);
+  const cell = WIDGET_LAYOUT.actionSize + WIDGET_LAYOUT.actionGap;
+  // n * size + (n - 1) * gap <= inner  →  n <= (inner + gap) / cell
+  return Math.max(1, Math.floor((inner + WIDGET_LAYOUT.actionGap) / cell));
+}
+
+function chunkActions(actions: WidgetAction[], perRow: number): WidgetAction[][] {
+  const rows: WidgetAction[][] = [];
+  for (let i = 0; i < actions.length; i += perRow) {
+    rows.push(actions.slice(i, i + perRow));
+  }
+  return rows;
+}
+
+function WidgetBody({
+  snapshot,
+  width,
+}: {
+  snapshot: HomeWidgetSnapshot;
+  width: number;
+}) {
+  const isRefreshing = Boolean(snapshot.isRefreshing);
+  const content = isRefreshing
+    ? snapshot.loadingMessage || snapshot.emptyMessage
+    : snapshot.quoteText || snapshot.emptyMessage;
+  const quoteColor = isRefreshing
+    ? snapshot.attributionColor
+    : snapshot.quoteColor;
   const ornamentColor = colorWithOpacity(
     snapshot.ornamentColor,
     snapshot.ornamentOpacity,
@@ -73,6 +110,29 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
     snapshot.ornamentColor,
     Math.min(1, snapshot.ornamentOpacity + 0.15),
   );
+  const actions: WidgetAction[] = snapshot.showActions
+    ? [
+        {
+          icon: WIDGET_ICON_GLYPH.refresh,
+          // Disabled while a refresh is already in flight.
+          clickAction: isRefreshing ? undefined : "REFRESH",
+        },
+        {
+          icon: snapshot.isSaved
+            ? WIDGET_ICON_GLYPH.bookmarkRemove
+            : WIDGET_ICON_GLYPH.bookmarkBorder,
+          clickAction: isRefreshing ? undefined : "TOGGLE_SAVE",
+        },
+        {
+          icon: WIDGET_ICON_GLYPH.share,
+          clickAction: isRefreshing ? undefined : "OPEN_URI",
+          clickActionData: isRefreshing
+            ? undefined
+            : { uri: "citationswidget://widget-share" },
+        },
+      ]
+    : [];
+  const actionRows = chunkActions(actions, actionsPerRow(width));
 
   return (
     <FlexWidget
@@ -128,8 +188,9 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
           style={{
             fontSize: snapshot.fontSize,
             lineHeight: getQuoteLineHeight(snapshot.fontSize),
-            color: asColor(snapshot.quoteColor),
+            color: asColor(quoteColor),
             fontFamily: snapshot.androidFontFile,
+            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
             width: "match_parent",
           }}
         />
@@ -143,77 +204,59 @@ function WidgetBody({ snapshot }: { snapshot: HomeWidgetSnapshot }) {
           marginTop: WIDGET_LAYOUT.sectionGap,
         }}
       >
-        <FlexWidget
-          style={{
-            width: "match_parent",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexGap: WIDGET_LAYOUT.actionGap,
-          }}
-        >
-          {snapshot.sourceText ? (
-            <FlexWidget style={{ flex: 1 }}>
-              <TextWidget
-                text={snapshot.sourceText.toUpperCase()}
-                maxLines={1}
-                truncate="END"
-                allowFontScaling={false}
+        {!isRefreshing && snapshot.sourceText ? (
+          <TextWidget
+            text={snapshot.sourceText.toUpperCase()}
+            maxLines={2}
+            truncate="END"
+            allowFontScaling={false}
+            style={{
+              fontSize: WIDGET_LAYOUT.metaFontSize,
+              lineHeight: WIDGET_LAYOUT.metaLineHeight,
+              letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+              color: asColor(snapshot.metaColor),
+              fontFamily: snapshot.androidFontFile,
+              fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
+              width: "match_parent",
+            }}
+          />
+        ) : null}
+
+        {actionRows.length > 0 ? (
+          <FlexWidget
+            style={{
+              width: "match_parent",
+              flexDirection: "column",
+              flexGap: WIDGET_LAYOUT.sourceActionsGap,
+            }}
+          >
+            {actionRows.map((row, rowIndex) => (
+              <FlexWidget
+                key={`action-row-${rowIndex}`}
                 style={{
-                  fontSize: WIDGET_LAYOUT.metaFontSize,
-                  lineHeight: WIDGET_LAYOUT.metaLineHeight,
-                  letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
-                  color: asColor(snapshot.metaColor),
-                  // Same face as the quote — omit fontWeight so single-face
-                  // widget fonts are not replaced by a system bold fallback.
-                  fontFamily: snapshot.androidFontFile,
+                  width: "match_parent",
+                  flexDirection: "row",
+                  flexGap: WIDGET_LAYOUT.actionGap,
+                  alignItems: "center",
+                  justifyContent: "flex-end",
                 }}
-              />
-            </FlexWidget>
-          ) : (
-            <FlexWidget style={{ flex: 1 }} />
-          )}
+              >
+                {row.map((action) => (
+                  <ActionChip
+                    key={action.icon}
+                    icon={action.icon}
+                    color={snapshot.actionIconColor}
+                    backgroundColor={snapshot.actionBg}
+                    clickAction={action.clickAction}
+                    clickActionData={action.clickActionData}
+                  />
+                ))}
+              </FlexWidget>
+            ))}
+          </FlexWidget>
+        ) : null}
 
-          {snapshot.showActions ? (
-            <FlexWidget
-              style={{
-                flexDirection: "row",
-                flexGap: WIDGET_LAYOUT.actionGap,
-                alignItems: "center",
-              }}
-            >
-              <ActionChip
-                icon={WIDGET_ICON_GLYPH.refresh}
-                color={snapshot.actionIconColor}
-                backgroundColor={snapshot.actionBg}
-                clickAction="REFRESH"
-              />
-              <ActionChip
-                icon={WIDGET_ICON_GLYPH.settings}
-                color={snapshot.actionIconColor}
-                backgroundColor={snapshot.actionBg}
-                clickAction="OPEN_URI"
-                clickActionData={{ uri: "citationswidget://settings" }}
-              />
-              <ActionChip
-                icon={WIDGET_ICON_GLYPH.bookmark}
-                color={snapshot.actionIconColor}
-                backgroundColor={snapshot.actionBg}
-                clickAction="OPEN_URI"
-                clickActionData={{ uri: "citationswidget:///" }}
-              />
-              <ActionChip
-                icon={WIDGET_ICON_GLYPH.share}
-                color={snapshot.actionIconColor}
-                backgroundColor={snapshot.actionBg}
-                clickAction="OPEN_URI"
-                clickActionData={{ uri: "citationswidget:///" }}
-              />
-            </FlexWidget>
-          ) : null}
-        </FlexWidget>
-
-        {snapshot.attributionText ? (
+        {!isRefreshing && snapshot.attributionText ? (
           <TextWidget
             text={snapshot.attributionText}
             maxLines={1}
@@ -275,7 +318,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
             backgroundColor: asColor(snapshot.overlayColor),
           }}
         >
-          <WidgetBody snapshot={snapshot} />
+          <WidgetBody snapshot={snapshot} width={width} />
         </FlexWidget>
       </OverlapWidget>
     );
@@ -297,7 +340,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
         borderRadius: WIDGET_LAYOUT.borderRadius,
       }}
     >
-      <WidgetBody snapshot={snapshot} />
+      <WidgetBody snapshot={snapshot} width={width} />
     </FlexWidget>
   );
 }

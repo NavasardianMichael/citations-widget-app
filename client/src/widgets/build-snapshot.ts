@@ -10,6 +10,11 @@ import {
   type WidgetFontId,
 } from "@/fonts/registry";
 import { t } from "@/i18n";
+import { fetchSavedCitations } from "@/services/api";
+import {
+  getGuestSavedCitations,
+  isGuestMode,
+} from "@/services/local-storage";
 import type { WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
 
@@ -38,9 +43,26 @@ const FONT_FILE_BY_ID = Object.fromEntries(
   WIDGET_FONT_OPTIONS.map((font) => [font.id, fontFileBasename(font.id)]),
 ) as Record<WidgetFontId, string>;
 
+export async function resolveCitationIsSaved(
+  citationId: string | null | undefined,
+): Promise<boolean> {
+  if (!citationId) return false;
+  try {
+    if (await isGuestMode()) {
+      const saved = await getGuestSavedCitations();
+      return saved.some((c) => c.id === citationId);
+    }
+    const saved = await fetchSavedCitations();
+    return saved.some((c) => c.id === citationId);
+  } catch {
+    return false;
+  }
+}
+
 export function buildHomeWidgetSnapshot(
   settings: WidgetSettingsDraft,
   citation: WidgetCitation | null,
+  isSaved = false,
 ): HomeWidgetSnapshot {
   const design = getWidgetDesign(settings.widgetDesign ?? DEFAULT_WIDGET_DESIGN);
   const fontId = (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId;
@@ -53,6 +75,11 @@ export function buildHomeWidgetSnapshot(
         ? t("settings.addedBy", { name: citation.addedBy })
         : null,
     showActions: settings.showActions,
+    citationId: citation?.id ?? null,
+    citationText: citation?.text ?? "",
+    citationSource: citation?.source ?? "",
+    citationCategory: citation?.category ?? null,
+    isSaved: Boolean(citation && isSaved),
     designId: design.id,
     backgroundImageIndex: citation?.backgroundImageIndex ?? 0,
     fontFamily: getWidgetFontFamily(fontId),
@@ -72,8 +99,18 @@ export function buildHomeWidgetSnapshot(
     showOrnament: design.showOrnament,
     showLargeQuotes: design.showLargeQuotes,
     overlayColor: design.overlayColor ?? null,
-      hasBackgroundImage: Boolean(design.randomBackground),
+    hasBackgroundImage: Boolean(design.randomBackground),
     emptyMessage: t("settings.previewEmpty"),
+    loadingMessage: t("settings.previewLoading"),
+    isRefreshing: false,
     fetchedAt: Date.now(),
   };
+}
+
+export async function buildHomeWidgetSnapshotAsync(
+  settings: WidgetSettingsDraft,
+  citation: WidgetCitation | null,
+): Promise<HomeWidgetSnapshot> {
+  const isSaved = await resolveCitationIsSaved(citation?.id);
+  return buildHomeWidgetSnapshot(settings, citation, isSaved);
 }

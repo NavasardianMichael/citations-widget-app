@@ -1,4 +1,5 @@
 import type { WidgetDesignId } from "@/constants/widget-designs";
+import type { CitationCategory } from "@/types/citation";
 
 /** Flat, JSON-safe props pushed to home-screen widgets. */
 export type HomeWidgetSnapshot = {
@@ -6,6 +7,13 @@ export type HomeWidgetSnapshot = {
   sourceText: string;
   attributionText: string | null;
   showActions: boolean;
+  /** Current citation id for in-widget save/unsave; null when empty. */
+  citationId: string | null;
+  citationText: string;
+  citationSource: string;
+  citationCategory: CitationCategory | null;
+  /** Whether the current citation is in the user's saved list. */
+  isSaved: boolean;
   designId: WidgetDesignId;
   /** Sanctuary random-pool index; ignored for fixed/solid designs. */
   backgroundImageIndex: number;
@@ -30,6 +38,10 @@ export type HomeWidgetSnapshot = {
   overlayColor: string | null;
   hasBackgroundImage: boolean;
   emptyMessage: string;
+  /** Same copy as settings preview (`settings.previewLoading`). */
+  loadingMessage: string;
+  /** True while a widget refresh is in flight — show loadingMessage as quote. */
+  isRefreshing: boolean;
   fetchedAt: number;
 };
 

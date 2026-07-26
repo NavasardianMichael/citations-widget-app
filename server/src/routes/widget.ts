@@ -151,12 +151,23 @@ async function withAttribution(
     ...(backgroundImageIndex !== undefined ? { backgroundImageIndex } : {}),
   };
 
-  if (!showAttribution || !citation.shareProfile || !citation.submittedByUserId) {
+  if (!showAttribution || !citation.submittedByUserId) {
     return { ...base, addedBy: null };
   }
 
-  const submitter = await prisma.user.findUnique({ where: { id: citation.submittedByUserId } });
-  return { ...base, addedBy: submitter?.name ?? null };
+  const submitter = await prisma.user.findUnique({
+    where: { id: citation.submittedByUserId },
+  });
+  if (!submitter?.shareProfile) {
+    return { ...base, addedBy: null };
+  }
+
+  const name = submitter.name.trim();
+  const socialUrl = submitter.socialUrl?.trim();
+  return {
+    ...base,
+    addedBy: socialUrl ? `${name} · ${socialUrl}` : name || null,
+  };
 }
 
 widgetRouter.get("/widget/citation", async (req, res) => {

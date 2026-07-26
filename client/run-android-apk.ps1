@@ -1,6 +1,6 @@
-# Builds a shareable APK for phone install.
-# On Windows, Gradle must not mix subst drive W: with the real C: path — so this
-# script temporarily unmaps W:, builds from the real client folder, then remaps.
+﻿# Builds a shareable APK for phone install.
+# On Windows, Desktop paths are too long for CMake/ninja (reanimated), so this
+# syncs to C:\cw\client and builds there - same short-path strategy as run-android.ps1.
 #
 # Usage:
 #   npm run android:apk           # release APK (arm64)
@@ -11,16 +11,23 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$clientDir = $PSScriptRoot
-$repoRoot = (Resolve-Path (Join-Path $clientDir "..")).Path
+
+$desktopClient = $PSScriptRoot
+$cwClient = "C:\cw\client"
+$cwRoot = "C:\cw"
+$desktopRoot = (Resolve-Path (Join-Path $desktopClient "..")).Path
 $drive = "W:"
 
-function Ensure-WDriveMapped {
+function Ensure-WDriveMapped([string]$targetRoot) {
   $substList = subst 2>$null
   $mapped = $substList | Select-String "^$drive"
   if (-not $mapped) {
-    Write-Host "Remapping $drive -> $repoRoot" -ForegroundColor Yellow
-    subst $drive $repoRoot | Out-Null
+    Write-Host "Remapping $drive -> $targetRoot" -ForegroundColor Yellow
+    subst $drive $targetRoot | Out-Null
+  } elseif ($mapped -notmatch [regex]::Escape($targetRoot)) {
+    Write-Host "Remapping $drive -> $targetRoot (was mapped elsewhere)" -ForegroundColor Yellow
+    subst "$drive" /D | Out-Null
+    subst $drive $targetRoot | Out-Null
   }
 }
 
@@ -75,17 +82,45 @@ function Ensure-GoogleOAuthManifestScheme([string]$manifestPath, [string]$scheme
   Write-Host "Injected Google OAuth scheme into AndroidManifest." -ForegroundColor Green
 }
 
-# Remember if W: pointed at this repo so we can restore after the build.
-$substList = subst 2>$null
-$wWasMappedHere = [bool]($substList | Select-String "^$drive" | Where-Object { $_ -match [regex]::Escape($repoRoot) })
+# Keep C:\cw in sync when launching from the Desktop tree.
+if (
+  ($desktopRoot -ne $cwRoot) -and
+  ($desktopClient -notlike "C:\cw\*") -and
+  ($desktopClient -notlike "W:\*")
+) {
+  Write-Host "Syncing Desktop -> C:\cw before APK build..." -ForegroundColor Yellow
+  New-Item -ItemType Directory -Path $cwRoot -Force | Out-Null
+  $null = robocopy $desktopRoot $cwRoot /E /XD node_modules .cxx build .expo dist .git /NFL /NDL /NP /R:1 /W:1
+  if ($LASTEXITCODE -ge 8) {
+    throw "robocopy Desktop -> C:\cw failed with exit $LASTEXITCODE"
+  }
+}
 
-if ($wWasMappedHere) {
-  Write-Host "Temporarily unmapping $drive for Gradle (avoids mixed W:/C: roots)..." -ForegroundColor Yellow
+$clientDir = & (Join-Path $PSScriptRoot "ensure-windows-path.ps1")
+if ($clientDir -like "W:\*") {
+  if (Test-Path $cwClient) {
+    $clientDir = $cwClient
+  } else {
+    $clientDir = (Resolve-Path $clientDir).Path
+  }
+}
+
+# Prefer real short path for Gradle (avoid mixed W:/C: roots).
+if (Test-Path (Join-Path $cwClient "package.json")) {
+  $clientDir = $cwClient
+}
+
+Write-Host "Building APK from: $clientDir" -ForegroundColor Cyan
+
+# Unmap W: during Gradle so paths don't mix subst + real C: roots.
+$substList = subst 2>$null
+$wWasMapped = [bool]($substList | Select-String "^$drive")
+if ($wWasMapped) {
+  Write-Host "Temporarily unmapping $drive for Gradle..." -ForegroundColor Yellow
   subst "$drive" /D | Out-Null
 }
 
 try {
-  Write-Host "Building APK from: $clientDir" -ForegroundColor Cyan
   Set-Location $clientDir
 
   # Bake EXPO_PUBLIC_* into the release JS bundle and derive OAuth schemes.
@@ -94,25 +129,41 @@ try {
 
   $googleScheme = Get-GoogleReversedScheme $env:EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
   if (-not $googleScheme) {
-    Write-Host "WARNING: EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID unset/invalid — Google login redirect will fail on device." -ForegroundColor Yellow
+    Write-Host "WARNING: EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID unset/invalid - Google login redirect will fail on device." -ForegroundColor Yellow
   } else {
     Ensure-GoogleOAuthManifestScheme (Join-Path $clientDir "android\app\src\main\AndroidManifest.xml") $googleScheme
   }
 
   if (-not $env:EXPO_PUBLIC_GOOGLE_CLIENT_ID) {
-    Write-Host "WARNING: EXPO_PUBLIC_GOOGLE_CLIENT_ID unset — Google button may be disabled or misconfigured." -ForegroundColor Yellow
+    Write-Host "WARNING: EXPO_PUBLIC_GOOGLE_CLIENT_ID unset - Google button may be disabled or misconfigured." -ForegroundColor Yellow
+  }
+
+  # Config plugins only copy fonts on prebuild; keep WidgetGlyphs in sync for APK.
+  $widgetGlyphSrc = Join-Path $clientDir "assets\fonts\widget-glyphs\WidgetGlyphs.ttf"
+  $androidFontsDir = Join-Path $clientDir "android\app\src\main\assets\fonts"
+  if (Test-Path $widgetGlyphSrc) {
+    New-Item -ItemType Directory -Path $androidFontsDir -Force | Out-Null
+    Copy-Item $widgetGlyphSrc (Join-Path $androidFontsDir "WidgetGlyphs.ttf") -Force
+    Remove-Item (Join-Path $androidFontsDir "MaterialIcons.ttf") -Force -ErrorAction SilentlyContinue
   }
 
   $env:NODE_ENV = "production"
   $env:CITATIONS_APK_BUILD = "1"
   $task = if ($Debug) { "assembleDebug" } else { "assembleRelease" }
 
-  # Long paths under Desktop often break CMake/ninja ("build.ninja still dirty").
+  # Stale CMake/ninja trees under long paths break subsequent short-path builds.
   Remove-Item -Recurse -Force @(
     "android\app\.cxx",
     "android\app\build",
-    "android\build"
+    "android\build",
+    "node_modules\react-native-reanimated\android\.cxx",
+    "node_modules\react-native-worklets\android\.cxx"
   ) -ErrorAction SilentlyContinue
+
+  if (-not (Test-Path (Join-Path $clientDir "node_modules"))) {
+    Write-Host "node_modules missing in $clientDir - run npm install there first." -ForegroundColor Red
+    throw "Missing node_modules in APK build directory"
+  }
 
   Set-Location (Join-Path $clientDir "android")
   # Most phones are arm64; single-ABI also reduces ninja path-length pain.
@@ -134,7 +185,7 @@ try {
 }
 finally {
   Remove-Item Env:CITATIONS_APK_BUILD -ErrorAction SilentlyContinue
-  if ($wWasMappedHere) {
-    Ensure-WDriveMapped
+  if ($wWasMapped -and (Test-Path $cwRoot)) {
+    Ensure-WDriveMapped $cwRoot
   }
 }

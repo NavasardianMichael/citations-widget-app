@@ -44,6 +44,10 @@ export function getQuoteLineHeight(fontSize: number): number {
   return Math.round(fontSize * 1.5);
 }
 
+/** Citation quote vs source weights — keep preview, saved cards, and widgets in sync. */
+export const WIDGET_QUOTE_FONT_WEIGHT = '600' as const;
+export const WIDGET_SOURCE_FONT_WEIGHT = 'normal' as const;
+
 /**
  * Native widgets can't render `@expo/vector-icons/MaterialIcons` directly, so this
  * bundles the same MaterialIcons glyphs as their own native font family (registered via the
@@ -69,17 +73,18 @@ export function getQuoteLineHeight(fontSize: number): number {
  *     const fs = require('fs');
  *     const src = fs.readFileSync('node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf');
  *     // Keep this codepoint list in sync with WIDGET_ICON_GLYPH below.
- *     const text = [0xe5d5, 0xe8b8, 0xe866, 0xe80d, 0xe3e4].map(cp => String.fromCodePoint(cp)).join('');
+ *     const text = [0xe5d5, 0xe866, 0xe867, 0xe59a, 0xe80d, 0xe3e4].map(cp => String.fromCodePoint(cp)).join('');
  *     subsetFont(src, text, { targetFormat: 'sfnt' }).then(buf => fs.writeFileSync('assets/fonts/widget-glyphs/WidgetGlyphs.ttf', buf));
  *   "
  */
 export const WIDGET_ICON_FONT_FAMILY = "WidgetGlyphs";
 
-/** MaterialIcons glyph codepoints for `refresh` / `settings` / `bookmark` / `share` / `flare`. */
+/** MaterialIcons glyph codepoints for widget action / ornament icons. */
 export const WIDGET_ICON_GLYPH = {
   refresh: "",
-  settings: "",
   bookmark: "",
+  bookmarkBorder: "",
+  bookmarkRemove: "",
   share: "",
   flare: "",
 } as const;

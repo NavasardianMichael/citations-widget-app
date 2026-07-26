@@ -87,7 +87,6 @@ export function MySubmissions() {
         text: editValues.text.trim(),
         source: editValues.source.trim(),
         category: editValues.category,
-        shareProfile: editValues.shareProfile,
       });
       setSubmissions((prev) => prev.map((c) => (c.id === id ? updated : c)));
       cancelEdit();

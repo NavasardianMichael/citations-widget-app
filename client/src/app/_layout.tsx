@@ -34,8 +34,18 @@ function useProtectedRoute() {
     if (isLoading) return
 
     const inAuthGroup = segments[0] === 'auth'
-    // OAuth callback must not be redirected away while AuthSession completes.
-    if (pathname.includes('oauthredirect')) return
+    const onOAuthRedirect = pathname.includes('oauthredirect')
+    const onWidgetShare = pathname.includes('widget-share')
+
+    // OAuth landing is intentionally blank while AuthSession finishes — but once
+    // we have a user, leave immediately (Login may already be unmounted).
+    if (onOAuthRedirect) {
+      if (user) router.replace('/(tabs)')
+      return
+    }
+
+    // Widget share must present the system sheet before any auth redirect.
+    if (onWidgetShare) return
 
     // Guests may open auth screens to sign in later; only signed-in users are kept out of /auth.
     if (!user && !isGuest && !inAuthGroup) {
@@ -71,6 +81,7 @@ function RootNavigator() {
         <Stack.Screen name='(tabs)' />
         <Stack.Screen name='auth' />
         <Stack.Screen name='oauthredirect' options={{ headerShown: false }} />
+        <Stack.Screen name='widget-share' options={{ headerShown: false }} />
       </Stack>
     </>
   )

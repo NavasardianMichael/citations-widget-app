@@ -23,7 +23,6 @@ function toOwnedCitation(row: Citation) {
   return {
     ...toPublicCitation(row),
     status: row.status,
-    shareProfile: row.shareProfile,
     moderatorNote: row.moderatorNote,
     removableOnRequest: row.status === "approved",
     updatedAt: row.updatedAt.toISOString(),
@@ -78,7 +77,6 @@ const createSchema = z.object({
   text: z.string().min(1).max(400),
   source: z.string().min(1).max(200),
   category: z.enum(["bible", "fiction"]),
-  shareProfile: z.boolean().default(false),
   visibility: z.enum(["private", "pending"]),
 });
 
@@ -92,7 +90,6 @@ citationsRouter.post("/citations", requireAuth, async (req, res) => {
       category: body.category,
       status: body.visibility,
       submittedByUserId: req.userId!,
-      shareProfile: body.shareProfile,
     },
   });
   res.status(201).json(toOwnedCitation(created));
@@ -102,7 +99,6 @@ const patchSchema = z.object({
   text: z.string().min(1).max(400).optional(),
   source: z.string().min(1).max(200).optional(),
   category: z.enum(["bible", "fiction"]).optional(),
-  shareProfile: z.boolean().optional(),
 });
 
 citationsRouter.patch("/citations/:id", requireAuth, async (req, res) => {

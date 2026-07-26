@@ -1,5 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Alert,
   PanResponder,
@@ -9,11 +9,6 @@ import {
   View,
 } from 'react-native'
 
-import {
-  CitationShareCard,
-  CITATION_SHARE_CARD_HEIGHT,
-  CITATION_SHARE_CARD_WIDTH,
-} from '@/components/citation-share-card'
 import { Button } from '@/components/ui/button'
 import { RadioListRow } from '@/components/ui/radio-list-row'
 import { RadioOptionCard } from '@/components/ui/radio-option-card'
@@ -43,20 +38,19 @@ import {
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { t } from '@/i18n'
 import {
+  fetchProfile,
   fetchWidgetCitation,
   previewWidgetCitation,
-  saveCitation,
+  updateProfile,
 } from '@/services/api'
 import { pickGuestWidgetCitation } from '@/services/guest-citation-picker'
 import {
   getCachedWidgetCitation,
   getGuestWidgetSettings,
-  saveGuestSavedCitation,
   saveGuestWidgetSettings,
   setCachedWidgetCitation,
 } from '@/services/local-storage'
 import { syncHomeWidget } from '@/services/home-widget-sync'
-import { shareCitationCard } from '@/services/share-citation-card'
 import {
   getWidgetSettings,
   saveWidgetSettings,
@@ -116,12 +110,15 @@ export default function SettingsScreen() {
   const [preview, setPreview] = useState<WidgetCitation | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [shareProfile, setShareProfile] = useState(false)
+  const [savedShareProfile, setSavedShareProfile] = useState(false)
   const isFirstSourceRender = useRef(true)
   const suppressNextSourceEffect = useRef(false)
   const draftRef = useRef(draft)
-  const shareCardRef = useRef<View>(null)
-  const shareLogoReadyRef = useRef(false)
-  draftRef.current = draft
+
+  useEffect(() => {
+    draftRef.current = draft
+  }, [draft])
 
   const loadWidgetCitation = useCallback(
     async (
@@ -129,12 +126,6 @@ export default function SettingsScreen() {
       refreshRateHours: RefreshRateHours,
       forceFresh = false,
     ) => {
-      console.log('[widget-citation] loadWidgetCitation start', {
-        source,
-        refreshRateHours,
-        forceFresh,
-        isGuest,
-      })
       setPreviewLoading(true)
       try {
         if (!forceFresh) {
@@ -145,45 +136,22 @@ export default function SettingsScreen() {
             // Never treat a null citation as a warm cache hit — that freezes an empty
             // preview for the whole refresh window (e.g. after an empty/unseeded pool).
             if (cached.citation && ageMs < rotationMs) {
-              console.log('[widget-citation] using cache', {
-                ageMs,
-                rotationMs,
-                citationId: cached.citation.id,
-                textPreview: cached.citation.text?.slice(0, 80) ?? null,
-              })
               setPreview(cached.citation)
               return
             }
-            console.log('[widget-citation] cache skipped', {
-              ageMs,
-              rotationMs,
-              hasCitation: Boolean(cached.citation),
-            })
-          } else {
-            console.log('[widget-citation] cache miss', {
-              hasCached: Boolean(cached),
-              cachedSource: cached?.sourceSelection ?? null,
-            })
           }
         }
 
         const result = isGuest
           ? await pickGuestWidgetCitation(source, draftRef.current.widgetDesign)
           : await fetchWidgetCitation(forceFresh)
-        console.log('[widget-citation] fetch result', {
-          path: isGuest ? 'guest' : 'auth',
-          citationId: result.citation?.id ?? null,
-          reason: result.reason ?? null,
-          textPreview: result.citation?.text?.slice(0, 80) ?? null,
-        })
         setPreview(result.citation)
         await setCachedWidgetCitation({
           citation: result.citation,
           fetchedAt: Date.now(),
           sourceSelection: source,
         })
-      } catch (error) {
-        console.warn('[widget-citation] loadWidgetCitation failed', error)
+      } catch {
         setPreview(null)
       } finally {
         setPreviewLoading(false)
@@ -199,11 +167,6 @@ export default function SettingsScreen() {
    */
   const previewDraftPool = useCallback(
     async (source: SourceSelection) => {
-      console.log('[widget-citation] previewDraftPool start', {
-        source,
-        isGuest,
-        fontStyle: draft.fontStyle,
-      })
       setPreviewLoading(true)
       try {
         const result = isGuest
@@ -214,15 +177,8 @@ export default function SettingsScreen() {
               widgetDesign: draft.widgetDesign,
               showAttribution: draft.showAttribution,
             })
-        console.log('[widget-citation] previewDraftPool result', {
-          path: isGuest ? 'guest' : 'auth-preview',
-          citationId: result.citation?.id ?? null,
-          reason: result.reason ?? null,
-          textPreview: result.citation?.text?.slice(0, 80) ?? null,
-        })
         setPreview(result.citation)
-      } catch (error) {
-        console.warn('[widget-citation] previewDraftPool failed', error)
+      } catch {
         setPreview(null)
       } finally {
         setPreviewLoading(false)
@@ -232,7 +188,6 @@ export default function SettingsScreen() {
   )
 
   const loadSettings = useCallback(async () => {
-    console.log('[widget-citation] loadSettings start', { isGuest })
     const settings = isGuest
       ? await getGuestWidgetSettings()
       : await getWidgetSettings()
@@ -245,30 +200,30 @@ export default function SettingsScreen() {
       showAttribution: settings.showAttribution,
       showActions: settings.showActions,
     }
-    console.log('[widget-citation] settings loaded', {
-      sourceSelection: next.sourceSelection,
-      refreshRateHours: next.refreshRateHours,
-      fontStyle: next.fontStyle,
-      widgetDesign: next.widgetDesign,
-    })
     setSaved(next)
     setDraft(next)
+    if (!isGuest) {
+      try {
+        const profile = await fetchProfile()
+        setShareProfile(profile.shareProfile)
+        setSavedShareProfile(profile.shareProfile)
+      } catch {
+        setShareProfile(false)
+        setSavedShareProfile(false)
+      }
+    } else {
+      setShareProfile(false)
+      setSavedShareProfile(false)
+    }
     isFirstSourceRender.current = true
     // The default state always mirrors today's real widget citation — never rolls a new one.
     await loadWidgetCitation(next.sourceSelection, next.refreshRateHours)
     const cached = await getCachedWidgetCitation()
-    console.log('[widget-citation] syncHomeWidget after load', {
-      cachedCitationId: cached?.citation?.id ?? null,
-    })
-    await syncHomeWidget(next, cached?.citation ?? null).catch((error) => {
-      console.warn('[widget-citation] syncHomeWidget failed', error)
-    })
+    await syncHomeWidget(next, cached?.citation ?? null).catch(() => undefined)
   }, [isGuest, loadWidgetCitation])
 
   useEffect(() => {
-    loadSettings().catch((error) => {
-      console.warn('[widget-citation] loadSettings failed', error)
-    })
+    loadSettings().catch(() => undefined)
   }, [loadSettings])
 
   useEffect(() => {
@@ -301,10 +256,6 @@ export default function SettingsScreen() {
     })
   }, [draft.widgetDesign, preview?.id])
 
-  useEffect(() => {
-    shareLogoReadyRef.current = false
-  }, [preview?.id])
-
   function updateDraft<K extends keyof WidgetSettingsDraft>(
     key: K,
     value: WidgetSettingsDraft[K],
@@ -319,22 +270,21 @@ export default function SettingsScreen() {
     }))
   }, [])
 
-  const shiftDesignRef = useRef(shiftDesign)
-  shiftDesignRef.current = shiftDesign
-
-  const swipeResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
-      onMoveShouldSetPanResponderCapture: (_, gesture) =>
-        Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx <= -40) shiftDesignRef.current(1)
-        else if (gesture.dx >= 40) shiftDesignRef.current(-1)
-      },
-    }),
-  ).current
+  const swipeResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gesture) =>
+          Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+        onMoveShouldSetPanResponderCapture: (_, gesture) =>
+          Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderRelease: (_, gesture) => {
+          if (gesture.dx <= -40) shiftDesign(1)
+          else if (gesture.dx >= 40) shiftDesign(-1)
+        },
+      }),
+    [shiftDesign],
+  )
 
   async function handleSave() {
     setSaving(true)
@@ -342,6 +292,10 @@ export default function SettingsScreen() {
       const updated = isGuest
         ? await saveGuestWidgetSettings(draft).then(() => draft)
         : await saveWidgetSettings(draft)
+      if (!isGuest) {
+        await updateProfile({ shareProfile })
+        setSavedShareProfile(shareProfile)
+      }
       const next: WidgetSettingsDraft = {
         sourceSelection: updated.sourceSelection,
         refreshRateHours: updated.refreshRateHours,
@@ -375,60 +329,8 @@ export default function SettingsScreen() {
     if (!saved) return
     suppressNextSourceEffect.current = true
     setDraft(saved)
+    setShareProfile(savedShareProfile)
     loadWidgetCitation(saved.sourceSelection, saved.refreshRateHours).catch(() => undefined)
-  }
-
-  function handleRefreshWidget() {
-    loadWidgetCitation(
-      draft.sourceSelection,
-      draft.refreshRateHours,
-      true,
-    )
-      .then(async () => {
-        const cached = await getCachedWidgetCitation()
-        await syncHomeWidget(draft, cached?.citation ?? preview).catch(
-          () => undefined,
-        )
-      })
-      .catch(() => undefined)
-  }
-
-  async function handleSaveWidgetCitation() {
-    if (!preview) return
-    try {
-      if (isGuest) {
-        await saveGuestSavedCitation({
-          id: preview.id,
-          text: preview.text,
-          source: preview.source,
-          category: preview.category,
-        })
-      } else {
-        await saveCitation(preview.id)
-      }
-      Alert.alert(t('common.save'), t('settings.actionSaveSuccess'))
-    } catch (e) {
-      Alert.alert(
-        t('common.error'),
-        e instanceof Error ? e.message : t('settings.actionSaveFailed'),
-      )
-    }
-  }
-
-  async function handleShareWidgetCitation() {
-    if (!preview) return
-    try {
-      // Give the off-screen card a frame (and logo decode) before capturing.
-      if (!shareLogoReadyRef.current) {
-        await new Promise((resolve) => setTimeout(resolve, 120))
-      }
-      const message = preview.source
-        ? `${preview.text}\n\n— ${preview.source}`
-        : preview.text
-      await shareCitationCard({ viewRef: shareCardRef, message })
-    } catch {
-      Alert.alert(t('common.error'), t('settings.shareFailed'))
-    }
   }
 
   const settingsColumn = (
@@ -474,6 +376,14 @@ export default function SettingsScreen() {
             value={draft.showActions}
             onValueChange={(v) => updateDraft('showActions', v)}
           />
+          {!isGuest ? (
+            <ToggleRow
+              title={t('settings.shareProfile')}
+              description={t('settings.shareProfileDesc')}
+              value={shareProfile}
+              onValueChange={setShareProfile}
+            />
+          ) : null}
         </View>
       </SettingsSection>
 
@@ -517,7 +427,6 @@ export default function SettingsScreen() {
             {...pressableNoRipple}
             onPress={() => shiftDesign(-1)}
             accessibilityRole='button'
-            accessibilityLabel={t('settings.designPrev')}
             className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
           >
             <MaterialIcons name='chevron-left' size={28} color='#021a35' />
@@ -531,9 +440,6 @@ export default function SettingsScreen() {
               design={draft.widgetDesign}
               loading={previewLoading}
               showActions={draft.showActions}
-              onRefresh={handleRefreshWidget}
-              onSave={handleSaveWidgetCitation}
-              onShare={handleShareWidgetCitation}
             />
           </View>
 
@@ -541,7 +447,6 @@ export default function SettingsScreen() {
             {...pressableNoRipple}
             onPress={() => shiftDesign(1)}
             accessibilityRole='button'
-            accessibilityLabel={t('settings.designNext')}
             className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
           >
             <MaterialIcons name='chevron-right' size={28} color='#021a35' />
@@ -610,31 +515,6 @@ export default function SettingsScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* Off-screen social card captured as a PNG when the user taps Share. */}
-      {preview ? (
-        <View
-          pointerEvents='none'
-          style={{
-            position: 'absolute',
-            left: -CITATION_SHARE_CARD_WIDTH - 40,
-            top: 0,
-            width: CITATION_SHARE_CARD_WIDTH,
-            height: CITATION_SHARE_CARD_HEIGHT,
-            opacity: 1,
-          }}
-        >
-          <View ref={shareCardRef} collapsable={false}>
-            <CitationShareCard
-              text={preview.text}
-              source={preview.source}
-              onLogoLoad={() => {
-                shareLogoReadyRef.current = true
-              }}
-            />
-          </View>
-        </View>
-      ) : null}
     </View>
   )
 }

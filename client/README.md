@@ -81,13 +81,15 @@ Rebuild native app only after SDK upgrades, new native modules, or `app.json` pl
 
 ## Shareable APK (phone install)
 
-Windows Desktop paths are too long for release CMake/ninja. Build from a short copy:
+Windows Desktop paths are too long for release CMake/ninja. `npm run android:apk` syncs to `C:\cw\client` and builds there automatically.
 
 ```powershell
-# one-time / when you need a fresh APK tree
+# first time only (or after wiping C:\cw)
 robocopy "$PWD\.." C:\cw /E /XD node_modules .cxx build .git .expo dist /NFL /NDL /NP
 cd C:\cw\client
 npm install
+
+# from Desktop client or C:\cw\client
 npm run android:apk
 ```
 

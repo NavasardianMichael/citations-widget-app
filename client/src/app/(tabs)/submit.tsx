@@ -32,7 +32,6 @@ export default function SubmitScreen() {
         text: values.text.trim(),
         source: values.source.trim(),
         category: values.category,
-        shareProfile: values.shareProfile,
         visibility,
       });
       Alert.alert(
@@ -66,18 +65,11 @@ export default function SubmitScreen() {
       <TopAppBar title={t("submit.title")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-2xl gap-12 px-margin-mobile py-8 md:px-margin-desktop md:py-12">
-          <View className={`gap-4 ${isMd ? "items-start" : "items-center"}`}>
-            <Text
-              className={`font-display-lg text-display-lg-mobile text-primary md:text-display-lg ${isMd ? "text-left" : "text-center"}`}
-            >
-              {t("submit.heroTitle")}
-            </Text>
-            <Text
-              className={`max-w-lg font-body-lg text-body-lg text-on-surface-variant ${isMd ? "text-left" : "text-center"}`}
-            >
-              {t("submit.heroBody")}
-            </Text>
-          </View>
+          <Text
+            className={`max-w-lg font-body-md text-body-md text-on-surface-variant ${isMd ? "text-left" : "text-center self-center"}`}
+          >
+            {t("submit.heroBody")}
+          </Text>
 
           <CitationForm
             values={values}

@@ -3,7 +3,6 @@ import { Text, View } from "react-native";
 
 import { FormField } from "@/components/ui/form-field";
 import { TogglePill } from "@/components/ui/toggle-pill";
-import { ToggleRow } from "@/components/ui/toggle-row";
 import { t } from "@/i18n";
 import type { CitationCategory } from "@/types/citation";
 
@@ -11,26 +10,22 @@ export type CitationFormValues = {
   text: string;
   source: string;
   category: CitationCategory;
-  shareProfile: boolean;
 };
 
 export const emptyCitationFormValues = (): CitationFormValues => ({
   text: "",
   source: "",
   category: "bible",
-  shareProfile: true,
 });
 
 export const citationToFormValues = (citation: {
   text: string;
   source: string;
   category: CitationCategory;
-  shareProfile: boolean;
 }): CitationFormValues => ({
   text: citation.text,
   source: citation.source,
   category: citation.category,
-  shareProfile: citation.shareProfile,
 });
 
 type CitationFormProps = {
@@ -85,14 +80,6 @@ export function CitationForm({ values, onChange, footer, disabled = false, error
           disabled={disabled}
         />
       </View>
-
-      <ToggleRow
-        title={t("form.shareProfile")}
-        description={t("form.shareProfileDetail")}
-        value={values.shareProfile}
-        onValueChange={(shareProfile) => patch("shareProfile", shareProfile)}
-        disabled={disabled}
-      />
 
       {footer ? <View className="border-t border-outline-variant/30 pt-6">{footer}</View> : null}
     </View>

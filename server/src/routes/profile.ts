@@ -14,6 +14,7 @@ function serializeProfile(user: NonNullable<Awaited<ReturnType<typeof prisma.use
     email: user.email,
     name: user.name,
     socialUrl: user.socialUrl,
+    shareProfile: user.shareProfile,
     avatarUrl: user.avatarUrl,
     locale: user.locale ?? "hy",
     createdAt: user.createdAt.toISOString(),
@@ -38,6 +39,7 @@ const patchSchema = z.object({
     .regex(AUTH_VALIDATION.name.pattern, AUTH_VALIDATION.name.messages.pattern)
     .optional(),
   socialUrl: z.string().url().max(300).nullable().optional(),
+  shareProfile: z.boolean().optional(),
 });
 
 profileRouter.patch("/profile", async (req, res) => {

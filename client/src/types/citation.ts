@@ -19,7 +19,6 @@ export type Citation = {
 
 export type OwnedCitation = Citation & {
   status: CitationStatus
-  shareProfile: boolean
   moderatorNote: string | null
   removableOnRequest: boolean
   updatedAt?: string
@@ -71,6 +70,7 @@ export type UserProfile = {
   email?: string
   name: string
   socialUrl: string | null
+  shareProfile: boolean
   avatarUrl: string | null
   createdAt: string
   updatedAt: string
@@ -80,7 +80,6 @@ export type CreateCitationInput = {
   text: string
   source: string
   category: CitationCategory
-  shareProfile: boolean
   visibility: 'private' | 'pending'
 }
 
@@ -88,10 +87,10 @@ export type UpdateCitationInput = {
   text?: string
   source?: string
   category?: CitationCategory
-  shareProfile?: boolean
 }
 
 export type UpdateProfileInput = {
   name?: string
   socialUrl?: string | null
+  shareProfile?: boolean
 }
