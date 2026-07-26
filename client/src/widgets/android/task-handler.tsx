@@ -137,6 +137,7 @@ async function toggleSaveCitation(
       ...snapshot,
       isSaved: !snapshot.isSaved,
       isRefreshing: false,
+      isSaving: false,
       fetchedAt: Date.now(),
     };
     await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(next));
@@ -156,20 +157,31 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
     snapshot = await loadSnapshot();
 
     if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
-      // Paint loading copy first (same string as settings preview), then fetch.
+      // Paint loading copy + refresh-button spinner first, then fetch.
       renderSnapshot(props, {
         ...snapshot,
         isRefreshing: true,
+        isSaving: false,
         loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
       });
       snapshot = await refreshCitationSnapshot();
     }
 
     if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "TOGGLE_SAVE") {
+      // Paint save-button spinner first, then toggle.
+      renderSnapshot(props, {
+        ...snapshot,
+        isSaving: true,
+        isRefreshing: false,
+      });
       snapshot = await toggleSaveCitation(snapshot);
     }
 
-    snapshot = withDefaults({ ...snapshot, isRefreshing: false });
+    snapshot = withDefaults({
+      ...snapshot,
+      isRefreshing: false,
+      isSaving: false,
+    });
   } catch {
     // Belt-and-suspenders: loadSnapshot/refreshCitationSnapshot already catch their own
     // failures, but renderWidget must run no matter what so the widget never goes blank.

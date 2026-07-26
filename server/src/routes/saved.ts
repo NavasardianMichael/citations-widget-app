@@ -57,8 +57,17 @@ savedRouter.post("/saved/:citationId", async (req, res) => {
 
 savedRouter.delete("/saved/:citationId", async (req, res) => {
   const citationId = String(req.params.citationId);
+  const userId = req.userId!;
+
   await prisma.savedCitation.deleteMany({
-    where: { userId: req.userId!, citationId },
+    where: { userId, citationId },
   });
+
+  // Private customs appear in GET /saved via ownership, not a bookmark row.
+  // Removing them from Saved must delete that private citation or they return on refetch.
+  await prisma.citation.deleteMany({
+    where: { id: citationId, submittedByUserId: userId, status: "private" },
+  });
+
   res.status(204).send();
 });

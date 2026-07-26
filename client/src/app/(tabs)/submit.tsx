@@ -1,5 +1,5 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, useWindowDimensions, View } from "react-native";
 
@@ -38,7 +38,7 @@ export default function SubmitScreen() {
         visibility === "private" ? t("submit.savedTitle") : t("submit.submittedTitle"),
         visibility === "private" ? t("submit.savedBody") : t("submit.submittedBody"),
         [
-          { text: t("tabs.profile"), onPress: () => router.push("/profile") },
+          { text: t("submit.viewSubmissions"), onPress: () => router.push("/") },
           { text: t("common.ok") },
         ],
       );
@@ -65,11 +65,26 @@ export default function SubmitScreen() {
       <TopAppBar title={t("submit.title")} showBrandIcon />
       <ScrollView className="flex-1" contentContainerClassName="pb-28 md:pb-12">
         <View className="mx-auto w-full max-w-2xl gap-12 px-margin-mobile py-8 md:px-margin-desktop md:py-12">
-          <Text
-            className={`max-w-lg font-body-md text-body-md text-on-surface-variant ${isMd ? "text-left" : "text-center self-center"}`}
-          >
-            {t("submit.heroBody")}
-          </Text>
+          <View className={`max-w-lg gap-3 ${isMd ? "" : "items-center self-center"}`}>
+            <Text
+              className={`font-body-md text-body-md text-on-surface-variant ${isMd ? "text-left" : "text-center"}`}
+            >
+              {t("submit.heroBody")}
+            </Text>
+            <Text
+              className={`font-label-sm text-label-sm text-on-surface-variant ${isMd ? "text-left" : "text-center"}`}
+            >
+              {t("submit.conditionsNoteBefore")}
+              <Text
+                className="font-label-sm text-label-sm text-primary underline"
+                onPress={() => router.push("/approval-conditions" as Href)}
+                accessibilityRole="link"
+              >
+                {t("submit.conditionsLink")}
+              </Text>
+              {t("submit.conditionsNoteAfter")}
+            </Text>
+          </View>
 
           <CitationForm
             values={values}

@@ -3,6 +3,7 @@ import {
   IconWidget,
   ImageWidget,
   OverlapWidget,
+  SvgWidget,
   TextWidget,
 } from "react-native-android-widget";
 import type { ColorProp } from "react-native-android-widget";
@@ -29,23 +30,44 @@ function asColor(value: string): ColorProp {
   return value as ColorProp;
 }
 
+/** Plain-text body for the system share sheet (no app UI). */
+function buildShareText(snapshot: HomeWidgetSnapshot): string | null {
+  const text = snapshot.citationText.trim();
+  if (!text) return null;
+  const source = snapshot.citationSource.trim();
+  return source ? `${text}\n\n— ${source}` : text;
+}
+
+/**
+ * Static circular spinner sized like action icons. The widget host paints to a
+ * bitmap, so a ProgressBar cannot animate — this keeps chip dimensions stable.
+ */
+function actionSpinnerSvg(color: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="9" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="40 56"/></svg>`;
+}
+
 function ActionChip({
   icon,
   color,
   backgroundColor,
   clickAction,
   clickActionData,
+  loading = false,
 }: {
   icon: string;
   color: string;
   backgroundColor: string;
   clickAction?: string;
   clickActionData?: Record<string, string>;
+  loading?: boolean;
 }) {
+  const enabled = Boolean(clickAction) && !loading;
+  const iconColor = enabled ? color : colorWithOpacity(color, 0.45);
+
   return (
     <FlexWidget
-      clickAction={clickAction}
-      clickActionData={clickActionData}
+      clickAction={enabled ? clickAction : undefined}
+      clickActionData={enabled ? clickActionData : undefined}
       style={{
         height: WIDGET_LAYOUT.actionSize,
         width: WIDGET_LAYOUT.actionSize,
@@ -55,22 +77,34 @@ function ActionChip({
         alignItems: "center",
       }}
     >
-      <IconWidget
-        icon={icon}
-        size={WIDGET_LAYOUT.actionIconSize}
-        font={WIDGET_ICON_FONT_FAMILY}
-        style={{
-          color: asColor(clickAction ? color : colorWithOpacity(color, 0.45)),
-        }}
-      />
+      {loading ? (
+        <SvgWidget
+          svg={actionSpinnerSvg(iconColor)}
+          style={{
+            width: WIDGET_LAYOUT.actionIconSize,
+            height: WIDGET_LAYOUT.actionIconSize,
+          }}
+        />
+      ) : (
+        <IconWidget
+          icon={icon}
+          size={WIDGET_LAYOUT.actionIconSize}
+          font={WIDGET_ICON_FONT_FAMILY}
+          style={{
+            color: asColor(iconColor),
+          }}
+        />
+      )}
     </FlexWidget>
   );
 }
 
 type WidgetAction = {
+  id: string;
   icon: string;
   clickAction?: string;
   clickActionData?: Record<string, string>;
+  loading?: boolean;
 };
 
 function actionsPerRow(widgetWidth: number): number {
@@ -96,6 +130,7 @@ function WidgetBody({
   width: number;
 }) {
   const isRefreshing = Boolean(snapshot.isRefreshing);
+  const isSaving = Boolean(snapshot.isSaving);
   const content = isRefreshing
     ? snapshot.loadingMessage || snapshot.emptyMessage
     : snapshot.quoteText || snapshot.emptyMessage;
@@ -110,25 +145,30 @@ function WidgetBody({
     snapshot.ornamentColor,
     Math.min(1, snapshot.ornamentOpacity + 0.15),
   );
+  const shareText = buildShareText(snapshot);
   const actions: WidgetAction[] = snapshot.showActions
     ? [
         {
+          id: "refresh",
           icon: WIDGET_ICON_GLYPH.refresh,
-          // Disabled while a refresh is already in flight.
+          loading: isRefreshing,
+          // Only the busy action is disabled; others stay tappable.
           clickAction: isRefreshing ? undefined : "REFRESH",
         },
         {
+          id: "save",
           icon: snapshot.isSaved
             ? WIDGET_ICON_GLYPH.bookmarkRemove
             : WIDGET_ICON_GLYPH.bookmarkBorder,
-          clickAction: isRefreshing ? undefined : "TOGGLE_SAVE",
+          loading: isSaving,
+          clickAction: isSaving || !snapshot.citationId ? undefined : "TOGGLE_SAVE",
         },
         {
+          id: "share",
           icon: WIDGET_ICON_GLYPH.share,
-          clickAction: isRefreshing ? undefined : "OPEN_URI",
-          clickActionData: isRefreshing
-            ? undefined
-            : { uri: "citationswidget://widget-share" },
+          // Native SHARE opens the system chooser without launching the app.
+          clickAction: shareText ? "SHARE" : undefined,
+          clickActionData: shareText ? { text: shareText } : undefined,
         },
       ]
     : [];
@@ -194,16 +234,7 @@ function WidgetBody({
             width: "match_parent",
           }}
         />
-      </FlexWidget>
 
-      <FlexWidget
-        style={{
-          width: "match_parent",
-          flexDirection: "column",
-          flexGap: WIDGET_LAYOUT.metaBlockGap,
-          marginTop: WIDGET_LAYOUT.sectionGap,
-        }}
-      >
         {!isRefreshing && snapshot.sourceText ? (
           <TextWidget
             text={snapshot.sourceText.toUpperCase()}
@@ -218,10 +249,20 @@ function WidgetBody({
               fontFamily: snapshot.androidFontFile,
               fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
               width: "match_parent",
+              marginTop: WIDGET_LAYOUT.metaBlockGap,
             }}
           />
         ) : null}
+      </FlexWidget>
 
+      <FlexWidget
+        style={{
+          width: "match_parent",
+          flexDirection: "column",
+          flexGap: WIDGET_LAYOUT.metaBlockGap,
+          marginTop: WIDGET_LAYOUT.sectionGap,
+        }}
+      >
         {actionRows.length > 0 ? (
           <FlexWidget
             style={{
@@ -243,12 +284,13 @@ function WidgetBody({
               >
                 {row.map((action) => (
                   <ActionChip
-                    key={action.icon}
+                    key={action.id}
                     icon={action.icon}
                     color={snapshot.actionIconColor}
                     backgroundColor={snapshot.actionBg}
                     clickAction={action.clickAction}
                     clickActionData={action.clickActionData}
+                    loading={action.loading}
                   />
                 ))}
               </FlexWidget>

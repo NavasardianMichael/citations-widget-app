@@ -12,7 +12,7 @@ export const hy = {
   'common.note': 'Նշում',
   'common.back': 'Հետ',
 
-  'tabs.saved': 'Պահված',
+  'tabs.citations': 'Մեջբերումներ',
   'tabs.submit': 'Ուղարկել',
   'tabs.settings': 'Կարգավորումներ',
   'tabs.profile': 'Պրոֆիլ',
@@ -109,11 +109,16 @@ export const hy = {
     'Այս բաժինն օգտագործելու համար խնդրում ենք գրանցվել կամ մուտք գործել Ձեր հաշիվ։',
   'guest.signIn': 'Մուտք գործել',
 
-  'saved.title': 'Պահված մեջբերումներ',
-  'saved.emptyTitle': 'Դեռ պահված մեջբերումներ չկան',
-  'saved.emptyBody':
-    'Նշեք հատվածներ Կարգավորումների նախադիտումից կամ պահեք Ձեր սեփական մասնավոր ուղարկումները։',
-  'saved.loadFailed': 'Չհաջողվեց բեռնել պահված մեջբերումները',
+  'citations.title': 'Մեջբերումներ',
+  'citations.emptyTitle': 'Մեջբերումներ չկան',
+  'citations.emptyBody':
+    'Պահեք հատվածներ Կարգավորումներից, կամ ուղարկեք Ձեր սեփական մեջբերումները։',
+  'citations.loadFailed': 'Չհաջողվեց բեռնել մեջբերումները',
+  'citations.filterAll': 'Բոլորը',
+  'citations.filterSaved': 'Պահված',
+  'citations.filterPending': 'Ուղարկված է հաստատման',
+  'citations.filterApproved': 'Հաստատված',
+  'citations.filterPrivate': 'Անձնական',
 
   'submit.title': 'Ավելացնել մեջբերում',
   'submit.ctaTitle': 'Ավելացրեք նոր մեջբերում',
@@ -122,6 +127,9 @@ export const hy = {
   'submit.addNew': 'Ավելացնել մեջբերում',
   'submit.heroBody':
     'Նվիրաբերեք հանրային հավաքածուին։ Ուղարկված հարցումները վերանայվում են մինչև միանալը։',
+  'submit.conditionsNoteBefore': 'Հաստատման համար պետք է բավարարվեն բոլոր ',
+  'submit.conditionsLink': 'պայմանները',
+  'submit.conditionsNoteAfter': '։',
   'submit.pendingHint': 'Հարցումները սպասում են վերանայման',
   'submit.missingTextTitle': 'Բացակայում է տեքստը',
   'submit.missingTextBody': 'Խնդրում ենք մուտքագրել մեջբերման տեքստը։',
@@ -129,20 +137,13 @@ export const hy = {
   'submit.submittedTitle': 'Ուղարկված է',
   'submit.savedBody': 'Պահված է Ձեր անձնական ցուցակում։',
   'submit.submittedBody': 'Ուղարկված է վերանայման։',
-  'submit.viewSubmissions': 'Դիտել իմ ուղարկումները',
+  'submit.viewSubmissions': 'Դիտել մեջբերումները',
   'submit.failed':
     'Չհաջողվեց ուղարկել մեջբերումը․ խնդրում ենք փորձել ևս մեկ անգամ կամ կապվեք մեզ հետ։',
   'submit.savePrivate': 'Պահել իմ ցուցակում',
   'submit.forReview': 'Ուղարկել վերանայման',
   'submit.submitting': 'Ուղարկվում է…',
   'submit.loadFailed': 'Չհաջողվեց բեռնել ուղարկումները',
-  'submit.filterAll': 'Բոլորը',
-  'submit.filterPending': 'Սպասող',
-  'submit.filterApproved': 'Հաստատված',
-  'submit.filterRejected': 'Մերժված',
-  'submit.filterPrivate': 'Մասնավոր',
-  'submit.mySubmissions': 'Իմ ուղարկումները',
-  'submit.noSubmissions': 'Այս ֆիլտրով ուղարկումներ չկան։',
   'submit.deleteTitle': 'Ջնջել մեջբերումը',
   'submit.deleteBody': 'Սա հնարավոր չէ հետարկել։',
   'submit.deleteAction': 'Ջնջել',
@@ -150,6 +151,22 @@ export const hy = {
   'submit.citationPendingReview':
     'Փոփոխությունները պահված են։ Մեջբերումը սպասում է վերանայման։',
   'submit.updateCitationFailed': 'Չհաջողվեց թարմացնել մեջբերումը',
+
+  'approvalConditions.title': 'Հաստատման պայմաններ',
+  'approvalConditions.intro':
+    'Հանրային հավաքածուում հայտնվելու համար ուղարկված մեջբերումը պետք է համապատասխանի ստորև նշված պայմաններին։',
+  'approvalConditions.requirementsHeading': 'Պարտադիր պայմաններ',
+  'approvalConditions.reqExactMatch':
+    'Մեջբերման տեքստը պետք է ճշգրիտ համընկնի նշված աղբյուրում եղած բնագրի հետ։',
+  'approvalConditions.reqValidSource':
+    'Աղբյուրը կամ հեղինակը պետք է լինի վավեր և ստուգելի (օր․՝ գրքի անուն, Աստվածաշնչի հատված)։',
+  'approvalConditions.reqArmenian': 'Մեջբերումը պետք է լինի հայերեն։',
+  'approvalConditions.notesHeading': 'Լրացուցիչ նշումներ',
+  'approvalConditions.noteEdit':
+    'Հաստատման ժամանակ մեջբերումը կարող է փոքր-ինչ խմբագրվել՝ պարզության կամ ոճի համար, առանց իմաստը փոխելու։',
+  'approvalConditions.noteBeautify':
+    'Հնարավոր է նաև ձևաչափման կամ կետադրության ճշգրտում՝ որպեսզի մեջբերումը ավելի ընթեռնելի լինի հավելվածում։',
+  'approvalConditions.backToSubmit': 'Վերադառնալ ուղարկմանը',
 
   'form.citationText': 'Մեջբերման տեքստ',
   'form.citationPlaceholder': 'Մուտքագրեք տեքստը',
@@ -178,6 +195,22 @@ export const hy = {
   'profile.updated': 'Պրոֆիլը թարմացված է։',
   'profile.loadFailed': 'Չհաջողվեց բեռնել պրոֆիլը',
   'profile.updateFailed': 'Չհաջողվեց թարմացնել պրոֆիլը',
+  'profile.contactUs': 'Կապ մեզ հետ',
+
+  'contact.title': 'Կապ մեզ հետ',
+  'contact.intro':
+    'Գրեք մեզ՝ հարցերի, առաջարկների կամ խնդիրների մասին։ Մենք կպատասխանենք հնարավորինս շուտ։',
+  'contact.fullName': 'Անուն Ազգանուն',
+  'contact.email': 'Էլ․ փոստ',
+  'contact.message': 'Հաղորդագրություն',
+  'contact.messagePlaceholder': 'Գրեք Ձեր հաղորդագրությունը…',
+  'contact.send': 'Ուղարկել',
+  'contact.sending': 'Ուղարկվում է…',
+  'contact.sendFailed': 'Չհաջողվեց ուղարկել հաղորդագրությունը',
+  'contact.successTitle': 'Հաղորդագրությունն ուղարկված է',
+  'contact.successBody':
+    'Շնորհակալություն։ Մենք ստացել ենք Ձեր նամակը և կպատասխանենք հնարավորինս շուտ։',
+  'contact.backToProfile': 'Վերադառնալ պրոֆիլ',
 
   'settings.title': 'Վիջեթի կարգավորումներ',
   'settings.sourcePool': 'Աղբյուրների ընտրություն',
@@ -189,8 +222,7 @@ export const hy = {
   'settings.showActions': 'Ցույց տալ գործողությունները կոճակները',
   'settings.showActionsDesc':
     'Ցույց տալ թարմացման, կարգավորումների, պահպանման և կիսվելու կոճակները վիջեթի նախադիտման վրա։',
-  'settings.shareProfile':
-    'Ցույց տալ իմ պրոֆիլը այլ օգտատերերի վիջեթներում',
+  'settings.shareProfile': 'Ցույց տալ իմ պրոֆիլը այլ օգտատերերի վիջեթներում',
   'settings.shareProfileDesc':
     'Երբ միացված է, Ձեր անունը և սոց․ հղումը կարող են երևալ այլ օգտատերերի վիջեթներում՝ Ձեր ավելացրած մեջբերումների վրա։ Խմբագրեք անունը և հղումը պրոֆիլում։',
   'settings.actionSaveSuccess': 'Մեջբերումը պահպանվեց',
@@ -268,6 +300,8 @@ export const hy = {
   'validation.socialUrlInvalid':
     'Մուտքագրեք վավեր հղում (սկսած http:// կամ https://)',
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
+  'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
+  'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
 } as const
 
 export type HyMessages = typeof hy

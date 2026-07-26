@@ -36,12 +36,16 @@ function emailLayout(content: string, preheader?: string): string {
 </html>`.trim();
 }
 
-function escapeHtmlAttr(value: string): string {
+function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escapeHtmlAttr(value: string): string {
+  return escapeHtml(value);
 }
 
 function emailButton(text: string, url: string): string {
@@ -76,6 +80,20 @@ export function buildEmailLink(path: string, token: string): string {
   }
   return buildAppDeepLink(cleanPath, token);
 }
+
+export type CitationPendingReviewDetails = {
+  citationId: string;
+  status: string;
+  category: string;
+  source: string;
+  text: string;
+  submittedAt: string;
+  submitterUserId: string;
+  submitterName: string;
+  submitterEmail: string;
+  submitterSocialUrl: string | null;
+  submitterShareProfile: boolean;
+};
 
 export const emailTemplates = {
   welcome(name: string) {
@@ -148,6 +166,7 @@ async function sendEmail(params: { to: string; subject: string; text: string; ht
     throw new Error("Mail API not configured");
   }
 
+  // https://github.com/NavasardianMichael/api-mail-engine — POST /mail/external/send
   const response = await fetch(`${env.MAIL_API_URL}/mail/external/send`, {
     method: "POST",
     headers: {
@@ -163,12 +182,75 @@ async function sendEmail(params: { to: string; subject: string; text: string; ht
     }),
   });
 
-  const data = (await response.json()) as { success?: boolean; error?: string };
+  const data = (await response.json()) as { success?: boolean; message?: string; error?: string };
   if (!response.ok || !data.success) {
-    throw new Error(data.error ?? "Failed to send email");
+    throw new Error(data.message ?? data.error ?? "Failed to send email");
   }
 
   return { success: true };
+}
+
+/**
+ * Admin/operator notifications via Mail Engine internal API.
+ * Recipient is `RECIPIENT_EMAIL` on the mail service (not passed here).
+ * @see https://github.com/NavasardianMichael/api-mail-engine — POST /mail/internal/send
+ */
+async function sendInternalEmail(params: {
+  subject: string;
+  body: string;
+  senderEmail?: string;
+  firstName?: string;
+  details?: Record<string, string>;
+}) {
+  if (!env.MAIL_API_URL || !env.MAIL_API_KEY) {
+    if (isDev) {
+      logger.info(
+        { subject: params.subject, body: params.body, details: params.details },
+        "Internal email (dev — mail API not configured)",
+      );
+      return { success: true };
+    }
+    throw new Error("Mail API not configured");
+  }
+
+  const response = await fetch(`${env.MAIL_API_URL}/mail/internal/send`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.MAIL_API_KEY,
+    },
+    body: JSON.stringify({
+      appId: APP_ID,
+      subject: params.subject,
+      body: params.body,
+      senderEmail: params.senderEmail,
+      firstName: params.firstName,
+      details: params.details,
+    }),
+  });
+
+  const data = (await response.json()) as { success?: boolean; message?: string; error?: string };
+  if (!response.ok || !data.success) {
+    throw new Error(data.message ?? data.error ?? "Failed to send internal email");
+  }
+
+  return { success: true };
+}
+
+function citationReviewDetails(details: CitationPendingReviewDetails): Record<string, string> {
+  return {
+    citationId: details.citationId,
+    status: details.status,
+    category: details.category,
+    source: details.source,
+    text: details.text,
+    submittedAt: details.submittedAt,
+    submitterUserId: details.submitterUserId,
+    submitterName: details.submitterName,
+    submitterEmail: details.submitterEmail,
+    submitterSocialUrl: details.submitterSocialUrl || "(none)",
+    submitterShareProfile: details.submitterShareProfile ? "yes" : "no",
+  };
 }
 
 export const emailService = {
@@ -203,5 +285,38 @@ export const emailService = {
     const verifyUrl = buildEmailLink("auth/verify-email", verifyToken);
     const { subject, text, html } = emailTemplates.verifyEmail(name, verifyUrl, 48);
     await sendEmail({ to, subject, text, html });
+  },
+
+  async sendCitationPendingReview(details: CitationPendingReviewDetails) {
+    await sendInternalEmail({
+      subject: `New citation pending — ${details.category}`,
+      body: "A user submitted a citation for approval. See details below.",
+      senderEmail: details.submitterEmail,
+      firstName: details.submitterName,
+      details: citationReviewDetails(details),
+    });
+  },
+
+  async sendCitationPendingWithdrawn(details: CitationPendingReviewDetails) {
+    await sendInternalEmail({
+      subject: `Pending citation withdrawn — ${details.category}`,
+      body: "A user deleted a citation that was pending approval. It is removed from the database — no further review needed.",
+      senderEmail: details.submitterEmail,
+      firstName: details.submitterName,
+      details: citationReviewDetails(details),
+    });
+  },
+
+  async sendContactMessage(input: { name: string; email: string; message: string }) {
+    await sendInternalEmail({
+      subject: "Contact form message",
+      body: input.message,
+      senderEmail: input.email,
+      firstName: input.name,
+      details: {
+        name: input.name,
+        email: input.email,
+      },
+    });
   },
 };

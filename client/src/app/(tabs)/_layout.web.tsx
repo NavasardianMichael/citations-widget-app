@@ -8,8 +8,8 @@ import { pressableNoRipple } from "@/constants/pressable";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { t } from "@/i18n";
 
-const TABS: { name: string; href: Href; labelKey: "tabs.saved" | "tabs.submit" | "tabs.settings" | "tabs.profile"; icon: keyof typeof MaterialIcons.glyphMap }[] = [
-  { name: "index", href: "/", labelKey: "tabs.saved", icon: "bookmark" },
+const TABS: { name: string; href: Href; labelKey: "tabs.citations" | "tabs.submit" | "tabs.settings" | "tabs.profile"; icon: keyof typeof MaterialIcons.glyphMap }[] = [
+  { name: "index", href: "/", labelKey: "tabs.citations", icon: "format-quote" },
   { name: "submit", href: "/submit", labelKey: "tabs.submit", icon: "edit" },
   { name: "settings", href: "/settings", labelKey: "tabs.settings", icon: "settings" },
   { name: "profile", href: "/profile", labelKey: "tabs.profile", icon: "person" },

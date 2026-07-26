@@ -59,6 +59,7 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   emptyMessage: '',
   loadingMessage: '',
   isRefreshing: false,
+  isSaving: false,
   fetchedAt: 0,
 }
 
@@ -172,6 +173,25 @@ function CitationWidgetView(
           : data.quoteText || data.emptyMessage}
       </Text>
 
+      {!data.isRefreshing && data.sourceText ? (
+        <Text
+          modifiers={[
+            font({
+              size: WIDGET_LAYOUT.metaFontSize,
+              weight: 'regular',
+              family: data.fontFamily,
+            }),
+            foregroundStyle(toArgbHex(data.metaColor)),
+            padding({ top: WIDGET_LAYOUT.metaBlockGap }),
+            frame({ maxWidth: Infinity, alignment: 'leading' }),
+          ]}
+        >
+          {data.sourceText.toUpperCase()}
+        </Text>
+      ) : null}
+
+      <Spacer />
+
       <VStack
         spacing={WIDGET_LAYOUT.metaBlockGap}
         alignment='leading'
@@ -180,22 +200,6 @@ function CitationWidgetView(
           frame({ maxWidth: Infinity, alignment: 'leading' }),
         ]}
       >
-        {!data.isRefreshing && data.sourceText ? (
-          <Text
-            modifiers={[
-              font({
-                size: WIDGET_LAYOUT.metaFontSize,
-                weight: 'regular',
-                family: data.fontFamily,
-              }),
-              foregroundStyle(toArgbHex(data.metaColor)),
-              frame({ maxWidth: Infinity, alignment: 'leading' }),
-            ]}
-          >
-            {data.sourceText.toUpperCase()}
-          </Text>
-        ) : null}
-
         {data.showActions ? (
           <HStack
             spacing={WIDGET_LAYOUT.actionGap}

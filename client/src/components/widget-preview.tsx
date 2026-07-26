@@ -139,59 +139,66 @@ export function WidgetPreview({
     justifyContent: 'space-between' as const,
   }
 
-  const topContent = showLoading ? (
-    <Text
-      style={{
-        fontFamily,
-        fontSize,
-        lineHeight: quoteLineHeight,
-        fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
-        color: tokens.attributionColor,
-      }}
-    >
-      {t('settings.previewLoading')}
-    </Text>
-  ) : citation ? (
-    <Text
-      style={{
-        fontFamily,
-        fontSize,
-        lineHeight: quoteLineHeight,
-        fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
-        color: tokens.quoteColor,
-      }}
-    >
-      &quot;{citation.text}&quot;
-    </Text>
-  ) : (
-    <Text
-      style={{
-        fontFamily,
-        fontSize,
-        lineHeight: quoteLineHeight,
-        fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
-        color: tokens.attributionColor,
-      }}
-    >
-      {t('settings.previewEmpty')}
-    </Text>
+  const topContent = (
+    <View>
+      {showLoading ? (
+        <Text
+          style={{
+            fontFamily,
+            fontSize,
+            lineHeight: quoteLineHeight,
+            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
+            color: tokens.attributionColor,
+          }}
+        >
+          {t('settings.previewLoading')}
+        </Text>
+      ) : citation ? (
+        <Text
+          style={{
+            fontFamily,
+            fontSize,
+            lineHeight: quoteLineHeight,
+            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
+            color: tokens.quoteColor,
+          }}
+        >
+          &quot;{citation.text}&quot;
+        </Text>
+      ) : (
+        <Text
+          style={{
+            fontFamily,
+            fontSize,
+            lineHeight: quoteLineHeight,
+            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
+            color: tokens.attributionColor,
+          }}
+        >
+          {t('settings.previewEmpty')}
+        </Text>
+      )}
+      {citation && !showLoading ? (
+        <Text
+          className='w-full uppercase'
+          style={{
+            marginTop: WIDGET_LAYOUT.metaBlockGap,
+            color: tokens.metaColor,
+            fontFamily,
+            fontSize: WIDGET_LAYOUT.metaFontSize,
+            lineHeight: WIDGET_LAYOUT.metaLineHeight,
+            letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+            fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
+          }}
+        >
+          {citation.source || citation.category}
+        </Text>
+      ) : null}
+    </View>
   )
 
   const metaContent = citation ? (
     <View style={{ gap: WIDGET_LAYOUT.metaBlockGap, marginTop: WIDGET_LAYOUT.sectionGap }}>
-      <Text
-        className='w-full uppercase'
-        style={{
-          color: tokens.metaColor,
-          fontFamily,
-          fontSize: WIDGET_LAYOUT.metaFontSize,
-          lineHeight: WIDGET_LAYOUT.metaLineHeight,
-          letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
-          fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
-        }}
-      >
-        {citation.source || citation.category}
-      </Text>
       {showActions ? (
         <View
           className='w-full flex-row flex-wrap justify-end'

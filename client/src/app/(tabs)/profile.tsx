@@ -1,13 +1,12 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useRouter, type Href } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { TopAppBar } from "@/components/ui/top-app-bar";
-import { SignInRequired } from "@/components/sign-in-required";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
 import { hasErrors, validateName, validateSocialUrl, type FieldErrors } from "@/lib/validation";
@@ -72,7 +71,22 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-background">
         <TopAppBar title={t("profile.title")} showBrandIcon />
-        <SignInRequired />
+        <View className="flex-1 items-center justify-center gap-6 px-margin-mobile py-12">
+          <Text className="text-center font-headline-md text-headline-md text-primary">
+            {t("guest.signInRequiredTitle")}
+          </Text>
+          <Text className="max-w-md text-center font-body-md text-body-md text-on-surface-variant">
+            {t("guest.signInRequiredBody")}
+          </Text>
+          <Button label={t("guest.signIn")} onPress={() => router.push("/auth/login")} className="w-full max-w-md" />
+          <Button
+            label={t("profile.contactUs")}
+            variant="secondary"
+            icon="mail-outline"
+            onPress={() => router.push("/contact" as Href)}
+            className="w-full max-w-md"
+          />
+        </View>
       </View>
     );
   }
@@ -201,6 +215,13 @@ export default function ProfileScreen() {
                 label={saving ? t("common.saving") : t("profile.saveChanges")}
                 onPress={handleSaveProfile}
                 disabled={saving}
+                className="w-full md:w-auto"
+              />
+              <Button
+                label={t("profile.contactUs")}
+                variant="secondary"
+                icon="mail-outline"
+                onPress={() => router.push("/contact" as Href)}
                 className="w-full md:w-auto"
               />
               <Button

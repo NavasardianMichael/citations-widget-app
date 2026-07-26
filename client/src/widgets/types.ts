@@ -42,6 +42,8 @@ export type HomeWidgetSnapshot = {
   loadingMessage: string;
   /** True while a widget refresh is in flight — show loadingMessage as quote. */
   isRefreshing: boolean;
+  /** True while save/unsave is in flight — spinner on the save action only. */
+  isSaving: boolean;
   fetchedAt: number;
 };
 

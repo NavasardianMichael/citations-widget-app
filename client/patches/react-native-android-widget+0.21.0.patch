@@ -1,3 +1,79 @@
+diff --git a/node_modules/react-native-android-widget/android/.gradle/9.2.0/checksums/checksums.lock b/node_modules/react-native-android-widget/android/.gradle/9.2.0/checksums/checksums.lock
+new file mode 100644
+index 0000000..2b04732
+Binary files /dev/null and b/node_modules/react-native-android-widget/android/.gradle/9.2.0/checksums/checksums.lock differ
+diff --git a/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileChanges/last-build.bin b/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileChanges/last-build.bin
+new file mode 100644
+index 0000000..f76dd23
+Binary files /dev/null and b/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileChanges/last-build.bin differ
+diff --git a/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileHashes/fileHashes.bin b/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileHashes/fileHashes.bin
+new file mode 100644
+index 0000000..4157273
+Binary files /dev/null and b/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileHashes/fileHashes.bin differ
+diff --git a/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileHashes/fileHashes.lock b/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileHashes/fileHashes.lock
+new file mode 100644
+index 0000000..156e495
+Binary files /dev/null and b/node_modules/react-native-android-widget/android/.gradle/9.2.0/fileHashes/fileHashes.lock differ
+diff --git a/node_modules/react-native-android-widget/android/.gradle/9.2.0/gc.properties b/node_modules/react-native-android-widget/android/.gradle/9.2.0/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-android-widget/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock b/node_modules/react-native-android-widget/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+new file mode 100644
+index 0000000..62938eb
+Binary files /dev/null and b/node_modules/react-native-android-widget/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock differ
+diff --git a/node_modules/react-native-android-widget/android/.gradle/buildOutputCleanup/cache.properties b/node_modules/react-native-android-widget/android/.gradle/buildOutputCleanup/cache.properties
+new file mode 100644
+index 0000000..7e2eb2f
+--- /dev/null
++++ b/node_modules/react-native-android-widget/android/.gradle/buildOutputCleanup/cache.properties
+@@ -0,0 +1,2 @@
++#Sun Jul 19 05:24:43 AMT 2026
++gradle.version=9.2.0
+diff --git a/node_modules/react-native-android-widget/android/.gradle/vcs-1/gc.properties b/node_modules/react-native-android-widget/android/.gradle/vcs-1/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
+index c138d81..fe0fe17 100644
+--- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
++++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
+@@ -57,6 +57,10 @@ public class RNWidgetProvider extends AppWidgetProvider {
+             case "OPEN_URI":
+                 openUri(context, incomingIntent.getBundleExtra("clickActionData").getString("uri"));
+                 break;
++            case "SHARE":
++                // System share sheet only — do not launch the host app Activity.
++                shareText(context, incomingIntent.getBundleExtra("clickActionData"));
++                break;
+             default:
+                 handleWidgetClick(context, incomingIntent, widgetId);
+         }
+@@ -139,6 +143,26 @@ public class RNWidgetProvider extends AppWidgetProvider {
+         }
+     }
+ 
++    private void shareText(Context context, Bundle data) {
++        try {
++            if (data == null) {
++                return;
++            }
++            String text = data.getString("text");
++            if (text == null || text.isEmpty()) {
++                return;
++            }
++            Intent sendIntent = new Intent(Intent.ACTION_SEND);
++            sendIntent.putExtra(Intent.EXTRA_TEXT, text);
++            sendIntent.setType("text/plain");
++            Intent shareIntent = Intent.createChooser(sendIntent, null);
++            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++            context.startActivity(shareIntent);
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++
+     private void handleWidgetClick(Context context, Intent incomingIntent, int widgetId) {
+         Data additionalData = Data.EMPTY;
+ 
 diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java
 index 5a3ea00..cb1252a 100644
 --- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/builder/widget/ImageWidget.java

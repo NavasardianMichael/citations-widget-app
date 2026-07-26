@@ -1,6 +1,6 @@
 /**
- * Google OAuth / widget deep links sometimes arrive as hostname-style URLs
- * (`citationswidget://oauthredirect`, `citationswidget://widget-share`).
+ * Google OAuth deep links sometimes arrive as hostname-style URLs
+ * (`citationswidget://oauthredirect`).
  * Expo Router would otherwise show Unmatched Route — rewrite to path routes.
  *
  * @see https://docs.expo.dev/router/advanced/native-intent/
@@ -30,12 +30,8 @@ export function redirectSystemPath({
     const oauth = rewriteHostnameRoute(path, 'oauthredirect')
     if (oauth) return oauth
 
-    const share = rewriteHostnameRoute(path, 'widget-share')
-    if (share) return share
-
     // App already open: still rewrite so these never 404.
     if (!initial && /oauthredirect/i.test(path)) return '/oauthredirect'
-    if (!initial && /widget-share/i.test(path)) return '/widget-share'
 
     return path
   } catch {

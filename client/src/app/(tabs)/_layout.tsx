@@ -12,8 +12,8 @@ export default function TabsLayout() {
       iconColor={{ default: "#44474d", selected: "#021a35" }}
     >
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>{t("tabs.saved")}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="bookmark" sf="bookmark" />
+        <NativeTabs.Trigger.Label>{t("tabs.citations")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon md="format_quote" sf="text.quote" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="submit">

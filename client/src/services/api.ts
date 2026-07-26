@@ -197,6 +197,18 @@ export async function updateProfile(input: UpdateProfileInput) {
   });
 }
 
+export async function sendContactMessage(input: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  return apiFetch<{ success: boolean }>("/api/contact", {
+    method: "POST",
+    auth: false,
+    body: JSON.stringify(input),
+  });
+}
+
 export async function getWidgetSettings() {
   return apiFetch<WidgetSettings>("/api/widget-settings");
 }

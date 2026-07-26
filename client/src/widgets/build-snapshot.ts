@@ -103,6 +103,7 @@ export function buildHomeWidgetSnapshot(
     emptyMessage: t("settings.previewEmpty"),
     loadingMessage: t("settings.previewLoading"),
     isRefreshing: false,
+    isSaving: false,
     fetchedAt: Date.now(),
   };
 }

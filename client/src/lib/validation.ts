@@ -89,6 +89,16 @@ export function validateSource(value: string): string | null {
   return null;
 }
 
+const CONTACT_MESSAGE_MAX = 4000;
+
+export function validateContactMessage(value: string): string | null {
+  const trimmed = value.trim();
+  const missing = required(trimmed, "validation.messageRequired");
+  if (missing) return missing;
+  if (trimmed.length > CONTACT_MESSAGE_MAX) return t("validation.messageMax");
+  return null;
+}
+
 export function validateLogin(fields: { email: string; password: string }): FieldErrors<"email" | "password"> {
   const errors: FieldErrors<"email" | "password"> = {};
   const email = validateEmail(fields.email);
