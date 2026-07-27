@@ -354,7 +354,7 @@ export default function CitationsScreen() {
                 }
 
                 return (
-                  <View key={citation.id} className='w-full gap-2'>
+                  <View key={citation.id} className='w-full gap-0'>
                     {typeLabelKey ? (
                       <View className='self-start rounded px-2 py-1 bg-surface-container-high'>
                         <Text className='font-label-sm text-label-sm text-on-surface-variant'>

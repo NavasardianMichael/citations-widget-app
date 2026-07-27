@@ -1,6 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useRouter, type Href } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
@@ -22,8 +22,8 @@ export default function ContactScreen() {
   const router = useRouter()
   const { user } = useAuth()
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [nameOverride, setNameOverride] = useState<string | null>(null)
+  const [emailOverride, setEmailOverride] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [fieldErrors, setFieldErrors] = useState<
     FieldErrors<'name' | 'email' | 'message'>
@@ -31,11 +31,8 @@ export default function ContactScreen() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
 
-  useEffect(() => {
-    if (!user) return
-    setName(user.name ?? '')
-    setEmail(user.email ?? '')
-  }, [user])
+  const name = nameOverride ?? user?.name ?? ''
+  const email = emailOverride ?? user?.email ?? ''
 
   async function handleSend() {
     const nextErrors: FieldErrors<'name' | 'email' | 'message'> = {
@@ -109,7 +106,7 @@ export default function ContactScreen() {
                 label={t('contact.fullName')}
                 value={name}
                 onChangeText={(v) => {
-                  setName(v)
+                  setNameOverride(v)
                   if (fieldErrors.name) {
                     setFieldErrors((prev) => ({ ...prev, name: undefined }))
                   }
@@ -125,7 +122,7 @@ export default function ContactScreen() {
                 label={t('contact.email')}
                 value={email}
                 onChangeText={(v) => {
-                  setEmail(v)
+                  setEmailOverride(v)
                   if (fieldErrors.email) {
                     setFieldErrors((prev) => ({ ...prev, email: undefined }))
                   }
@@ -153,6 +150,7 @@ export default function ContactScreen() {
                 multiline
                 variant='paper'
                 autoCapitalize='sentences'
+                textContentType='none'
               />
 
               <Button

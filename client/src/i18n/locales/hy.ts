@@ -200,7 +200,9 @@ export const hy = {
   'profile.updated': 'Պրոֆիլը թարմացված է։',
   'profile.loadFailed': 'Չհաջողվեց բեռնել պրոֆիլը',
   'profile.updateFailed': 'Չհաջողվեց թարմացնել պրոֆիլը',
-  'profile.contactUs': 'Կապ մեզ հետ',
+  'profile.contactUs': 'կապվեք մեզ հետ',
+  'profile.contactPrompt':
+    'Եթե ունեք հարցեր, առաջարկներ կամ խնդիրներ, խնդրում ենք՝ կապվեք մեզ հետ {link}։',
 
   'contact.title': 'Կապ մեզ հետ',
   'contact.intro':

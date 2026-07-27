@@ -34,7 +34,7 @@ export const RANDOM_BACKGROUND_DESIGN: WidgetDesignId = 'sanctuary'
  * Length of the client's `WIDGET_BACKGROUND_IMAGES` sanctuary pool.
  * Server uses this when picking `currentBackgroundImageIndex`.
  */
-export const WIDGET_BACKGROUND_IMAGE_COUNT = 3
+export const WIDGET_BACKGROUND_IMAGE_COUNT = 25
 
 /** Must stay aligned with Prisma `FontStyle` and client `WIDGET_FONT_OPTIONS`. */
 export const FONT_STYLE_IDS = [
