@@ -2,32 +2,28 @@
  * Predefined home-widget looks. Colors use rgba so they sit over
  * wallpaper / home screens with readable contrast.
  *
- * Six solid styles + one photo style (`sanctuary`). Sanctuary is the only
+ * Solid styles + one photo style (`sanctuary`). Sanctuary is the only
  * photo design: each *new* citation fetch rolls a random background from
  * WIDGET_BACKGROUND_IMAGES. That pick is only for the current display window
  * (settings + home widget) — not permanently attached to a citation id.
  *
- * Keep WIDGET_BACKGROUND_IMAGES' length in sync with the server's
- * WIDGET_BACKGROUND_IMAGE_COUNT (server/src/routes/widget.ts).
+ * Design ids / pool size live in `@citations/shared` (also used by the API).
  */
+import {
+  DEFAULT_WIDGET_DESIGN,
+  RANDOM_BACKGROUND_DESIGN,
+  WIDGET_BACKGROUND_IMAGE_COUNT,
+  WIDGET_DESIGN_IDS,
+  type WidgetDesignId,
+} from '@citations/shared'
 import type { ImageSourcePropType } from 'react-native'
 
-export const WIDGET_DESIGN_IDS = [
-  'classic',
-  'parchment',
-  'midnight',
-  'glass',
-  'ink',
-  'manuscript',
-  'sanctuary',
-] as const
-
-export type WidgetDesignId = (typeof WIDGET_DESIGN_IDS)[number]
-
-export const DEFAULT_WIDGET_DESIGN: WidgetDesignId = 'classic'
-
-/** The sole photo design — rolls a fresh image from WIDGET_BACKGROUND_IMAGES per new citation. */
-export const RANDOM_BACKGROUND_DESIGN: WidgetDesignId = 'sanctuary'
+export {
+  DEFAULT_WIDGET_DESIGN,
+  RANDOM_BACKGROUND_DESIGN,
+  WIDGET_DESIGN_IDS,
+  type WidgetDesignId,
+}
 
 export type WidgetDesignLabelKey =
   | 'settings.designClassic'
@@ -37,6 +33,11 @@ export type WidgetDesignLabelKey =
   | 'settings.designInk'
   | 'settings.designManuscript'
   | 'settings.designSanctuary'
+  | 'settings.designEmber'
+  | 'settings.designLagoon'
+  | 'settings.designCopper'
+  | 'settings.designNoir'
+  | 'settings.designFrost'
 
 export type WidgetDesignTokens = {
   id: WidgetDesignId
@@ -70,6 +71,12 @@ export const WIDGET_BACKGROUND_IMAGES: ImageSourcePropType[] = [
   require('../../assets/images/widget-bg/2.jpg'),
   require('../../assets/images/widget-bg/3.jpg'),
 ]
+
+if (WIDGET_BACKGROUND_IMAGES.length !== WIDGET_BACKGROUND_IMAGE_COUNT) {
+  throw new Error(
+    `WIDGET_BACKGROUND_IMAGES length (${WIDGET_BACKGROUND_IMAGES.length}) must match WIDGET_BACKGROUND_IMAGE_COUNT (${WIDGET_BACKGROUND_IMAGE_COUNT}) from @citations/shared`,
+  )
+}
 
 const PHOTO_TEXT = {
   quoteColor: '#fbf9f8',
@@ -204,6 +211,96 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     showOrnament: true,
     randomBackground: true,
     overlayColor: 'rgba(12, 10, 8, 0.72)',
+  },
+  ember: {
+    id: 'ember',
+    labelKey: 'settings.designEmber',
+    panelBg: 'rgba(28, 14, 10, 0.9)',
+    panelBorderColor: 'rgba(255, 140, 66, 0.28)',
+    accentBorderColor: '#ff8c42',
+    accentBorderWidth: 3,
+    quoteColor: '#fff4ec',
+    metaColor: '#ffb347',
+    attributionColor: 'rgba(255, 214, 170, 0.78)',
+    actionBg: 'rgba(62, 28, 18, 0.88)',
+    actionIconColor: '#ffe0c2',
+    ornamentColor: '#ff8c42',
+    ornamentOpacity: 0.32,
+    showOrnament: true,
+    showLargeQuotes: false,
+    shadow: '0 10px 28px rgba(40, 12, 4, 0.4)',
+  },
+  lagoon: {
+    id: 'lagoon',
+    labelKey: 'settings.designLagoon',
+    panelBg: 'rgba(6, 42, 48, 0.88)',
+    panelBorderColor: 'rgba(110, 231, 214, 0.28)',
+    accentBorderColor: '#5eead4',
+    accentBorderWidth: 2,
+    quoteColor: '#ecfeff',
+    metaColor: '#99f6e4',
+    attributionColor: 'rgba(167, 243, 208, 0.8)',
+    actionBg: 'rgba(12, 58, 64, 0.9)',
+    actionIconColor: '#ccfbf1',
+    ornamentColor: '#5eead4',
+    ornamentOpacity: 0.22,
+    showOrnament: true,
+    showLargeQuotes: false,
+    shadow: '0 10px 28px rgba(4, 30, 36, 0.38)',
+  },
+  copper: {
+    id: 'copper',
+    labelKey: 'settings.designCopper',
+    panelBg: 'rgba(42, 24, 16, 0.92)',
+    panelBorderColor: 'rgba(205, 127, 50, 0.35)',
+    accentBorderColor: '#cd7f32',
+    accentBorderWidth: 2,
+    quoteColor: '#faf3eb',
+    metaColor: '#e8a86a',
+    attributionColor: 'rgba(232, 196, 160, 0.8)',
+    actionBg: 'rgba(72, 40, 24, 0.9)',
+    actionIconColor: '#f3d5b5',
+    ornamentColor: '#cd7f32',
+    ornamentOpacity: 0.28,
+    showOrnament: false,
+    showLargeQuotes: true,
+    shadow: '0 10px 26px rgba(32, 14, 6, 0.4)',
+  },
+  noir: {
+    id: 'noir',
+    labelKey: 'settings.designNoir',
+    panelBg: 'rgba(8, 8, 8, 0.94)',
+    panelBorderColor: 'rgba(255, 255, 255, 0.12)',
+    accentBorderColor: '#d4af37',
+    accentBorderWidth: 1,
+    quoteColor: '#f5f5f5',
+    metaColor: '#d4af37',
+    attributionColor: 'rgba(200, 200, 200, 0.75)',
+    actionBg: 'rgba(28, 28, 28, 0.95)',
+    actionIconColor: '#f0f0f0',
+    ornamentColor: '#d4af37',
+    ornamentOpacity: 0.2,
+    showOrnament: false,
+    showLargeQuotes: true,
+    shadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+  },
+  frost: {
+    id: 'frost',
+    labelKey: 'settings.designFrost',
+    panelBg: 'rgba(236, 244, 252, 0.82)',
+    panelBorderColor: 'rgba(148, 187, 233, 0.45)',
+    accentBorderColor: '#6b9bd1',
+    accentBorderWidth: 2,
+    quoteColor: '#0f2744',
+    metaColor: '#2f5f8f',
+    attributionColor: 'rgba(47, 78, 112, 0.82)',
+    actionBg: 'rgba(255, 255, 255, 0.55)',
+    actionIconColor: '#1a3a5c',
+    ornamentColor: '#6b9bd1',
+    ornamentOpacity: 0.2,
+    showOrnament: true,
+    showLargeQuotes: false,
+    shadow: '0 8px 24px rgba(47, 95, 143, 0.16)',
   },
 }
 

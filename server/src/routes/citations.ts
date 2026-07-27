@@ -6,8 +6,14 @@ import { z } from "zod";
 import { prisma } from "../db/index.js";
 import { logger } from "../lib/logger.js";
 import { HttpError } from "../middleware/error-handler.js";
+import { authLimiter } from "../middleware/rate-limiter.js";
 import { requireAuth } from "../middleware/require-auth.js";
-import { emailService } from "../services/email-service.js";
+import { citationReviewRepository } from "../repositories/citation-review-repository.js";
+import {
+  citationReviewService,
+  reviewResultHtml,
+} from "../services/citation-review-service.js";
+import { buildCitationReviewUrl, emailService } from "../services/email-service.js";
 
 export const citationsRouter = Router();
 
@@ -31,9 +37,10 @@ function toOwnedCitation(row: Citation) {
   };
 }
 
-/** Fire-and-forget internal review email for pending submissions. */
+/** Fire-and-forget internal review email with one-click approve/reject links. */
 async function notifyCitationPendingReview(citation: Citation, submitter: User) {
   try {
+    const { approve, reject } = await citationReviewRepository.createPair(citation.id);
     await emailService.sendCitationPendingReview({
       citationId: citation.id,
       status: citation.status,
@@ -46,6 +53,8 @@ async function notifyCitationPendingReview(citation: Citation, submitter: User) 
       submitterEmail: submitter.email,
       submitterSocialUrl: submitter.socialUrl,
       submitterShareProfile: submitter.shareProfile,
+      approveUrl: buildCitationReviewUrl(approve.token),
+      rejectUrl: buildCitationReviewUrl(reject.token),
     });
   } catch (error) {
     logger.error(
@@ -107,12 +116,23 @@ citationsRouter.get("/citations/mine", requireAuth, async (req, res) => {
   const rows = await prisma.citation.findMany({
     where: {
       submittedByUserId: req.userId!,
-      // Rejected rows are deleted after manual notice — never return them.
+      // Rejected submissions are notified by email and hidden from the owner list.
       status: query.status === "all" ? { not: "rejected" } : query.status,
     },
     orderBy: { createdAt: "desc" },
   });
   res.json(rows.map(toOwnedCitation));
+});
+
+/**
+ * One-click moderator review from the pending-approval email.
+ * Must be registered before `/citations/:id`.
+ */
+citationsRouter.get("/citations/review/:token", authLimiter, async (req, res) => {
+  const token = String(req.params.token ?? "");
+  const result = await citationReviewService.reviewByToken(token);
+  const status = result.ok ? 200 : result.reason === "invalid" || result.reason === "missing" ? 404 : 409;
+  res.status(status).type("html").send(reviewResultHtml(result));
 });
 
 citationsRouter.get("/citations/:id", async (req, res) => {

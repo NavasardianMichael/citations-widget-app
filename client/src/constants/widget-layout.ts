@@ -1,6 +1,10 @@
 /**
- * Shared layout/typography for settings live preview and home-screen widgets.
- * Keep these in sync so the real widget matches what users see in Settings.
+ * Shared layout/typography for:
+ * - home-screen widgets
+ * - Settings live preview
+ * - Citations library items (same chrome, no actions)
+ *
+ * Quote and source share the user's Settings font size; only weight / case differ.
  */
 export const WIDGET_LAYOUT = {
   /** Preview `p-8` / rounded-lg */
@@ -9,10 +13,6 @@ export const WIDGET_LAYOUT = {
   /** Matches the real widget's declared minHeight (widgetprovider_citationwidget.xml) so the
    *  Settings preview pins its action row to the bottom the same way the real widget does. */
   previewMinHeight: 180,
-  /** Design-system `text-label-sm` */
-  metaFontSize: 12,
-  metaLineHeight: 16,
-  metaLetterSpacing: 0.6,
   /** Tailwind `text-sm` */
   attributionFontSize: 14,
   attributionLineHeight: 20,
@@ -34,10 +34,12 @@ export const WIDGET_LAYOUT = {
 
 export type WidgetLayout = typeof WIDGET_LAYOUT;
 
-/** Typography range for the "font size" control in Settings → Typography. */
-export const FONT_SIZE_MIN = 13;
-export const FONT_SIZE_MAX = 22;
-export const DEFAULT_QUOTE_FONT_SIZE = 16;
+/** Re-export API contract sizes — single source in `@citations/shared`. */
+export {
+  DEFAULT_QUOTE_FONT_SIZE,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+} from '@citations/shared'
 
 /** Quote line-height scales with font size at the same 1.5 ratio as the previous fixed 16/24. */
 export function getQuoteLineHeight(fontSize: number): number {

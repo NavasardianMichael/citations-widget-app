@@ -68,7 +68,7 @@ export function buildHomeWidgetSnapshot(
   const fontId = (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId;
 
   return {
-    quoteText: citation?.text ? `"${citation.text}"` : "",
+    quoteText: citation?.text ? `«${citation.text}»` : "",
     sourceText: citation?.source ?? "",
     attributionText:
       settings.showAttribution && citation?.addedBy

@@ -1,3 +1,13 @@
+import {
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  FONT_STYLE_IDS,
+  RANDOM_BACKGROUND_DESIGN,
+  REFRESH_RATE_HOURS,
+  SOURCE_SELECTION_IDS,
+  WIDGET_BACKGROUND_IMAGE_COUNT,
+  WIDGET_DESIGN_IDS,
+} from "@citations/shared";
 import type { FontStyle, SourceSelection, WidgetDesign } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
@@ -8,24 +18,6 @@ import { pickCitationForPool } from "../services/widget-citation-picker.js";
 
 export const widgetRouter = Router();
 widgetRouter.use(requireAuth);
-
-/** Keep in sync with client `WIDGET_BACKGROUND_IMAGES` / sanctuary random pool. */
-const WIDGET_BACKGROUND_IMAGE_COUNT = 3;
-const FONT_SIZE_MIN = 13;
-const FONT_SIZE_MAX = 22;
-
-/** Design that rolls a fresh photo from the pool on each new citation (not citation-owned). */
-const RANDOM_BACKGROUND_DESIGN = "sanctuary";
-
-const WIDGET_DESIGNS = [
-  "classic",
-  "parchment",
-  "midnight",
-  "glass",
-  "ink",
-  "manuscript",
-  "sanctuary",
-] as const;
 
 /**
  * Explicit row shape matching `schema.prisma` WidgetSettings.
@@ -84,30 +76,16 @@ widgetRouter.get("/widget-settings", async (req, res) => {
   res.json(serializeWidgetSettings(settings));
 });
 
-const FONT_STYLES = [
-  "vrdznagir",
-  "braind_amanor",
-  "artsakh",
-  "davel_aghvor",
-  "mardoto",
-  "arti",
-  "arian_grqi",
-  "braind_zbans",
-  "nortar_body",
-  "arm_hmks_script",
-  "noyemi",
-  "armeniapedia_garun",
-  "armeniapedia_geghagrutyun",
-  "sasuntsi",
-  "armeniapedia_jhapaven",
-] as const;
-
 const settingsSchema = z.object({
-  sourceSelection: z.enum(["bible", "fiction", "mixed", "saved"]),
-  refreshRateHours: z.union([z.literal(6), z.literal(12), z.literal(24)]),
-  fontStyle: z.enum(FONT_STYLES),
+  sourceSelection: z.enum(SOURCE_SELECTION_IDS),
+  refreshRateHours: z.union([
+    z.literal(REFRESH_RATE_HOURS[0]),
+    z.literal(REFRESH_RATE_HOURS[1]),
+    z.literal(REFRESH_RATE_HOURS[2]),
+  ]),
+  fontStyle: z.enum(FONT_STYLE_IDS),
   fontSize: z.number().int().min(FONT_SIZE_MIN).max(FONT_SIZE_MAX),
-  widgetDesign: z.enum(WIDGET_DESIGNS),
+  widgetDesign: z.enum(WIDGET_DESIGN_IDS),
   showAttribution: z.boolean(),
   showActions: z.boolean(),
 });
@@ -215,9 +193,9 @@ widgetRouter.get("/widget/citation", async (req, res) => {
 });
 
 const previewSchema = z.object({
-  sourceSelection: z.enum(["bible", "fiction", "mixed", "saved"]),
-  fontStyle: z.enum(FONT_STYLES),
-  widgetDesign: z.enum(WIDGET_DESIGNS).optional(),
+  sourceSelection: z.enum(SOURCE_SELECTION_IDS),
+  fontStyle: z.enum(FONT_STYLE_IDS),
+  widgetDesign: z.enum(WIDGET_DESIGN_IDS).optional(),
   showAttribution: z.boolean(),
 });
 

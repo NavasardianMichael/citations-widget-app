@@ -24,6 +24,11 @@ enum CitationCategory {
   fiction
 }
 
+enum CitationReviewAction {
+  approve
+  reject
+}
+
 enum SourceSelection {
   bible
   fiction
@@ -148,12 +153,30 @@ model Citation {
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
 
-  submittedBy User?            @relation("SubmittedCitations", fields: [submittedByUserId], references: [id], onDelete: SetNull)
-  savedBy     SavedCitation[]
-  widgetRefs  WidgetSettings[] @relation("CurrentCitation")
+  submittedBy  User?                  @relation("SubmittedCitations", fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  savedBy      SavedCitation[]
+  widgetRefs   WidgetSettings[]       @relation("CurrentCitation")
+  reviewTokens CitationReviewToken[]
 
   @@index([status, category])
   @@map("citations")
+}
+
+/** One-time email action links for moderator approve/reject. */
+model CitationReviewToken {
+  id         String               @id @default(uuid())
+  token      String               @unique
+  citationId String               @map("citation_id")
+  action     CitationReviewAction
+  expiresAt  DateTime             @map("expires_at")
+  usedAt     DateTime?            @map("used_at")
+  createdAt  DateTime             @default(now()) @map("created_at")
+
+  citation Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@index([citationId])
+  @@index([token])
+  @@map("citation_review_tokens")
 }
 
 model SavedCitation {
@@ -176,6 +199,11 @@ enum WidgetDesign {
   ink
   manuscript
   sanctuary
+  ember
+  lagoon
+  copper
+  noir
+  frost
 }
 
 model WidgetSettings {

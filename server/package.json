@@ -19,6 +19,7 @@
     "postinstall": "node postinstall.cjs"
   },
   "dependencies": {
+    "@citations/shared": "file:../shared",
     "@prisma/client": "~6.19.0",
     "argon2": "^0.41.1",
     "connect-redis": "^8.0.1",

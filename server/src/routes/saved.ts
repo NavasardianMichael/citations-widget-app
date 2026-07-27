@@ -20,20 +20,14 @@ function toPublicCitation(row: Citation) {
 savedRouter.get("/saved", async (req, res) => {
   const userId = req.userId!;
 
+  // Bookmarks only. Own private/pending submissions are listed via /citations/mine
+  // under their status filters — not duplicated here.
   const bookmarked = await prisma.savedCitation.findMany({
     where: { userId },
     include: { citation: true },
   });
 
-  const ownPrivate = await prisma.citation.findMany({
-    where: { submittedByUserId: userId, status: "private" },
-  });
-
-  const byId = new Map<string, Citation>();
-  for (const { citation } of bookmarked) byId.set(citation.id, citation);
-  for (const citation of ownPrivate) byId.set(citation.id, citation);
-
-  res.json([...byId.values()].map(toPublicCitation));
+  res.json(bookmarked.map(({ citation }) => toPublicCitation(citation)));
 });
 
 savedRouter.post("/saved/:citationId", async (req, res) => {
@@ -63,8 +57,7 @@ savedRouter.delete("/saved/:citationId", async (req, res) => {
     where: { userId, citationId },
   });
 
-  // Private customs appear in GET /saved via ownership, not a bookmark row.
-  // Removing them from Saved must delete that private citation or they return on refetch.
+  // If a private custom was bookmarked (or an older client unsaves one), delete it.
   await prisma.citation.deleteMany({
     where: { id: citationId, submittedByUserId: userId, status: "private" },
   });

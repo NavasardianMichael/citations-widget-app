@@ -90,7 +90,6 @@ export function CitationShareCard({ text, source, onLogoLoad }: CitationShareCar
             lineHeight: 36,
             fontWeight: '700',
             letterSpacing: 1.2,
-            textTransform: 'uppercase',
           }}
         >
           {source}

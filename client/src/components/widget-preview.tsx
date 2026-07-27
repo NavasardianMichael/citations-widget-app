@@ -27,6 +27,8 @@ type WidgetPreviewProps = {
   design?: WidgetDesignId
   loading?: boolean
   showActions?: boolean
+  /** Settings-only chrome; hide on Citations library rows. */
+  showLivePreviewLabel?: boolean
   onRefresh?: () => void
   onSave?: () => void
   onShare?: () => void
@@ -95,6 +97,7 @@ export function WidgetPreview({
   design = DEFAULT_WIDGET_DESIGN,
   loading = false,
   showActions = true,
+  showLivePreviewLabel = true,
   onRefresh,
   onSave,
   onShare,
@@ -163,7 +166,7 @@ export function WidgetPreview({
             color: tokens.quoteColor,
           }}
         >
-          &quot;{citation.text}&quot;
+          «{citation.text}»
         </Text>
       ) : (
         <Text
@@ -180,14 +183,13 @@ export function WidgetPreview({
       )}
       {citation && !showLoading ? (
         <Text
-          className='w-full uppercase'
+          className='w-full'
           style={{
             marginTop: WIDGET_LAYOUT.metaBlockGap,
             color: tokens.metaColor,
             fontFamily,
-            fontSize: WIDGET_LAYOUT.metaFontSize,
-            lineHeight: WIDGET_LAYOUT.metaLineHeight,
-            letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+            fontSize,
+            lineHeight: quoteLineHeight,
             fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
           }}
         >
@@ -283,21 +285,23 @@ export function WidgetPreview({
   )
 
   return (
-    <View className='rounded-xl '>
-      <View
-        className='absolute top-0 left-6 z-10 rounded-full bg-secondary-container px-3 py-1'
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
-      >
-        <Text className='font-label-sm text-label-sm text-on-secondary-container'>
-          {t('settings.livePreview')}
-        </Text>
-      </View>
+    <View className='rounded-xl'>
+      {showLivePreviewLabel ? (
+        <View
+          className='absolute top-0 left-6 z-10 rounded-full bg-secondary-container px-3 py-1'
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+        >
+          <Text className='font-label-sm text-label-sm text-on-secondary-container'>
+            {t('settings.livePreview')}
+          </Text>
+        </View>
+      ) : null}
 
       {hasPhoto && backgroundImage ? (
         <ImageBackground
           source={backgroundImage}
           resizeMode='cover'
-          className='relative mt-4'
+          className={showLivePreviewLabel ? 'relative mt-4' : 'relative'}
           style={frameStyle}
           imageStyle={{ borderRadius: WIDGET_LAYOUT.borderRadius }}
         >
@@ -313,7 +317,7 @@ export function WidgetPreview({
         </ImageBackground>
       ) : (
         <View
-          className='relative mt-4'
+          className={showLivePreviewLabel ? 'relative mt-4' : 'relative'}
           style={{
             ...frameStyle,
             ...contentPad,

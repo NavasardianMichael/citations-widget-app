@@ -1,13 +1,16 @@
-import type { WidgetDesignId } from '@/constants/widget-designs'
+import type {
+  RefreshRateHours,
+  SourceSelectionId,
+  WidgetDesignId,
+} from '@citations/shared'
 import type { WidgetFontId } from '@/fonts/registry'
 
 export type CitationCategory = 'bible' | 'fiction'
-export type SourceSelection = CitationCategory | 'mixed' | 'saved'
+export type SourceSelection = SourceSelectionId
 export type CitationStatus = 'approved' | 'pending' | 'rejected' | 'private'
 
 export type FontStyle = WidgetFontId
-export type RefreshRateHours = 6 | 12 | 24
-export type { WidgetDesignId }
+export type { RefreshRateHours, WidgetDesignId }
 
 export type Citation = {
   id: string

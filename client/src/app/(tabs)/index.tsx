@@ -1,55 +1,42 @@
-﻿import { useFocusEffect } from 'expo-router'
+﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { useFocusEffect } from 'expo-router'
 import { useCallback, useMemo, useState } from 'react'
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native'
 
-import {
-  CitationCard,
-  type CitationCardVariant,
-} from '@/components/citation-card'
-import {
-  CitationForm,
-  citationToFormValues,
-  type CitationFormValues,
-} from '@/components/citation-form'
-import { SubmissionCard } from '@/components/submission-card'
-import { Button } from '@/components/ui/button'
 import { FilterPill } from '@/components/ui/filter-pill'
 import { TopAppBar } from '@/components/ui/top-app-bar'
+import { WidgetPreview } from '@/components/widget-preview'
+import { pressableNoRipple } from '@/constants/pressable'
+import {
+  DEFAULT_WIDGET_DESIGN,
+  type WidgetDesignId,
+} from '@/constants/widget-designs'
 import { DEFAULT_QUOTE_FONT_SIZE } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
 import { DEFAULT_WIDGET_FONT } from '@/fonts/registry'
 import { t } from '@/i18n'
-import {
-  hasErrors,
-  validateCitationForm,
-  validateCitationTextMax,
-  type FieldErrors,
-} from '@/lib/validation'
 import {
   deleteCitation,
   fetchMyCitations,
   fetchSavedCitations,
   getWidgetSettings,
   unsaveCitation,
-  updateCitation,
 } from '@/services/api'
 import {
   getGuestSavedCitations,
   getGuestWidgetSettings,
   removeGuestSavedCitation,
 } from '@/services/local-storage'
-import type {
-  Citation,
-  FontStyle,
-  OwnedCitation,
-} from '@/types/citation'
+import type { Citation, FontStyle, OwnedCitation } from '@/types/citation'
 
-type LibraryFilter =
-  | 'all'
-  | 'saved'
-  | 'pending'
-  | 'approved'
-  | 'private'
+type LibraryFilter = 'all' | 'saved' | 'pending' | 'approved' | 'private'
 
 type LibraryItem = {
   citation: Citation
@@ -57,15 +44,10 @@ type LibraryItem = {
   owned: OwnedCitation | null
 }
 
-const VARIANT_CYCLE: CitationCardVariant[] = [
-  'decorative',
-  'minimalist',
-  'featured',
-  'decorative',
-  'minimalist',
-]
-
-const GUEST_FILTERS: { value: LibraryFilter; labelKey: 'citations.filterAll' | 'citations.filterSaved' }[] = [
+const GUEST_FILTERS: {
+  value: LibraryFilter
+  labelKey: 'citations.filterAll' | 'citations.filterSaved'
+}[] = [
   { value: 'all', labelKey: 'citations.filterAll' },
   { value: 'saved', labelKey: 'citations.filterSaved' },
 ]
@@ -81,15 +63,22 @@ const SIGNED_IN_FILTERS: {
 }[] = [
   { value: 'all', labelKey: 'citations.filterAll' },
   { value: 'saved', labelKey: 'citations.filterSaved' },
-  { value: 'pending', labelKey: 'citations.filterPending' },
-  { value: 'approved', labelKey: 'citations.filterApproved' },
   { value: 'private', labelKey: 'citations.filterPrivate' },
+  { value: 'approved', labelKey: 'citations.filterApproved' },
+  { value: 'pending', labelKey: 'citations.filterPending' },
 ]
 
-function mergeLibrary(
-  saved: Citation[],
-  mine: OwnedCitation[],
-): LibraryItem[] {
+function formatSubmittedDate(value?: string) {
+  if (!value) return t('card.submittedRecent')
+  const date = new Date(value).toLocaleDateString('hy-AM', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return t('card.submittedOn', { date })
+}
+
+function mergeLibrary(saved: Citation[], mine: OwnedCitation[]): LibraryItem[] {
   const byId = new Map<string, LibraryItem>()
   const savedIds = new Set(saved.map((c) => c.id))
 
@@ -98,7 +87,7 @@ function mergeLibrary(
     if (owned.status === 'rejected') continue
     byId.set(owned.id, {
       citation: owned,
-      isSaved: savedIds.has(owned.id) || owned.status === 'private',
+      isSaved: savedIds.has(owned.id),
       owned,
     })
   }
@@ -128,7 +117,12 @@ function matchesFilter(item: LibraryItem, filter: LibraryFilter): boolean {
     case 'all':
       return true
     case 'saved':
-      return item.isSaved
+      // Bookmarks only — own private/pending submissions belong to their status filters.
+      return (
+        item.isSaved &&
+        item.owned?.status !== 'private' &&
+        item.owned?.status !== 'pending'
+      )
     case 'pending':
     case 'approved':
     case 'private':
@@ -138,19 +132,41 @@ function matchesFilter(item: LibraryItem, filter: LibraryFilter): boolean {
   }
 }
 
+type LibraryTypeLabelKey =
+  | 'citations.filterSaved'
+  | 'citations.filterPending'
+  | 'citations.filterApproved'
+  | 'citations.filterPrivate'
+
+/** Filter-pill title for an item — shown above the widget only in the All view. */
+function libraryTypeLabelKey(item: LibraryItem): LibraryTypeLabelKey | null {
+  if (item.owned) {
+    switch (item.owned.status) {
+      case 'pending':
+        return 'citations.filterPending'
+      case 'approved':
+        return 'citations.filterApproved'
+      case 'private':
+        return 'citations.filterPrivate'
+      default:
+        break
+    }
+  }
+  if (item.isSaved) return 'citations.filterSaved'
+  return null
+}
+
 export default function CitationsScreen() {
   const { user, isGuest } = useAuth()
   const [items, setItems] = useState<LibraryItem[]>([])
   const [filter, setFilter] = useState<LibraryFilter>('all')
   const [fontStyle, setFontStyle] = useState<FontStyle>(DEFAULT_WIDGET_FONT)
   const [fontSize, setFontSize] = useState(DEFAULT_QUOTE_FONT_SIZE)
+  const [widgetDesign, setWidgetDesign] = useState<WidgetDesignId>(
+    DEFAULT_WIDGET_DESIGN,
+  )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editValues, setEditValues] = useState<CitationFormValues | null>(null)
-  const [editErrors, setEditErrors] = useState<FieldErrors<'text' | 'source'>>({})
-  const [savingEdit, setSavingEdit] = useState(false)
 
   const filterOptions = isGuest || !user ? GUEST_FILTERS : SIGNED_IN_FILTERS
 
@@ -166,6 +182,7 @@ export default function CitationsScreen() {
         setItems(mergeLibrary(saved, []))
         setFontStyle(settings.fontStyle)
         setFontSize(settings.fontSize)
+        setWidgetDesign(settings.widgetDesign)
         return
       }
 
@@ -177,6 +194,7 @@ export default function CitationsScreen() {
       setItems(mergeLibrary(saved, mine))
       setFontStyle(settings.fontStyle)
       setFontSize(settings.fontSize)
+      setWidgetDesign(settings.widgetDesign)
     } catch (e) {
       setError(e instanceof Error ? e.message : t('citations.loadFailed'))
     } finally {
@@ -201,21 +219,24 @@ export default function CitationsScreen() {
     } else {
       await unsaveCitation(id)
     }
-    // Reload so private deletes and bookmark removals stay consistent with the server.
     await loadLibrary()
   }
 
   function confirmUnsave(id: string) {
-    Alert.alert(t('card.removeSavedConfirmTitle'), t('card.removeSavedConfirmBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('card.remove'),
-        style: 'destructive',
-        onPress: () => {
-          void handleUnsave(id)
+    Alert.alert(
+      t('card.removeSavedConfirmTitle'),
+      t('card.removeSavedConfirmBody'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('card.remove'),
+          style: 'destructive',
+          onPress: () => {
+            void handleUnsave(id)
+          },
         },
-      },
-    ])
+      ],
+    )
   }
 
   function confirmDelete(id: string) {
@@ -228,8 +249,6 @@ export default function CitationsScreen() {
           try {
             await deleteCitation(id)
             setItems((prev) => prev.filter((item) => item.citation.id !== id))
-            if (editingId === id) cancelEdit()
-            // Refetch so a failed/partial delete cannot leave a stale row after navigation.
             await loadLibrary()
           } catch (e) {
             Alert.alert(
@@ -243,73 +262,36 @@ export default function CitationsScreen() {
     ])
   }
 
-  function startEdit(citation: OwnedCitation) {
-    setEditingId(citation.id)
-    setEditValues(citationToFormValues(citation))
-    setEditErrors({})
-  }
-
-  function cancelEdit() {
-    setEditingId(null)
-    setEditValues(null)
-    setEditErrors({})
-  }
-
-  async function handleSaveEdit(id: string) {
-    if (!editValues) return
-    const nextErrors = validateCitationForm(editValues)
-    setEditErrors(nextErrors)
-    if (hasErrors(nextErrors)) return
-
-    setSavingEdit(true)
-    try {
-      const updated = await updateCitation(id, {
-        text: editValues.text.trim(),
-        source: editValues.source.trim(),
-        category: editValues.category,
-      })
-      setItems((prev) =>
-        prev.map((item) =>
-          item.citation.id === id
-            ? {
-                citation: updated,
-                isSaved: item.isSaved || updated.status === 'private',
-                owned: updated,
-              }
-            : item,
-        ),
-      )
-      cancelEdit()
-      Alert.alert(
-        t('common.save'),
-        updated.status === 'pending'
-          ? t('submit.citationPendingReview')
-          : t('submit.citationUpdated'),
-      )
-    } catch (e) {
-      Alert.alert(
-        t('common.error'),
-        e instanceof Error ? e.message : t('submit.updateCitationFailed'),
-      )
-    } finally {
-      setSavingEdit(false)
-    }
-  }
-
   return (
     <View className='flex-1 bg-background'>
       <TopAppBar title={t('citations.title')} showBrandIcon />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] gap-8 px-margin-mobile pt-8 md:px-margin-desktop md:pt-12'>
-          <View className='flex-row flex-wrap gap-2'>
-            {filterOptions.map((option) => (
-              <FilterPill
-                key={option.value}
-                label={t(option.labelKey)}
-                selected={filter === option.value}
-                onPress={() => setFilter(option.value)}
-              />
-            ))}
+          <View className='gap-3'>
+            <View className='flex-row flex-wrap gap-2'>
+              {filterOptions.map((option) => (
+                <FilterPill
+                  key={option.value}
+                  label={t(option.labelKey)}
+                  selected={filter === option.value}
+                  onPress={() => setFilter(option.value)}
+                />
+              ))}
+            </View>
+            {filter !== 'all' ? (
+              <Text className='font-label-sm text-label-sm text-on-surface-variant'>
+                {t(
+                  (
+                    {
+                      saved: 'citations.filterSavedHint',
+                      pending: 'citations.filterPendingHint',
+                      approved: 'citations.filterApprovedHint',
+                      private: 'citations.filterPrivateHint',
+                    } as const
+                  )[filter],
+                )}
+              </Text>
+            ) : null}
           </View>
 
           {loading ? (
@@ -318,89 +300,121 @@ export default function CitationsScreen() {
             <Text className='text-center text-error'>{error}</Text>
           ) : filteredItems.length === 0 ? (
             <View className='items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12'>
-              <Text className='text-center font-headline-md text-headline-md text-primary'>
-                {t('citations.emptyTitle')}
-              </Text>
               <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
                 {t('citations.emptyBody')}
               </Text>
             </View>
           ) : (
             <View className='flex-row flex-wrap gap-gutter'>
-              {filteredItems.map((item, index) => {
+              {filteredItems.map((item) => {
                 const { citation, owned, isSaved } = item
+                const typeLabelKey =
+                  filter === 'all' ? libraryTypeLabelKey(item) : null
+                const showUnsave =
+                  isSaved &&
+                  owned?.status !== 'private' &&
+                  owned?.status !== 'pending'
 
-                if (owned && editingId === owned.id && editValues) {
-                  return (
-                    <View key={citation.id} className='w-full'>
-                      <CitationForm
-                        values={editValues}
-                        onChange={(next) => {
-                          setEditValues(next)
-                          setEditErrors((prev) => {
-                            const updated = { ...prev }
-                            if (next.text !== editValues.text) {
-                              const maxError = validateCitationTextMax(next.text)
-                              if (maxError) updated.text = maxError
-                              else delete updated.text
-                            }
-                            if (next.source !== editValues.source) delete updated.source
-                            return updated
-                          })
-                        }}
-                        errors={editErrors}
-                        disabled={savingEdit}
-                        footer={
-                          <View className='flex-row justify-end gap-3'>
-                            <Button
-                              label={t('common.cancel')}
-                              variant='secondary'
-                              onPress={cancelEdit}
-                              disabled={savingEdit}
-                            />
-                            <Button
-                              label={savingEdit ? t('common.saving') : t('profile.saveChanges')}
-                              onPress={() => handleSaveEdit(owned.id)}
-                              disabled={savingEdit}
-                            />
-                          </View>
-                        }
-                      />
-                    </View>
-                  )
+                const footerActions: {
+                  icon: keyof typeof MaterialIcons.glyphMap
+                  labelKey:
+                    | 'card.removeSaved'
+                    | 'card.removePending'
+                    | 'card.removePrivate'
+                    | 'card.removeApproved'
+                  onPress: () => void
+                }[] = []
+
+                if (owned?.status === 'pending') {
+                  footerActions.push({
+                    icon: 'delete',
+                    labelKey: 'card.removePending',
+                    onPress: () => confirmDelete(owned.id),
+                  })
+                } else if (owned?.status === 'private') {
+                  footerActions.push({
+                    icon: 'delete',
+                    labelKey: 'card.removePrivate',
+                    onPress: () => confirmDelete(owned.id),
+                  })
+                } else if (owned?.status === 'approved') {
+                  footerActions.push({
+                    icon: 'delete',
+                    labelKey: 'card.removeApproved',
+                    onPress: () => confirmDelete(owned.id),
+                  })
                 }
 
-                if (owned) {
-                  return (
-                    <View key={citation.id} className='w-full md:w-[calc(50%-12px)]'>
-                      <SubmissionCard
-                        citation={owned}
-                        onEdit={() => startEdit(owned)}
-                        onDelete={() => confirmDelete(owned.id)}
-                      />
-                    </View>
-                  )
+                if (showUnsave) {
+                  footerActions.push({
+                    icon: 'bookmark-remove',
+                    labelKey: 'card.removeSaved',
+                    onPress: () => confirmUnsave(citation.id),
+                  })
                 }
-
-                const variant = VARIANT_CYCLE[index % VARIANT_CYCLE.length]
-                const spanClass =
-                  variant === 'featured'
-                    ? 'w-full'
-                    : variant === 'minimalist'
-                      ? 'w-full md:w-4/12'
-                      : 'w-full md:w-8/12'
 
                 return (
-                  <CitationCard
-                    key={citation.id}
-                    citation={citation}
-                    variant={variant}
-                    fontStyle={fontStyle}
-                    fontSize={fontSize}
-                    className={spanClass}
-                    isSaved={isSaved}
-                    onUnsave={isSaved ? () => confirmUnsave(citation.id) : undefined}
-                  />
+                  <View key={citation.id} className='w-full gap-2'>
+                    {typeLabelKey ? (
+                      <View className='self-start rounded px-2 py-1 bg-surface-container-high'>
+                        <Text className='font-label-sm text-label-sm text-on-surface-variant'>
+                          {t(typeLabelKey)}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    <WidgetPreview
+                      citation={{ ...citation, addedBy: null }}
+                      fontStyle={fontStyle}
+                      fontSize={fontSize}
+                      design={widgetDesign}
+                      showActions={false}
+                      showLivePreviewLabel={false}
+                    />
+
+                    {owned?.status === 'pending' ? (
+                      <Text className='font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
+                        {formatSubmittedDate(owned.createdAt)}
+                      </Text>
+                    ) : null}
+
+                    {owned?.moderatorNote ? (
+                      <Text className='text-sm text-on-error-container'>
+                        {t('common.note')}: {owned.moderatorNote}
+                      </Text>
+                    ) : null}
+
+                    {owned?.status === 'approved' &&
+                    owned.removableOnRequest ? (
+                      <Text className='font-label-sm text-label-sm text-outline-variant'>
+                        {t('card.removableNote')}
+                      </Text>
+                    ) : null}
+
+                    {footerActions.length > 0 ? (
+                      <View className='items-end gap-1'>
+                        {footerActions.map((action) => (
+                          <Pressable
+                            key={action.labelKey}
+                            {...pressableNoRipple}
+                            onPress={action.onPress}
+                            accessibilityRole='button'
+                            accessibilityLabel={t(action.labelKey)}
+                            className='flex-row items-center justify-end gap-2 self-end rounded-full px-3 py-2'
+                          >
+                            <MaterialIcons
+                              name={action.icon}
+                              size={20}
+                              color='#44474d'
+                            />
+                            <Text className='font-label-sm text-label-sm text-on-surface-variant'>
+                              {t(action.labelKey)}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
                 )
               })}
             </View>

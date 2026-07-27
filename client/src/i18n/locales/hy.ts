@@ -110,15 +110,20 @@ export const hy = {
   'guest.signIn': 'Մուտք գործել',
 
   'citations.title': 'Մեջբերումներ',
-  'citations.emptyTitle': 'Մեջբերումներ չկան',
-  'citations.emptyBody':
-    'Պահեք հատվածներ Կարգավորումներից, կամ ուղարկեք Ձեր սեփական մեջբերումները։',
+  'citations.emptyBody': 'Այս բաժնում ընդգրկված մեջբերումներ չկան։',
   'citations.loadFailed': 'Չհաջողվեց բեռնել մեջբերումները',
   'citations.filterAll': 'Բոլորը',
   'citations.filterSaved': 'Պահված',
   'citations.filterPending': 'Ուղարկված է հաստատման',
   'citations.filterApproved': 'Հաստատված',
   'citations.filterPrivate': 'Անձնական',
+  'citations.filterSavedHint': 'Մեջբերումներ, որոնք պահպանել եք:',
+  'citations.filterPendingHint':
+    'Ձեր ուղարկած մեջբերումները, որոնք սպասում են վերանայման և հաստատման։',
+  'citations.filterApprovedHint':
+    'Ձեր մեջբերումները, որոնք հաստատվել են և հասանելի են հանրային շտեմարանում։',
+  'citations.filterPrivateHint':
+    'Մեջբերումներ, որոնք ավելացրել եք դուք և հասանելի են միայն Ձեզ:',
 
   'submit.title': 'Ավելացնել մեջբերում',
   'submit.ctaTitle': 'Ավելացրեք նոր մեջբերում',
@@ -127,7 +132,7 @@ export const hy = {
   'submit.addNew': 'Ավելացնել մեջբերում',
   'submit.heroBody':
     'Նվիրաբերեք հանրային հավաքածուին։ Ուղարկված հարցումները վերանայվում են մինչև միանալը։',
-  'submit.conditionsNoteBefore': 'Հաստատման համար պետք է բավարարվեն բոլոր ',
+  'submit.conditionsNoteBefore': 'Հաստատման համար պետք է ապահովվեն բոլոր ',
   'submit.conditionsLink': 'պայմանները',
   'submit.conditionsNoteAfter': '։',
   'submit.pendingHint': 'Հարցումները սպասում են վերանայման',
@@ -201,7 +206,7 @@ export const hy = {
   'contact.intro':
     'Գրեք մեզ՝ հարցերի, առաջարկների կամ խնդիրների մասին։ Մենք կպատասխանենք հնարավորինս շուտ։',
   'contact.fullName': 'Անուն Ազգանուն',
-  'contact.email': 'Էլ․ փոստ',
+  'contact.email': 'Հետադարձ Էլ․ փոստ',
   'contact.message': 'Հաղորդագրություն',
   'contact.messagePlaceholder': 'Գրեք Ձեր հաղորդագրությունը…',
   'contact.send': 'Ուղարկել',
@@ -248,6 +253,11 @@ export const hy = {
   'settings.designInk': 'Թանաք',
   'settings.designManuscript': 'Ձեռագիր',
   'settings.designSanctuary': 'Սրբավայր',
+  'settings.designEmber': 'Խարույկ',
+  'settings.designLagoon': 'Լագունա',
+  'settings.designCopper': 'Պղինձ',
+  'settings.designNoir': 'Մութ',
+  'settings.designFrost': 'Ցրտաշունչ',
   'settings.addedBy': 'Ավելացրել է {name}',
   'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',
@@ -258,15 +268,16 @@ export const hy = {
   'settings.saved': 'Կարգավորումները պահված են։',
   'settings.saveFailed': 'Չհաջողվեց պահպանել կարգավորումները',
   'settings.loadFailed': 'Չհաջողվեց բեռնել կարգավորումները',
-
   'status.pending': 'Սպասում է հաստատման',
   'status.approved': 'Հաստատված',
   'status.rejected': 'Մերժված',
   'status.private': 'Մասնավոր',
-
   'card.removeSaved': 'Հեռացնել պահվածներից',
   'card.removeSavedConfirmTitle': 'Հեռացնե՞լ մեջբերումը',
   'card.removeSavedConfirmBody': 'Այն կհեռացվի Ձեր պահվածների ցանկից։',
+  'card.removePending': 'Հեռացնել ուղարկվածներից',
+  'card.removePrivate': 'Հեռացնել անձնականներից',
+  'card.removeApproved': 'Հեռացնել հաստատվածներից',
   'card.saveCitation': 'Պահել մեջբերումը',
   'card.remove': 'ՀԵՌԱՑՆԵԼ',
   'card.unknownSource': 'Անհայտ աղբյուր',

@@ -1,3 +1,4 @@
+import { DEFAULT_FONT_STYLE, type FontStyleId } from '@citations/shared'
 import * as Font from 'expo-font'
 
 /** App UI faces — loaded eagerly at startup. */
@@ -114,7 +115,16 @@ export const WIDGET_FONT_OPTIONS = [
 
 export type WidgetFontId = (typeof WIDGET_FONT_OPTIONS)[number]['id']
 
-export const DEFAULT_WIDGET_FONT: WidgetFontId = 'davel_aghvor'
+/** Compile-time guard: client font assets stay aligned with `@citations/shared`. */
+type AssertFontIdsMatch = WidgetFontId extends FontStyleId
+  ? FontStyleId extends WidgetFontId
+    ? true
+    : never
+  : never
+const _assertFontIdsMatch: AssertFontIdsMatch = true
+void _assertFontIdsMatch
+
+export const DEFAULT_WIDGET_FONT: WidgetFontId = DEFAULT_FONT_STYLE
 
 export const WIDGET_FONT_IDS = WIDGET_FONT_OPTIONS.map((f) => f.id) as [
   WidgetFontId,

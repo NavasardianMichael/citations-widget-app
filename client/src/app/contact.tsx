@@ -100,10 +100,7 @@ export default function ContactScreen() {
               />
             </View>
           ) : (
-            <View
-              className='gap-6 rounded-lg bg-surface-bright p-8'
-              style={{ boxShadow: '0 4px 20px -2px rgba(2, 26, 53, 0.05)' }}
-            >
+            <View className='gap-8'>
               <Text className='font-body-md text-body-md text-on-surface-variant'>
                 {t('contact.intro')}
               </Text>
@@ -118,7 +115,7 @@ export default function ContactScreen() {
                   }
                 }}
                 error={fieldErrors.name}
-                variant='academic'
+                variant='paper'
                 autoCapitalize='words'
                 textContentType='name'
                 autoComplete='name'
@@ -134,7 +131,7 @@ export default function ContactScreen() {
                   }
                 }}
                 error={fieldErrors.email}
-                variant='academic'
+                variant='paper'
                 autoCapitalize='none'
                 autoCorrect={false}
                 keyboardType='email-address'
@@ -154,7 +151,7 @@ export default function ContactScreen() {
                 error={fieldErrors.message}
                 placeholder={t('contact.messagePlaceholder')}
                 multiline
-                variant='default'
+                variant='paper'
                 autoCapitalize='sentences'
               />
 

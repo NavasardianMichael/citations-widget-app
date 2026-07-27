@@ -49,8 +49,8 @@ services:
 
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     container_name: citations-server
     restart: unless-stopped
     logging: *default-logging

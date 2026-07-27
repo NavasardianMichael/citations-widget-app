@@ -177,7 +177,7 @@ function CitationWidgetView(
         <Text
           modifiers={[
             font({
-              size: WIDGET_LAYOUT.metaFontSize,
+              size: data.fontSize,
               weight: 'regular',
               family: data.fontFamily,
             }),
@@ -186,7 +186,7 @@ function CitationWidgetView(
             frame({ maxWidth: Infinity, alignment: 'leading' }),
           ]}
         >
-          {data.sourceText.toUpperCase()}
+          {data.sourceText}
         </Text>
       ) : null}
 

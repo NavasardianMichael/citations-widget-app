@@ -37,6 +37,7 @@ function resolveProjectRoot() {
 }
 
 const projectRoot = resolveProjectRoot()
+const sharedRoot = path.resolve(projectRoot, '..', 'shared')
 
 // Starting Expo from the long Desktop path while W: is mapped loads react-native
 // twice (Desktop + W:) → Hermes "TypeError: property is not writable".
@@ -71,7 +72,8 @@ const config = getSentryExpoConfig(projectRoot, {
 })
 
 config.projectRoot = projectRoot
-config.watchFolders = [projectRoot]
+// Include monorepo `shared/` so Metro resolves `@citations/shared` outside client/.
+config.watchFolders = [projectRoot, sharedRoot]
 config.resolver.unstable_enablePackageExports = false
 config.resolver.alias = {
   ...(config.resolver.alias ?? {}),
@@ -82,6 +84,8 @@ config.resolver.alias = {
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules ?? {}),
   'react-native': path.join(projectRoot, 'node_modules', 'react-native'),
+  // file:../shared — ensure Metro always resolves the monorepo package.
+  '@citations/shared': sharedRoot,
 }
 
 const nativeWindConfig = withNativeWind(config, {

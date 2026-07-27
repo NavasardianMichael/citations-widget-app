@@ -1,7 +1,7 @@
 # ==============================================================================
 # Continuous Integration — typecheck, build, verify Docker image
 # ==============================================================================
-# Runs on pull requests to master that touch the server or deploy config.
+# Runs on pull requests to master that touch the server, shared package, or deploy config.
 # ==============================================================================
 
 name: CI
@@ -11,6 +11,7 @@ on:
     branches: [master]
     paths:
       - 'server/**'
+      - 'shared/**'
       - 'docker-compose.prod.yml'
       - '.github/workflows/ci.yml'
       - '.github/workflows/deploy.yml'
@@ -24,10 +25,6 @@ jobs:
     name: Server CI
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: server
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -37,15 +34,24 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: server/package-lock.json
+          cache-dependency-path: |
+            shared/package-lock.json
+            server/package-lock.json
 
-      - name: Install dependencies
+      - name: Install shared package
+        working-directory: shared
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: server
         run: npm ci
 
       - name: Typecheck
+        working-directory: server
         run: npm run typecheck
 
       - name: Build
+        working-directory: server
         run: npm run build
 
       - name: Set up Docker Buildx
@@ -54,7 +60,7 @@ jobs:
       - name: Verify server Docker image builds
         uses: docker/build-push-action@v7
         with:
-          context: ./server
+          context: .
           file: server/Dockerfile
           push: false
           load: true

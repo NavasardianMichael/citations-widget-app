@@ -237,14 +237,13 @@ function WidgetBody({
 
         {!isRefreshing && snapshot.sourceText ? (
           <TextWidget
-            text={snapshot.sourceText.toUpperCase()}
+            text={snapshot.sourceText}
             maxLines={2}
             truncate="END"
             allowFontScaling={false}
             style={{
-              fontSize: WIDGET_LAYOUT.metaFontSize,
-              lineHeight: WIDGET_LAYOUT.metaLineHeight,
-              letterSpacing: WIDGET_LAYOUT.metaLetterSpacing,
+              fontSize: snapshot.fontSize,
+              lineHeight: getQuoteLineHeight(snapshot.fontSize),
               color: asColor(snapshot.metaColor),
               fontFamily: snapshot.androidFontFile,
               fontWeight: WIDGET_SOURCE_FONT_WEIGHT,

@@ -1,4 +1,5 @@
 # Multi-stage Dockerfile for Citations Widget API (npm)
+# Build context must be the repo root (see docker-compose.prod.yml).
 
 # -----------------------------------------------------------------------------
 # Stage 1: Builder — install deps, generate Prisma, compile TypeScript
@@ -9,14 +10,23 @@ RUN apk add --no-cache python3 make g++ openssl
 
 WORKDIR /app
 
-COPY package.json package-lock.json postinstall.cjs ./
-COPY prisma ./prisma
+# Shared contract package (file: dependency for server)
+COPY shared/package.json shared/package-lock.json ./shared/
+COPY shared/tsconfig.json ./shared/
+COPY shared/src ./shared/src
+WORKDIR /app/shared
+RUN npm ci && npm run build
 
-RUN npm ci
+WORKDIR /app/server
+COPY server/package.json server/package-lock.json server/postinstall.cjs ./
+COPY server/prisma ./prisma
 
-COPY tsconfig.json ./
-COPY src ./src
-COPY data/seed ./data/seed
+# --install-links copies file: deps into node_modules (no symlinks) for the runtime image.
+RUN npm ci --install-links
+
+COPY server/tsconfig.json ./
+COPY server/src ./src
+COPY server/data/seed ./data/seed
 
 RUN npx prisma generate && npx tsc
 RUN npm prune --omit=dev
@@ -33,14 +43,14 @@ RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/package-lock.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/data/seed ./data/seed
+COPY --from=builder /app/server/package.json ./
+COPY --from=builder /app/server/package-lock.json ./
+COPY --from=builder /app/server/node_modules ./node_modules
+COPY --from=builder /app/server/prisma ./prisma
+COPY --from=builder /app/server/dist ./dist
+COPY --from=builder /app/server/data/seed ./data/seed
 
-COPY entrypoint.sh ./entrypoint.sh
+COPY server/entrypoint.sh ./entrypoint.sh
 RUN chmod +x entrypoint.sh
 
 RUN addgroup -g 1001 -S nodejs && \

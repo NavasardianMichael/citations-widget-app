@@ -88,9 +88,19 @@ function BottomTab({
 }: TabTriggerSlotProps & { icon: keyof typeof MaterialIcons.glyphMap; label: string }) {
   const color = isFocused ? "#021a35" : "#44474d";
   return (
-    <Pressable {...pressableNoRipple} {...props} className="min-h-11 flex-1 items-center justify-center gap-1" accessibilityRole="tab">
+    <Pressable
+      {...pressableNoRipple}
+      {...props}
+      className="min-h-11 min-w-0 flex-1 items-center justify-center gap-1 px-0.5"
+      accessibilityRole="tab"
+    >
       <MaterialIcons name={icon} size={22} color={color} />
-      <Text className="font-label-sm text-label-sm" style={{ color }}>
+      <Text
+        className="w-full text-center font-label-sm text-label-sm"
+        style={{ color }}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
         {label}
       </Text>
     </Pressable>

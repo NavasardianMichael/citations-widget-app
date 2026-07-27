@@ -24,6 +24,7 @@ on:
     branches: [master]
     paths:
       - 'server/**'
+      - 'shared/**'
       - 'docker-compose.prod.yml'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
@@ -55,6 +56,7 @@ jobs:
           filters: |
             server_pkg:
               - 'server/**'
+              - 'shared/**'
             deploy_config:
               - 'docker-compose.prod.yml'
               - 'server/Dockerfile'
@@ -89,9 +91,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: server/package-lock.json
+          cache-dependency-path: |
+            shared/package-lock.json
+            server/package-lock.json
 
-      - name: Install dependencies
+      - name: Install shared package
+        working-directory: shared
+        run: npm ci
+
+      - name: Install server dependencies
         working-directory: server
         run: npm ci
 
@@ -105,7 +113,7 @@ jobs:
       - name: Verify server Docker image builds
         uses: docker/build-push-action@v7
         with:
-          context: ./server
+          context: .
           file: server/Dockerfile
           push: false
           load: true
@@ -116,6 +124,7 @@ jobs:
       - name: Create server archive
         run: |
           # Include server/data/seed for first-boot citation seeding in the image.
+          # Include shared/ for Docker file: dependency (build context is repo root).
           # Exclude legacy drizzle/ (Prisma is the ORM) and local/dev-only paths.
           tar -czf server-build.tar.gz \
             --exclude='server/node_modules' \
@@ -128,8 +137,10 @@ jobs:
             --exclude='server/data/seed/README.md' \
             --exclude='server/*.md' \
             --exclude='server/.gitignore' \
+            --exclude='shared/node_modules' \
+            --exclude='shared/dist' \
             --anchored \
-            server docker-compose.prod.yml
+            server shared docker-compose.prod.yml
 
       - name: Upload server artifact
         uses: actions/upload-artifact@v6
