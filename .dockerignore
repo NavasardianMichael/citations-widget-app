@@ -12,7 +12,9 @@ client
 **/.expo
 **/android
 **/ios
-server/data
+server/data/*
+!server/data/seed/
+!server/data/seed/**
 server/scripts
 **/*.log
 **/coverage
