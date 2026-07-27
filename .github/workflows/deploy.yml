@@ -26,6 +26,7 @@ on:
       - 'server/**'
       - 'shared/**'
       - 'docker-compose.prod.yml'
+      - '.dockerignore'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
