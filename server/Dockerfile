@@ -29,7 +29,9 @@ COPY server/src ./src
 COPY server/data/seed ./data/seed
 
 RUN npx prisma generate && npx tsc
-RUN npm prune --omit=dev
+# --install-links again: plain `npm prune` forgets the earlier flag and re-symlinks
+# file: deps to ../shared, which doesn't exist in the runtime stage.
+RUN npm prune --omit=dev --install-links
 
 # -----------------------------------------------------------------------------
 # Stage 2: Production runtime

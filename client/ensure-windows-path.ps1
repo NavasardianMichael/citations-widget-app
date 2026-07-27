@@ -16,6 +16,11 @@ if ($env:OS -notlike "*Windows*") {
   return $ClientDir
 }
 
+# Repo root is already short enough for Gradle/Metro — no subst or C:\cw copy needed.
+if ($repoRoot.Length -le 50) {
+  return $ClientDir
+}
+
 # Best option: real short path copy (no subst mixed roots).
 if (Test-Path (Join-Path $cwClient "package.json")) {
   # Point W: at C:\cw so any leftover W:\client references hit the same tree.
