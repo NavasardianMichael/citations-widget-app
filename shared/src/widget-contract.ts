@@ -4,9 +4,9 @@
  */
 
 /** Typography range for Settings → Typography and PUT /widget-settings. */
-export const FONT_SIZE_MIN = 12
-export const FONT_SIZE_MAX = 32
-export const DEFAULT_QUOTE_FONT_SIZE = 16
+export const FONT_SIZE_MIN = 10
+export const FONT_SIZE_MAX = 40
+export const DEFAULT_QUOTE_FONT_SIZE = 20
 
 export const WIDGET_DESIGN_IDS = [
   'classic',

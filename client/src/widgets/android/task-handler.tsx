@@ -22,8 +22,8 @@ import {
 } from "@/widgets/build-snapshot";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
 import {
-  ANDROID_WIDGET_NAME,
   HOME_WIDGET_SNAPSHOT_KEY,
+  isAndroidWidgetName,
   type HomeWidgetSnapshot,
 } from "@/widgets/types";
 
@@ -148,7 +148,7 @@ async function toggleSaveCitation(
 }
 
 export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
-  if (props.widgetInfo.widgetName !== ANDROID_WIDGET_NAME) return;
+  if (!isAndroidWidgetName(props.widgetInfo.widgetName)) return;
 
   if (props.widgetAction === "WIDGET_DELETED") return;
 

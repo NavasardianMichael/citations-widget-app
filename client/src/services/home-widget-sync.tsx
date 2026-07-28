@@ -5,7 +5,7 @@ import type { WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
 import { buildHomeWidgetSnapshotAsync } from "@/widgets/build-snapshot";
 import {
-  ANDROID_WIDGET_NAME,
+  ANDROID_WIDGET_NAMES,
   HOME_WIDGET_SNAPSHOT_KEY,
   type HomeWidgetSnapshot,
 } from "@/widgets/types";
@@ -38,16 +38,20 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot) {
 async function pushAndroidWidget(snapshot: HomeWidgetSnapshot) {
   try {
     const { requestWidgetUpdate } = await import("react-native-android-widget");
-    await requestWidgetUpdate({
-      widgetName: ANDROID_WIDGET_NAME,
-      renderWidget: (widgetInfo) => (
-        <CitationAndroidWidget
-          snapshot={snapshot}
-          width={widgetInfo.width}
-          height={widgetInfo.height}
-        />
+    await Promise.all(
+      ANDROID_WIDGET_NAMES.map((widgetName) =>
+        requestWidgetUpdate({
+          widgetName,
+          renderWidget: (widgetInfo) => (
+            <CitationAndroidWidget
+              snapshot={snapshot}
+              width={widgetInfo.width}
+              height={widgetInfo.height}
+            />
+          ),
+        }),
       ),
-    });
+    );
   } catch {
     // No widget instances / native module not linked yet.
   }

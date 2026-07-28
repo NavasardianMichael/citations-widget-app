@@ -56,7 +56,12 @@
               "displayName": "Մեջբերումներ Աստվածաշնչից",
               "description": "Մեջբերումներ ձեր գլխավոր էկրանին",
               "contentMarginsDisabled": true,
-              "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              "supportedFamilies": [
+                "systemSmall",
+                "systemMedium",
+                "systemLarge",
+                "systemExtraLarge"
+              ]
             }
           ]
         }
@@ -84,9 +89,42 @@
           ],
           "widgets": [
             {
+              "name": "CitationWidgetSmall",
+              "label": "Թվային սրբարան · 2×2",
+              "description": "Կոմպակտ մեջբերում ձեր գլխավոր էկրանին (2×2)",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
               "name": "CitationWidget",
-              "label": "Մեջբերումներ Աստվածաշնչից",
-              "description": "Մեջբերումներ ձեր գլխավոր էկրանին",
+              "label": "Թվային սրբարան · 3×2",
+              "description": "Մեջբերում ձեր գլխավոր էկրանին (3×2)",
+              "minWidth": "180dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "CitationWidgetWide",
+              "label": "Թվային սրբարան · 4×2",
+              "description": "Լայն մեջբերում ձեր գլխավոր էկրանին (4×2)",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "CitationWidgetLarge",
+              "label": "Թվային սրբարան · 4×3",
+              "description": "Մեծ մեջբերում ձեր գլխավոր էկրանին (4×3)",
               "minWidth": "250dp",
               "minHeight": "180dp",
               "targetCellWidth": 4,

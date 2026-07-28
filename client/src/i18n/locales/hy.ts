@@ -12,7 +12,7 @@ export const hy = {
   'common.note': 'Նշում',
   'common.back': 'Հետ',
 
-  'tabs.citations': 'Մեջբերումներ',
+  'tabs.citations': 'Իմ մեջբերումները',
   'tabs.submit': 'Ուղարկել',
   'tabs.settings': 'Կարգավորումներ',
   'tabs.profile': 'Պրոֆիլ',
@@ -114,7 +114,7 @@ export const hy = {
   'citations.loadFailed': 'Չհաջողվեց բեռնել մեջբերումները',
   'citations.filterAll': 'Բոլորը',
   'citations.filterSaved': 'Պահված',
-  'citations.filterPending': 'Ուղարկված է հաստատման',
+  'citations.filterPending': 'Դիտարկվում է',
   'citations.filterApproved': 'Հաստատված',
   'citations.filterPrivate': 'Անձնական',
   'citations.filterSavedHint': 'Մեջբերումներ, որոնք պահպանել եք:',
@@ -226,9 +226,9 @@ export const hy = {
   'settings.fontSize': 'Տառաչափ',
   'settings.displayOptions': 'Ցուցադրման կարգավորումներ',
   'settings.attribution': 'Ցույց տալ մեջբերումն ավելացրած օգտատիրոջ անունը',
-  'settings.showActions': 'Ցույց տալ գործողությունները կոճակները',
+  'settings.showActions': 'Ցույց տալ գործողությունների կոճակները',
   'settings.showActionsDesc':
-    'Ցույց տալ թարմացման, կարգավորումների, պահպանման և կիսվելու կոճակները վիջեթի նախադիտման վրա։',
+    'Ցույց տալ նոր մեջբերման, պահպանման և կիսվելու կոճակները վիջեթի ներքևի հատվածում։',
   'settings.shareProfile': 'Ցույց տալ իմ պրոֆիլը այլ օգտատերերի վիջեթներում',
   'settings.shareProfileDesc':
     'Երբ միացված է, Ձեր անունը և սոց․ հղումը կարող են երևալ այլ օգտատերերի վիջեթներում՝ Ձեր ավելացրած մեջբերումների վրա։ Խմբագրեք անունը և հղումը պրոֆիլում։',
@@ -236,8 +236,8 @@ export const hy = {
   'settings.actionSaveFailed': 'Չհաջողվեց պահպանել մեջբերումը',
   'settings.attributionDesc':
     'Վիջեթի ներքևում ցույց է տալիս «Ավելացրել է [Անունը]»',
-  'settings.refresh6': 'Ամեն 6 ժամը մեկ',
-  'settings.refresh12': 'Ամեն 12 ժամը մեկ',
+  'settings.refresh6': '6 ժամը մեկ',
+  'settings.refresh12': '12 ժամը մեկ',
   'settings.refresh24': 'Ամեն օր',
   'settings.poolBible': 'Աստվածաշունչ',
   'settings.poolFiction': 'Գրականություն',
@@ -284,8 +284,6 @@ export const hy = {
   'card.remove': 'ՀԵՌԱՑՆԵԼ',
   'card.unknownSource': 'Անհայտ աղբյուր',
   'card.submittedRecent': 'Ուղարկված է վերջերս',
-  'card.submittedOn': 'Ուղարկված՝ {date}',
-  'card.removableNote': 'Հնարավոր է հեռացնել հանրային շտեմարանից՝ ըստ խնդրանքի',
   'card.editSubmission': 'Խմբագրել ուղարկումը',
   'card.deleteSubmission': 'Ջնջել ուղարկումը',
 

@@ -223,7 +223,13 @@ export default function SettingsScreen() {
   }, [isGuest, loadWidgetCitation])
 
   useEffect(() => {
-    loadSettings().catch(() => undefined)
+    let cancelled = false
+    queueMicrotask(() => {
+      if (!cancelled) loadSettings().catch(() => undefined)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [loadSettings])
 
   useEffect(() => {
@@ -247,14 +253,34 @@ export default function SettingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.sourceSelection])
 
-  // Sanctuary needs a display-only random index for the current preview — not citation-owned.
-  useEffect(() => {
-    if (!designUsesRandomBackground(draft.widgetDesign)) return
-    setPreview((prev) => {
-      if (!prev || prev.backgroundImageIndex !== undefined) return prev
-      return { ...prev, backgroundImageIndex: pickBackgroundImageIndex() }
+  // Sanctuary needs a stable display-only random index for the current preview.
+  // Adjust during render (not in an effect) when the citation id changes.
+  const [sanctuaryBgPick, setSanctuaryBgPick] = useState<{
+    citationId: string
+    index: number
+  } | null>(null)
+  const usesSanctuaryBg = designUsesRandomBackground(draft.widgetDesign)
+  if (
+    preview &&
+    usesSanctuaryBg &&
+    preview.backgroundImageIndex === undefined &&
+    sanctuaryBgPick?.citationId !== preview.id
+  ) {
+    setSanctuaryBgPick({
+      citationId: preview.id,
+      index: pickBackgroundImageIndex(),
     })
-  }, [draft.widgetDesign, preview?.id])
+  }
+
+  const previewCitation = useMemo((): WidgetCitation | null => {
+    if (!preview) return null
+    if (!usesSanctuaryBg) return preview
+    if (preview.backgroundImageIndex !== undefined) return preview
+    if (sanctuaryBgPick?.citationId === preview.id) {
+      return { ...preview, backgroundImageIndex: sanctuaryBgPick.index }
+    }
+    return preview
+  }, [preview, usesSanctuaryBg, sanctuaryBgPick])
 
   function updateDraft<K extends keyof WidgetSettingsDraft>(
     key: K,
@@ -434,7 +460,7 @@ export default function SettingsScreen() {
 
           <View className='min-w-0 flex-1' {...swipeResponder.panHandlers}>
             <WidgetPreview
-              citation={preview}
+              citation={previewCitation}
               fontStyle={draft.fontStyle}
               fontSize={draft.fontSize}
               design={draft.widgetDesign}

@@ -68,16 +68,6 @@ const SIGNED_IN_FILTERS: {
   { value: 'pending', labelKey: 'citations.filterPending' },
 ]
 
-function formatSubmittedDate(value?: string) {
-  if (!value) return t('card.submittedRecent')
-  const date = new Date(value).toLocaleDateString('hy-AM', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-  return t('card.submittedOn', { date })
-}
-
 function mergeLibrary(saved: Citation[], mine: OwnedCitation[]): LibraryItem[] {
   const byId = new Map<string, LibraryItem>()
   const savedIds = new Set(saved.map((c) => c.id))
@@ -137,6 +127,28 @@ type LibraryTypeLabelKey =
   | 'citations.filterPending'
   | 'citations.filterApproved'
   | 'citations.filterPrivate'
+
+const LIBRARY_TYPE_BADGE_CLASSES: Record<
+  LibraryTypeLabelKey,
+  { bg: string; text: string }
+> = {
+  'citations.filterApproved': {
+    bg: 'bg-[#cfe8d3]',
+    text: 'text-[#1b5e20]',
+  },
+  'citations.filterPending': {
+    bg: 'bg-secondary-container',
+    text: 'text-on-secondary-container',
+  },
+  'citations.filterPrivate': {
+    bg: 'bg-primary-fixed',
+    text: 'text-on-primary-fixed',
+  },
+  'citations.filterSaved': {
+    bg: 'bg-surface-container-highest',
+    text: 'text-on-surface-variant',
+  },
+}
 
 /** Filter-pill title for an item — shown above the widget only in the All view. */
 function libraryTypeLabelKey(item: LibraryItem): LibraryTypeLabelKey | null {
@@ -354,10 +366,14 @@ export default function CitationsScreen() {
                 }
 
                 return (
-                  <View key={citation.id} className='w-full gap-0'>
+                  <View key={citation.id} className='w-full gap-1'>
                     {typeLabelKey ? (
-                      <View className='self-start rounded px-2 py-1 bg-surface-container-high'>
-                        <Text className='font-label-sm text-label-sm text-on-surface-variant'>
+                      <View
+                        className={`self-start px-2 py-1 ${LIBRARY_TYPE_BADGE_CLASSES[typeLabelKey].bg} rounded-md`}
+                      >
+                        <Text
+                          className={`font-label-sm text-label-sm ${LIBRARY_TYPE_BADGE_CLASSES[typeLabelKey].text}`}
+                        >
                           {t(typeLabelKey)}
                         </Text>
                       </View>
@@ -372,22 +388,9 @@ export default function CitationsScreen() {
                       showLivePreviewLabel={false}
                     />
 
-                    {owned?.status === 'pending' ? (
-                      <Text className='font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
-                        {formatSubmittedDate(owned.createdAt)}
-                      </Text>
-                    ) : null}
-
                     {owned?.moderatorNote ? (
                       <Text className='text-sm text-on-error-container'>
                         {t('common.note')}: {owned.moderatorNote}
-                      </Text>
-                    ) : null}
-
-                    {owned?.status === 'approved' &&
-                    owned.removableOnRequest ? (
-                      <Text className='font-label-sm text-label-sm text-outline-variant'>
-                        {t('card.removableNote')}
                       </Text>
                     ) : null}
 
