@@ -14,13 +14,12 @@ export const WIDGET_DESIGN_IDS = [
   'midnight',
   'glass',
   'ink',
-  'manuscript',
-  'sanctuary',
   'ember',
   'lagoon',
   'copper',
   'noir',
   'frost',
+  'sanctuary',
 ] as const
 
 export type WidgetDesignId = (typeof WIDGET_DESIGN_IDS)[number]

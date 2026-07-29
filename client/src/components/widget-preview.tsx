@@ -12,8 +12,9 @@ import {
   colorWithOpacity,
   getQuoteLineHeight,
   WIDGET_LAYOUT,
-  WIDGET_QUOTE_FONT_WEIGHT,
-  WIDGET_SOURCE_FONT_WEIGHT,
+  widgetPreviewQuoteWeightStyle,
+  widgetPreviewSourceWeightStyle,
+  widgetPreviewUsesFakeQuoteBold,
 } from '@/constants/widget-layout'
 import { getWidgetFontFamily } from '@/fonts/registry'
 import { useWidgetFont } from '@/fonts/use-widget-font'
@@ -142,60 +143,96 @@ export function WidgetPreview({
     justifyContent: 'space-between' as const,
   }
 
+  const quoteWeight = widgetPreviewQuoteWeightStyle()
+  const sourceWeight = widgetPreviewSourceWeightStyle()
+  const fakeQuoteBold = widgetPreviewUsesFakeQuoteBold()
+
+  const renderFaceText = (
+    text: string,
+    style: {
+      fontFamily: string | undefined
+      fontSize: number
+      lineHeight: number
+      color: string
+      marginTop?: number
+      width?: '100%'
+    },
+    weight: typeof quoteWeight | typeof sourceWeight,
+    embolden: boolean,
+  ) => {
+    const base = { ...style, ...weight }
+    if (!embolden) {
+      return <Text style={base}>{text}</Text>
+    }
+    // Approximate Android home-widget Typeface.create(..., 600) without RN fontWeight.
+    return (
+      <View>
+        <Text
+          accessible={false}
+          importantForAccessibility='no-hide-descendants'
+          style={[base, { position: 'absolute', left: 0.4 }]}
+        >
+          {text}
+        </Text>
+        <Text style={base}>{text}</Text>
+      </View>
+    )
+  }
+
   const topContent = (
     <View>
       {showLoading ? (
-        <Text
-          style={{
+        renderFaceText(
+          t('settings.previewLoading'),
+          {
             fontFamily,
             fontSize,
             lineHeight: quoteLineHeight,
-            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
             color: tokens.attributionColor,
-          }}
-        >
-          {t('settings.previewLoading')}
-        </Text>
+          },
+          quoteWeight,
+          fakeQuoteBold,
+        )
       ) : citation ? (
-        <Text
-          style={{
+        renderFaceText(
+          `«${citation.text}»`,
+          {
             fontFamily,
             fontSize,
             lineHeight: quoteLineHeight,
-            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
             color: tokens.quoteColor,
-          }}
-        >
-          «{citation.text}»
-        </Text>
+          },
+          quoteWeight,
+          fakeQuoteBold,
+        )
       ) : (
-        <Text
-          style={{
+        renderFaceText(
+          t('settings.previewEmpty'),
+          {
             fontFamily,
             fontSize,
             lineHeight: quoteLineHeight,
-            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
             color: tokens.attributionColor,
-          }}
-        >
-          {t('settings.previewEmpty')}
-        </Text>
+          },
+          quoteWeight,
+          fakeQuoteBold,
+        )
       )}
-      {citation && !showLoading ? (
-        <Text
-          className='w-full'
-          style={{
-            marginTop: WIDGET_LAYOUT.metaBlockGap,
-            color: tokens.metaColor,
-            fontFamily,
-            fontSize,
-            lineHeight: quoteLineHeight,
-            fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
-          }}
-        >
-          {citation.source || citation.category}
-        </Text>
-      ) : null}
+      {citation && !showLoading
+        ? renderFaceText(
+            citation.source || citation.category,
+            {
+              marginTop: WIDGET_LAYOUT.metaBlockGap,
+              width: '100%',
+              fontFamily,
+              fontSize,
+              lineHeight: quoteLineHeight,
+              color: tokens.metaColor,
+            },
+            sourceWeight,
+            false,
+          )
+        : null}
     </View>
   )
 

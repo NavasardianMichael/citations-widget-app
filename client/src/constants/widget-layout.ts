@@ -6,6 +6,8 @@
  *
  * Quote and source share the user's Settings font size; only weight / case differ.
  */
+import { Platform } from 'react-native'
+
 export const WIDGET_LAYOUT = {
   /** Preview `p-8` / rounded-lg */
   padding: 32,
@@ -49,6 +51,34 @@ export function getQuoteLineHeight(fontSize: number): number {
 /** Citation quote vs source weights — keep preview, saved cards, and widgets in sync. */
 export const WIDGET_QUOTE_FONT_WEIGHT = '600' as const;
 export const WIDGET_SOURCE_FONT_WEIGHT = 'normal' as const;
+
+/**
+ * In-app `Text` (Settings / library preview) weight styles.
+ *
+ * Home-screen Android `TextWidget` applies `fontWeight` via `Typeface.create(face, weight)`,
+ * which emboldens a single-face OTF in place. React Native `Text` on Android does not: weights
+ * 100–600 are ignored for custom fonts, and 700+ look for a missing `*_bold` file and can fall
+ * back to a system face. So Android preview omits `fontWeight` and uses a 1px dual-draw for the
+ * quote to approximate the home widget; iOS/web can set weight normally.
+ */
+export function widgetPreviewQuoteWeightStyle(): {
+  fontWeight?: typeof WIDGET_QUOTE_FONT_WEIGHT
+} {
+  if (Platform.OS === 'android') return {}
+  return { fontWeight: WIDGET_QUOTE_FONT_WEIGHT }
+}
+
+export function widgetPreviewSourceWeightStyle(): {
+  fontWeight?: typeof WIDGET_SOURCE_FONT_WEIGHT
+} {
+  if (Platform.OS === 'android') return {}
+  return { fontWeight: WIDGET_SOURCE_FONT_WEIGHT }
+}
+
+/** Whether the in-app preview should dual-draw the quote to fake home-widget emboldening. */
+export function widgetPreviewUsesFakeQuoteBold(): boolean {
+  return Platform.OS === 'android'
+}
 
 /**
  * Native widgets can't render `@expo/vector-icons/MaterialIcons` directly, so this

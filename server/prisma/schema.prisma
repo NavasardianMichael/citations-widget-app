@@ -197,13 +197,12 @@ enum WidgetDesign {
   midnight
   glass
   ink
-  manuscript
-  sanctuary
   ember
   lagoon
   copper
   noir
   frost
+  sanctuary
 }
 
 model WidgetSettings {

@@ -31,7 +31,6 @@ export type WidgetDesignLabelKey =
   | 'settings.designMidnight'
   | 'settings.designGlass'
   | 'settings.designInk'
-  | 'settings.designManuscript'
   | 'settings.designSanctuary'
   | 'settings.designEmber'
   | 'settings.designLagoon'
@@ -138,20 +137,20 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
   parchment: {
     id: 'parchment',
     labelKey: 'settings.designParchment',
-    panelBg: 'rgba(253, 250, 248, 0.9)',
-    panelBorderColor: 'rgba(233, 195, 73, 0.35)',
-    accentBorderColor: '#e9c349',
+    panelBg: 'rgba(236, 214, 160, 0.96)',
+    panelBorderColor: 'rgba(176, 142, 74, 0.45)',
+    accentBorderColor: '#b08e4a',
     accentBorderWidth: 3,
-    quoteColor: '#241a00',
-    metaColor: '#574500',
-    attributionColor: '#745c00',
-    actionBg: 'rgba(254, 214, 91, 0.35)',
-    actionIconColor: '#574500',
-    ornamentColor: '#735c00',
-    ornamentOpacity: 0.15,
+    quoteColor: '#3a2a12',
+    metaColor: '#6b4f1d',
+    attributionColor: '#8a6a2e',
+    actionBg: 'rgba(210, 180, 110, 0.45)',
+    actionIconColor: '#5c4018',
+    ornamentColor: '#8a6a2e',
+    ornamentOpacity: 0.2,
     showOrnament: true,
     showLargeQuotes: false,
-    shadow: '0 6px 18px rgba(115, 92, 0, 0.12)',
+    shadow: '0 6px 18px rgba(115, 92, 0, 0.16)',
   },
   midnight: {
     id: 'midnight',
@@ -206,33 +205,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     showOrnament: false,
     showLargeQuotes: true,
     shadow: '0 10px 28px rgba(0, 0, 0, 0.35)',
-  },
-  manuscript: {
-    id: 'manuscript',
-    labelKey: 'settings.designManuscript',
-    panelBg: 'rgba(245, 243, 243, 0.94)',
-    panelBorderColor: 'rgba(2, 26, 53, 0.12)',
-    accentBorderColor: '#021a35',
-    accentBorderWidth: 2,
-    quoteColor: '#1a2f4b',
-    metaColor: '#021a35',
-    attributionColor: '#44474d',
-    actionBg: 'rgba(212, 227, 255, 0.65)',
-    actionIconColor: '#021a35',
-    ornamentColor: '#8397b8',
-    ornamentOpacity: 0.35,
-    showOrnament: true,
-    showLargeQuotes: true,
-    shadow: '0 4px 16px rgba(2, 26, 53, 0.1)',
-  },
-  sanctuary: {
-    id: 'sanctuary',
-    labelKey: 'settings.designSanctuary',
-    panelBg: 'rgba(18, 14, 12, 0.92)',
-    ...PHOTO_TEXT,
-    showOrnament: true,
-    randomBackground: true,
-    overlayColor: 'rgba(12, 10, 8, 0.72)',
   },
   ember: {
     id: 'ember',
@@ -324,12 +296,24 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     showLargeQuotes: false,
     shadow: '0 8px 24px rgba(47, 95, 143, 0.16)',
   },
+  sanctuary: {
+    id: 'sanctuary',
+    labelKey: 'settings.designSanctuary',
+    panelBg: 'rgba(18, 14, 12, 0.92)',
+    ...PHOTO_TEXT,
+    showOrnament: true,
+    randomBackground: true,
+    overlayColor: 'rgba(12, 10, 8, 0.72)',
+  },
 }
 
-/** Map retired photo-style ids (vista/horizon) onto sanctuary. */
+/** Map retired design ids onto current ones. */
 export function normalizeWidgetDesignId(value: unknown): WidgetDesignId {
   if (value === 'vista' || value === 'horizon' || value === 'sanctuary') {
     return 'sanctuary'
+  }
+  if (value === 'manuscript') {
+    return 'parchment'
   }
   if (
     typeof value === 'string' &&
