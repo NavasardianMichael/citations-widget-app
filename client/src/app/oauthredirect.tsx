@@ -18,12 +18,23 @@ export default function OAuthRedirectScreen() {
   useEffect(() => {
     if (isLoading) return
 
-    if (user) {
-      router.replace('/(tabs)')
-      return
-    }
-
     let cancelled = false
+
+    if (user) {
+      // Finish guest→account migration before landing on citations; racing
+      // parallel WidgetSettings creates used to 500 the library load.
+      void (async () => {
+        try {
+          await completeGuestSignIn()
+        } catch {
+          // Migration is best-effort; still enter the app.
+        }
+        if (!cancelled) router.replace('/(tabs)')
+      })()
+      return () => {
+        cancelled = true
+      }
+    }
 
     async function finishAuth() {
       // Poll while Login's in-flight promptAsync + code exchange + setTokens run.

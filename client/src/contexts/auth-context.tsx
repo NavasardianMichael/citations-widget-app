@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -105,8 +106,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bootstrap();
   }, [refreshSession]);
 
+  const guestSignInPromise = useRef<Promise<void> | null>(null);
   const completeGuestSignIn = useCallback(async () => {
-    await migrateGuestDataToAccount();
+    // Login + oauthredirect can both call this after Google auth; coalesce.
+    if (!guestSignInPromise.current) {
+      guestSignInPromise.current = migrateGuestDataToAccount()
+        .catch(() => undefined)
+        .finally(() => {
+          guestSignInPromise.current = null;
+        });
+    }
+    await guestSignInPromise.current;
     setIsGuest(false);
   }, []);
 

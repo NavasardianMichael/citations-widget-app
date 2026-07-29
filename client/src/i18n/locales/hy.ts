@@ -11,6 +11,19 @@ export const hy = {
   'common.optional': 'ոչ պարտադիր',
   'common.note': 'Նշում',
   'common.back': 'Հետ',
+  'common.reload': 'Թարմացնել էջը',
+
+  'errors.generic': 'Ինչ-որ բան սխալ ընթացավ։ Խնդրում ենք կրկին փորձել։',
+  'errors.network':
+    'Չհաջողվեց կապ հաստատել սերվերի հետ։ Ստուգեք ինտերնետը և կրկին փորձեք։',
+  'errors.server':
+    'Սերվերի ժամանակավոր խնդիր է առաջացել։ Խնդրում ենք մի փոքր ուշ կրկին փորձել։',
+  'errors.unauthorized': 'Խնդրում ենք կրկին մուտք գործել։',
+  'errors.forbidden':
+    'Դուք չունեք այս գործողությունը կատարելու թույլտվություն։',
+  'errors.notFound': 'Պահանջված տվյալները չեն գտնվել։',
+  'errors.rateLimited':
+    'Չափից շատ հարցումներ։ Խնդրում ենք մի փոքր սպասել և կրկին փորձել։',
 
   'tabs.citations': 'Իմ մեջբերումները',
   'tabs.submit': 'Ուղարկել',
@@ -111,7 +124,8 @@ export const hy = {
 
   'citations.title': 'Մեջբերումներ',
   'citations.emptyBody': 'Այս բաժնում ընդգրկված մեջբերումներ չկան։',
-  'citations.loadFailed': 'Չհաջողվեց բեռնել մեջբերումները',
+  'citations.loadFailed':
+    'Չհաջողվեց բեռնել մեջբերումները։ Խնդրում ենք կրկին փորձել։',
   'citations.filterAll': 'Բոլորը',
   'citations.filterSaved': 'Պահված',
   'citations.filterPending': 'Դիտարկվում է',

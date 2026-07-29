@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native'
 
+import { ErrorState } from '@/components/ui/error-state'
 import { FilterPill } from '@/components/ui/filter-pill'
 import { TopAppBar } from '@/components/ui/top-app-bar'
 import { WidgetPreview } from '@/components/widget-preview'
@@ -22,6 +23,7 @@ import { DEFAULT_QUOTE_FONT_SIZE } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
 import { DEFAULT_WIDGET_FONT } from '@/fonts/registry'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
 import {
   deleteCitation,
   fetchMyCitations,
@@ -208,7 +210,7 @@ export default function CitationsScreen() {
       setFontSize(settings.fontSize)
       setWidgetDesign(settings.widgetDesign)
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('citations.loadFailed'))
+      setError(getUserFacingError(e, 'citations.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -265,7 +267,7 @@ export default function CitationsScreen() {
           } catch (e) {
             Alert.alert(
               t('common.error'),
-              e instanceof Error ? e.message : t('citations.loadFailed'),
+              getUserFacingError(e, 'citations.loadFailed'),
             )
             await loadLibrary()
           }
@@ -309,7 +311,7 @@ export default function CitationsScreen() {
           {loading ? (
             <ActivityIndicator size='large' color='#021a35' className='py-12' />
           ) : error ? (
-            <Text className='text-center text-error'>{error}</Text>
+            <ErrorState message={error} onRetry={() => void loadLibrary()} />
           ) : filteredItems.length === 0 ? (
             <View className='items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12'>
               <Text className='text-center font-body-md text-body-md text-on-surface-variant'>

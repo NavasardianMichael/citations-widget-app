@@ -65,10 +65,14 @@ function serializeWidgetSettings(row: WidgetSettingsRow) {
 }
 
 async function getOrCreateSettings(userId: string): Promise<WidgetSettingsRow> {
-  const existing = await prisma.widgetSettings.findUnique({ where: { userId } });
-  if (existing) return existing as WidgetSettingsRow;
-
-  return (await prisma.widgetSettings.create({ data: { userId } })) as WidgetSettingsRow;
+  // Upsert: first Google/email login often fans out several authenticated GETs
+  // (citations library + guest migration) that all need settings at once. A
+  // find-then-create race used to throw P2002 → opaque 500 on the citations page.
+  return (await prisma.widgetSettings.upsert({
+    where: { userId },
+    create: { userId },
+    update: {},
+  })) as WidgetSettingsRow;
 }
 
 widgetRouter.get("/widget-settings", async (req, res) => {

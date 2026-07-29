@@ -2,14 +2,11 @@
 
 ## `bible-hy.json`
 
-Eastern Armenian Bible verses built from the public-domain **ArmEastern** corpus
-(`kevincoxme/bible_databases`, CSV/SQLite).
+62 popular Eastern Armenian (Նոր վերանայված Արարատ) verses from
+[BibliaTodo — Առավել տպավորիչ](https://www.bibliatodo.com/hy/աստվածաշնչի-խոսքեր/Հայտնի/aravel-tpavorich).
 
-- That redistributable package currently ships **6 478 verses with text** (many verse slots are empty in the source).
-- Rebuild: download `_armeastern.csv`, then `npx tsx scripts/build-hy-bible-seed.ts`
-- `source` uses Eastern Armenian book titles (e.g. `Ծննդոց 1:1`)
-
-A fuller Ararat/Etchmiadzin edition can replace this file later under the same JSON shape.
+- `source` = `titulo-*` link text (ranges normalized from verse markers when the title omits them)
+- `text` = `verso-*` / `bt-verse-text` content
 
 ## `fiction-quotes.json`
 
@@ -28,3 +25,5 @@ English `kjv.json` is no longer used or shipped; seed only loads `bible-hy.json`
 ## Production
 
 How to seed or sync on the deployed server: [docs/production-seeding.md](../../docs/production-seeding.md).
+
+`--sync` only **adds** missing IDs and does not delete the old full-bible rows. To replace bible citations after this change, delete existing `category = 'bible'` rows (or wipe citations and re-seed), then seed.
