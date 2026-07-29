@@ -234,7 +234,16 @@ function WidgetBody({
             width: "match_parent",
           }}
         />
+      </FlexWidget>
 
+      <FlexWidget
+        style={{
+          width: "match_parent",
+          flexDirection: "column",
+          flexGap: WIDGET_LAYOUT.metaBlockGap,
+          marginTop: WIDGET_LAYOUT.sectionGap,
+        }}
+      >
         {!isRefreshing && snapshot.sourceText ? (
           <TextWidget
             text={snapshot.sourceText}
@@ -248,20 +257,10 @@ function WidgetBody({
               fontFamily: snapshot.androidFontFile,
               fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
               width: "match_parent",
-              marginTop: WIDGET_LAYOUT.metaBlockGap,
             }}
           />
         ) : null}
-      </FlexWidget>
 
-      <FlexWidget
-        style={{
-          width: "match_parent",
-          flexDirection: "column",
-          flexGap: WIDGET_LAYOUT.metaBlockGap,
-          marginTop: WIDGET_LAYOUT.sectionGap,
-        }}
-      >
         {actionRows.length > 0 ? (
           <FlexWidget
             style={{

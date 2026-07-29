@@ -1,5 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { ImageBackground, Pressable, Text, View } from 'react-native'
+import { ImageBackground, Platform, Pressable, Text, View } from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
 import {
@@ -147,6 +147,9 @@ export function WidgetPreview({
   const sourceWeight = widgetPreviewSourceWeightStyle()
   const fakeQuoteBold = widgetPreviewUsesFakeQuoteBold()
 
+  const androidTextMetrics =
+    Platform.OS === 'android' ? ({ includeFontPadding: false } as const) : null
+
   const renderFaceText = (
     text: string,
     style: {
@@ -160,27 +163,30 @@ export function WidgetPreview({
     weight: typeof quoteWeight | typeof sourceWeight,
     embolden: boolean,
   ) => {
-    const base = { ...style, ...weight }
+    const base = { ...style, ...weight, ...androidTextMetrics }
     if (!embolden) {
       return <Text style={base}>{text}</Text>
     }
     // Approximate Android home-widget Typeface.create(..., 600) without RN fontWeight.
+    // textShadow (not absolute dual-draw) keeps lineHeight intact for multiline Armenian.
     return (
-      <View>
-        <Text
-          accessible={false}
-          importantForAccessibility='no-hide-descendants'
-          style={[base, { position: 'absolute', left: 0.4 }]}
-        >
-          {text}
-        </Text>
-        <Text style={base}>{text}</Text>
-      </View>
+      <Text
+        style={[
+          base,
+          {
+            textShadowColor: style.color,
+            textShadowOffset: { width: 0.55, height: 0 },
+            textShadowRadius: 0.25,
+          },
+        ]}
+      >
+        {text}
+      </Text>
     )
   }
 
   const topContent = (
-    <View>
+    <View style={{ flexShrink: 1 }}>
       {showLoading ? (
         renderFaceText(
           t('settings.previewLoading'),
@@ -218,60 +224,67 @@ export function WidgetPreview({
           fakeQuoteBold,
         )
       )}
-      {citation && !showLoading
-        ? renderFaceText(
-            citation.source || citation.category,
-            {
-              marginTop: WIDGET_LAYOUT.metaBlockGap,
-              width: '100%',
-              fontFamily,
-              fontSize,
-              lineHeight: quoteLineHeight,
-              color: tokens.metaColor,
-            },
-            sourceWeight,
-            false,
-          )
-        : null}
     </View>
   )
 
-  const metaContent = citation ? (
-    <View style={{ gap: WIDGET_LAYOUT.metaBlockGap, marginTop: WIDGET_LAYOUT.sectionGap }}>
-      {showActions ? (
-        <View
-          className='w-full flex-row flex-wrap justify-end'
-          style={{
-            columnGap: WIDGET_LAYOUT.actionGap,
-            rowGap: WIDGET_LAYOUT.sourceActionsGap,
-          }}
-        >
-          {previewActions.map((action) => (
-            <PreviewActionIcon
-              key={action.icon}
-              icon={action.icon}
-              label={action.label}
-              onPress={action.onPress}
-              backgroundColor={tokens.actionBg}
-              iconColor={tokens.actionIconColor}
-            />
-          ))}
-        </View>
-      ) : null}
-      {citation.addedBy ? (
-        <Text
-          style={{
-            fontFamily,
-            fontSize: WIDGET_LAYOUT.attributionFontSize,
-            lineHeight: WIDGET_LAYOUT.attributionLineHeight,
-            color: tokens.attributionColor,
-          }}
-        >
-          {t('settings.addedBy', { name: citation.addedBy })}
-        </Text>
-      ) : null}
-    </View>
-  ) : null
+  const metaContent =
+    citation || showActions ? (
+      <View
+        style={{
+          gap: WIDGET_LAYOUT.metaBlockGap,
+          marginTop: WIDGET_LAYOUT.sectionGap,
+          flexShrink: 0,
+        }}
+      >
+        {citation && !showLoading
+          ? renderFaceText(
+              citation.source || citation.category,
+              {
+                width: '100%',
+                fontFamily,
+                fontSize,
+                lineHeight: quoteLineHeight,
+                color: tokens.metaColor,
+              },
+              sourceWeight,
+              false,
+            )
+          : null}
+        {showActions ? (
+          <View
+            className='w-full flex-row flex-wrap justify-end'
+            style={{
+              columnGap: WIDGET_LAYOUT.actionGap,
+              rowGap: WIDGET_LAYOUT.sourceActionsGap,
+            }}
+          >
+            {previewActions.map((action) => (
+              <PreviewActionIcon
+                key={action.icon}
+                icon={action.icon}
+                label={action.label}
+                onPress={action.onPress}
+                backgroundColor={tokens.actionBg}
+                iconColor={tokens.actionIconColor}
+              />
+            ))}
+          </View>
+        ) : null}
+        {citation?.addedBy ? (
+          <Text
+            style={{
+              fontFamily,
+              fontSize: WIDGET_LAYOUT.attributionFontSize,
+              lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+              color: tokens.attributionColor,
+              ...androidTextMetrics,
+            }}
+          >
+            {t('settings.addedBy', { name: citation.addedBy })}
+          </Text>
+        ) : null}
+      </View>
+    ) : null
 
   const ornaments = (
     <>

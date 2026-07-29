@@ -29,12 +29,7 @@ export type WidgetDesignLabelKey =
   | 'settings.designClassic'
   | 'settings.designParchment'
   | 'settings.designMidnight'
-  | 'settings.designGlass'
-  | 'settings.designInk'
   | 'settings.designSanctuary'
-  | 'settings.designEmber'
-  | 'settings.designLagoon'
-  | 'settings.designCopper'
   | 'settings.designNoir'
   | 'settings.designFrost'
 
@@ -170,96 +165,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     showLargeQuotes: false,
     shadow: '0 8px 24px rgba(2, 26, 53, 0.35)',
   },
-  glass: {
-    id: 'glass',
-    labelKey: 'settings.designGlass',
-    panelBg: 'rgba(251, 249, 248, 0.55)',
-    panelBorderColor: 'rgba(255, 255, 255, 0.55)',
-    accentBorderColor: 'rgba(2, 26, 53, 0.2)',
-    accentBorderWidth: 1,
-    quoteColor: '#021a35',
-    metaColor: '#334865',
-    attributionColor: 'rgba(68, 71, 77, 0.85)',
-    actionBg: 'rgba(255, 255, 255, 0.45)',
-    actionIconColor: '#021a35',
-    ornamentColor: '#021a35',
-    ornamentOpacity: 0.12,
-    showOrnament: false,
-    showLargeQuotes: false,
-    shadow: '0 8px 28px rgba(2, 26, 53, 0.12)',
-  },
-  ink: {
-    id: 'ink',
-    labelKey: 'settings.designInk',
-    panelBg: 'rgba(25, 26, 24, 0.88)',
-    panelBorderColor: 'rgba(200, 198, 195, 0.2)',
-    accentBorderColor: '#e9c349',
-    accentBorderWidth: 0,
-    quoteColor: '#fbf9f8',
-    metaColor: '#e9c349',
-    attributionColor: 'rgba(200, 198, 195, 0.8)',
-    actionBg: 'rgba(46, 47, 45, 0.9)',
-    actionIconColor: '#e4e2de',
-    ornamentColor: '#fed65b',
-    ornamentOpacity: 0.18,
-    showOrnament: false,
-    showLargeQuotes: true,
-    shadow: '0 10px 28px rgba(0, 0, 0, 0.35)',
-  },
-  ember: {
-    id: 'ember',
-    labelKey: 'settings.designEmber',
-    panelBg: 'rgba(28, 14, 10, 0.9)',
-    panelBorderColor: 'rgba(255, 140, 66, 0.28)',
-    accentBorderColor: '#ff8c42',
-    accentBorderWidth: 3,
-    quoteColor: '#fff4ec',
-    metaColor: '#ffb347',
-    attributionColor: 'rgba(255, 214, 170, 0.78)',
-    actionBg: 'rgba(62, 28, 18, 0.88)',
-    actionIconColor: '#ffe0c2',
-    ornamentColor: '#ff8c42',
-    ornamentOpacity: 0.32,
-    showOrnament: true,
-    showLargeQuotes: false,
-    shadow: '0 10px 28px rgba(40, 12, 4, 0.4)',
-  },
-  lagoon: {
-    id: 'lagoon',
-    labelKey: 'settings.designLagoon',
-    panelBg: 'rgba(6, 42, 48, 0.88)',
-    panelBorderColor: 'rgba(110, 231, 214, 0.28)',
-    accentBorderColor: '#5eead4',
-    accentBorderWidth: 2,
-    quoteColor: '#ecfeff',
-    metaColor: '#99f6e4',
-    attributionColor: 'rgba(167, 243, 208, 0.8)',
-    actionBg: 'rgba(12, 58, 64, 0.9)',
-    actionIconColor: '#ccfbf1',
-    ornamentColor: '#5eead4',
-    ornamentOpacity: 0.22,
-    showOrnament: true,
-    showLargeQuotes: false,
-    shadow: '0 10px 28px rgba(4, 30, 36, 0.38)',
-  },
-  copper: {
-    id: 'copper',
-    labelKey: 'settings.designCopper',
-    panelBg: 'rgba(42, 24, 16, 0.92)',
-    panelBorderColor: 'rgba(205, 127, 50, 0.35)',
-    accentBorderColor: '#cd7f32',
-    accentBorderWidth: 2,
-    quoteColor: '#faf3eb',
-    metaColor: '#e8a86a',
-    attributionColor: 'rgba(232, 196, 160, 0.8)',
-    actionBg: 'rgba(72, 40, 24, 0.9)',
-    actionIconColor: '#f3d5b5',
-    ornamentColor: '#cd7f32',
-    ornamentOpacity: 0.28,
-    showOrnament: false,
-    showLargeQuotes: true,
-    shadow: '0 10px 26px rgba(32, 14, 6, 0.4)',
-  },
   noir: {
     id: 'noir',
     labelKey: 'settings.designNoir',
@@ -314,6 +219,15 @@ export function normalizeWidgetDesignId(value: unknown): WidgetDesignId {
   }
   if (value === 'manuscript') {
     return 'parchment'
+  }
+  if (
+    value === 'glass' ||
+    value === 'ink' ||
+    value === 'ember' ||
+    value === 'lagoon' ||
+    value === 'copper'
+  ) {
+    return DEFAULT_WIDGET_DESIGN
   }
   if (
     typeof value === 'string' &&

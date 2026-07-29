@@ -1,58 +1,66 @@
-import type { CitationStatus } from "@prisma/client";
+import type { CitationStatus } from '@prisma/client'
 
-import { prisma } from "../db/index.js";
-import { logger } from "../lib/logger.js";
-import { citationReviewRepository } from "../repositories/citation-review-repository.js";
-import { emailService } from "./email-service.js";
+import { prisma } from '../db/index.js'
+import { logger } from '../lib/logger.js'
+import { citationReviewRepository } from '../repositories/citation-review-repository.js'
+import { emailService } from './email-service.js'
 
 export type ReviewResult =
-  | { ok: true; action: "approve" | "reject"; citationId: string }
-  | { ok: false; reason: "invalid" | "already_used" | "not_pending" | "missing" };
+  | { ok: true; action: 'approve' | 'reject'; citationId: string }
+  | {
+      ok: false
+      reason: 'invalid' | 'already_used' | 'not_pending' | 'missing'
+    }
 
 function escapeHtml(value: string): string {
   return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 export function reviewResultHtml(result: ReviewResult): string {
-  let title: string;
-  let message: string;
-  let statusCodeHint: string;
+  let title: string
+  let message: string
+  let statusCodeHint: string
 
   if (result.ok) {
-    title = result.action === "approve" ? "Citation approved" : "Citation rejected";
+    title =
+      result.action === 'approve'
+        ? 'Շնորհավրում ենք, Ձեր ուղարկած մեջբերումը հաստատված է'
+        : 'Ցավոք, Ձեր ուղարկած մեջբերումը մերժված է'
     message =
-      result.action === "approve"
-        ? "The citation is now public. The submitter has been emailed."
-        : "The citation was marked rejected. The submitter has been emailed.";
-    statusCodeHint = "ok";
+      result.action === 'approve'
+        ? 'Մեջբերումը այժմ հրապարակային է։ Ուղարկողին էլ. նամակ է ուղարկվել։'
+        : 'Մեջբերումը նշվել է որպես մերժված։ Ուղարկողին էլ. նամակ է ուղարկվել։'
+    statusCodeHint = 'ok'
   } else {
-    statusCodeHint = result.reason;
+    statusCodeHint = result.reason
     switch (result.reason) {
-      case "invalid":
-        title = "Invalid or expired link";
-        message = "This review link is invalid or has expired. Request a new pending-review email if needed.";
-        break;
-      case "already_used":
-        title = "Already reviewed";
-        message = "This citation was already approved or rejected via an earlier link.";
-        break;
-      case "not_pending":
-        title = "Not pending";
-        message = "This citation is no longer awaiting review (it may have been withdrawn or changed).";
-        break;
-      case "missing":
-        title = "Citation not found";
-        message = "The citation for this link no longer exists.";
-        break;
+      case 'invalid':
+        title = 'Անվավեր կամ ժամկետանց հղում'
+        message =
+          'Այս վերանայման հղումն անվավեր է կամ ժամկետանց։ Անհրաժեշտության դեպքում խնդրեք նոր սպասող վերանայման նամակ։'
+        break
+      case 'already_used':
+        title = 'Արդեն վերանայված է'
+        message = 'Այս մեջբերումն արդեն հաստատվել կամ մերժվել է նախորդ հղումով։'
+        break
+      case 'not_pending':
+        title = 'Այլևս սպասող չէ'
+        message =
+          'Այս մեջբերումն այլևս վերանայման չի սպասում (հնարավոր է՝ հետ է կանչվել կամ փոխվել)։'
+        break
+      case 'missing':
+        title = 'Մեջբերումը չի գտնվել'
+        message = 'Այս հղման մեջբերումն այլևս գոյություն չունի։'
+        break
     }
   }
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="hy">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -70,34 +78,43 @@ export function reviewResultHtml(result: ReviewResult): string {
     <p>${escapeHtml(message)}</p>
   </div>
 </body>
-</html>`;
+</html>`
 }
 
 export const citationReviewService = {
   async reviewByToken(token: string): Promise<ReviewResult> {
     if (!token || token.length > 128) {
-      return { ok: false, reason: "invalid" };
+      return { ok: false, reason: 'invalid' }
     }
 
-    const row = await citationReviewRepository.findValidToken(token);
+    const row = await citationReviewRepository.findValidToken(token)
     if (!row) {
       // Distinguish expired/used vs never existed when possible.
-      const any = await prisma.citationReviewToken.findUnique({ where: { token } });
-      if (!any) return { ok: false, reason: "invalid" };
-      if (any.usedAt) return { ok: false, reason: "already_used" };
-      return { ok: false, reason: "invalid" };
+      const any = await prisma.citationReviewToken.findUnique({
+        where: { token },
+      })
+      if (!any) return { ok: false, reason: 'invalid' }
+      if (any.usedAt) return { ok: false, reason: 'already_used' }
+      return { ok: false, reason: 'invalid' }
     }
 
-    const { citation, action } = row;
+    const { citation, action } = row
     if (!citation) {
-      return { ok: false, reason: "missing" };
+      return { ok: false, reason: 'missing' }
     }
-    if (citation.status !== "pending") {
-      return { ok: false, reason: citation.status === "approved" || citation.status === "rejected" ? "already_used" : "not_pending" };
+    if (citation.status !== 'pending') {
+      return {
+        ok: false,
+        reason:
+          citation.status === 'approved' || citation.status === 'rejected'
+            ? 'already_used'
+            : 'not_pending',
+      }
     }
 
-    const nextStatus: CitationStatus = action === "approve" ? "approved" : "rejected";
-    const reviewedAt = new Date();
+    const nextStatus: CitationStatus =
+      action === 'approve' ? 'approved' : 'rejected'
+    const reviewedAt = new Date()
 
     await prisma.$transaction([
       prisma.citation.update({
@@ -108,32 +125,40 @@ export const citationReviewService = {
         where: { citationId: citation.id, usedAt: null },
         data: { usedAt: reviewedAt },
       }),
-    ]);
+    ])
 
-    const submitter = citation.submittedBy;
+    const submitter = citation.submittedBy
     if (submitter) {
       try {
-        if (action === "approve") {
-          await emailService.sendCitationApproved(submitter.email, submitter.name, {
-            text: citation.text,
-            source: citation.source,
-            category: citation.category,
-          });
+        if (action === 'approve') {
+          await emailService.sendCitationApproved(
+            submitter.email,
+            submitter.name,
+            {
+              text: citation.text,
+              source: citation.source,
+              category: citation.category,
+            },
+          )
         } else {
-          await emailService.sendCitationRejected(submitter.email, submitter.name, {
-            text: citation.text,
-            source: citation.source,
-            category: citation.category,
-          });
+          await emailService.sendCitationRejected(
+            submitter.email,
+            submitter.name,
+            {
+              text: citation.text,
+              source: citation.source,
+              category: citation.category,
+            },
+          )
         }
       } catch (error) {
         logger.error(
           { error, citationId: citation.id, action, userId: submitter.id },
-          "Failed to send citation review outcome email",
-        );
+          'Failed to send citation review outcome email',
+        )
       }
     }
 
-    return { ok: true, action, citationId: citation.id };
+    return { ok: true, action, citationId: citation.id }
   },
-};
+}

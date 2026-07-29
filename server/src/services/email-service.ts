@@ -106,6 +106,18 @@ export type CitationReviewOutcomeDetails = {
   category: string
 }
 
+/** Armenian labels for citation categories in user-facing emails. */
+function categoryLabelHy(category: string): string {
+  switch (category) {
+    case 'bible':
+      return 'Աստվածաշունչ'
+    case 'fiction':
+      return 'Գրականություն'
+    default:
+      return category
+  }
+}
+
 /** Public HTTPS URL for one-click moderator review (email clients). */
 export function buildCitationReviewUrl(token: string): string {
   const base = (env.API_URL ?? `http://localhost:${env.PORT}`).replace(
@@ -178,10 +190,11 @@ export const emailTemplates = {
 
   citationApproved(name: string, details: CitationReviewOutcomeDetails) {
     const subject = `Ձեր մեջբերումը հաստատված է — «${APP_NAME}»`
-    const snippet = `«${details.text}» — ${details.source}`
+    const category = categoryLabelHy(details.category)
+    const snippet = `«${details.text}» — ${details.source} · ${category}`
     const text = `Ողջույն, ${name},\n\nՁեր մեջբերումը հաստատվել է և հասանելի է հավելվածում։\n\n${snippet}`
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Մեջբերումը հաստատված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր ներկայացրած մեջբերումը հաստատվել է և այժմ հասանելի է հավելվածում։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(details.category)}</p>`,
+      `<h2 style="color:${COLORS.textDark};">Մեջբերումը հաստատված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր ներկայացրած մեջբերումը հաստատվել է և այժմ հասանելի է հավելվածում։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p>`,
       'Մեջբերումը հաստատված է',
     )
     return { subject, text, html }
@@ -189,10 +202,12 @@ export const emailTemplates = {
 
   citationRejected(name: string, details: CitationReviewOutcomeDetails) {
     const subject = `Ձեր մեջբերման հայտը մերժված է — «${APP_NAME}»`
-    const snippet = `«${details.text}» — ${details.source}`
-    const text = `Ողջույն, ${name},\n\nՑավոք, Ձեր մեջբերման հայտը մերժվել է։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։\n\n${snippet}: Մերժման պատճառը շուտով կստանաք այլ նամակով։`
+    const category = categoryLabelHy(details.category)
+    const snippet = `«${details.text}» — ${details.source} · ${category}`
+    const reasonNote = 'Մերժման պատճառը շուտով կստանաք այլ նամակով։'
+    const text = `Ողջույն, ${name},\n\nՑավոք, Ձեր մեջբերման հայտը մերժվել է։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։\n\n${snippet}\n\n${reasonNote}`
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Մեջբերման հայտը մերժված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ցավոք, Ձեր ներկայացրած մեջբերումը չի հաստատվել։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(details.category)}</p>`,
+      `<h2 style="color:${COLORS.textDark};">Մեջբերման հայտը մերժված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ցավոք, Ձեր ներկայացրած մեջբերումը չի հաստատվել։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p><p style="color:${COLORS.textLight};margin:16px 0 0;">${reasonNote}</p>`,
       'Մեջբերման հայտը մերժված է',
     )
     return { subject, text, html }
@@ -251,7 +266,8 @@ async function sendEmail(params: {
  */
 async function sendInternalEmail(params: {
   subject: string
-  body: string
+  /** Omit or leave empty to skip the mail-engine MESSAGE block. */
+  body?: string
   senderEmail?: string
   firstName?: string
   details?: Record<string, string>
@@ -267,20 +283,25 @@ async function sendInternalEmail(params: {
     throw new Error('Mail API not configured')
   }
 
+  const payload: Record<string, unknown> = {
+    appId: APP_ID,
+    subject: params.subject,
+    senderEmail: params.senderEmail,
+    firstName: params.firstName,
+    details: params.details,
+  }
+  // Only include body when present — empty MESSAGE sections duplicate details (e.g. review URLs).
+  if (params.body?.trim()) {
+    payload.body = params.body.trim()
+  }
+
   const response = await fetch(`${env.MAIL_API_URL}/mail/internal/send`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': env.MAIL_API_KEY,
     },
-    body: JSON.stringify({
-      appId: APP_ID,
-      subject: params.subject,
-      body: params.body,
-      senderEmail: params.senderEmail,
-      firstName: params.firstName,
-      details: params.details,
-    }),
+    body: JSON.stringify(payload),
   })
 
   const data = (await response.json()) as {
@@ -300,16 +321,20 @@ async function sendInternalEmail(params: {
 function citationReviewDetails(
   details: CitationPendingReviewDetails,
 ): Record<string, string> {
-  // Action links first so they stay visible above long citation text.
-  const base: Record<string, string> = {}
+  // Citation content first (mail-engine renders details in insertion order).
+  const base: Record<string, string> = {
+    text: details.text,
+    source: details.source,
+    category: details.category,
+  }
   if (details.approveUrl) base.approveUrl = details.approveUrl
   if (details.rejectUrl) base.rejectUrl = details.rejectUrl
+  if (details.approveUrl || details.rejectUrl) {
+    base.reviewNote = 'Each link can be used once and expires in 14 days.'
+  }
   Object.assign(base, {
     citationId: details.citationId,
     status: details.status,
-    category: details.category,
-    source: details.source,
-    text: details.text,
     submittedAt: details.submittedAt,
     submitterUserId: details.submitterUserId,
     submitterName: details.submitterName,
@@ -318,21 +343,6 @@ function citationReviewDetails(
     submitterShareProfile: details.submitterShareProfile ? 'yes' : 'no',
   })
   return base
-}
-
-function pendingReviewBody(details: CitationPendingReviewDetails): string {
-  const lines = ['A user submitted a citation for approval. See details below.']
-  if (details.approveUrl && details.rejectUrl) {
-    lines.push(
-      '',
-      'One-click review:',
-      `Approve: ${details.approveUrl}`,
-      `Reject: ${details.rejectUrl}`,
-      '',
-      'Each link can be used once and expires in 14 days.',
-    )
-  }
-  return lines.join('\n')
 }
 
 export const emailService = {
@@ -381,9 +391,9 @@ export const emailService = {
   },
 
   async sendCitationPendingReview(details: CitationPendingReviewDetails) {
+    // Details-only: citation fields + one-click review links (no MESSAGE block).
     await sendInternalEmail({
       subject: `New citation pending — ${details.category}`,
-      body: pendingReviewBody(details),
       senderEmail: details.submitterEmail,
       firstName: details.submitterName,
       details: citationReviewDetails(details),

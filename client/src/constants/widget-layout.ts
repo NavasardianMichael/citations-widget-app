@@ -43,9 +43,9 @@ export {
   FONT_SIZE_MIN,
 } from '@citations/shared'
 
-/** Quote line-height scales with font size at the same 1.5 ratio as the previous fixed 16/24. */
+/** Quote line-height scales with font size; slightly roomy for Armenian glyphs. */
 export function getQuoteLineHeight(fontSize: number): number {
-  return Math.round(fontSize * 1.5);
+  return Math.round(fontSize * 1.55);
 }
 
 /** Citation quote vs source weights — keep preview, saved cards, and widgets in sync. */
@@ -58,8 +58,11 @@ export const WIDGET_SOURCE_FONT_WEIGHT = 'normal' as const;
  * Home-screen Android `TextWidget` applies `fontWeight` via `Typeface.create(face, weight)`,
  * which emboldens a single-face OTF in place. React Native `Text` on Android does not: weights
  * 100–600 are ignored for custom fonts, and 700+ look for a missing `*_bold` file and can fall
- * back to a system face. So Android preview omits `fontWeight` and uses a 1px dual-draw for the
- * quote to approximate the home widget; iOS/web can set weight normally.
+ * back to a system face. So Android preview omits `fontWeight` and uses a horizontal text-shadow
+ * to approximate the home widget; iOS/web can set weight normally.
+ *
+ * Do not dual-draw with an absolutely positioned `Text` — Android often ignores lineHeight on
+ * absolute multiline text, which stacks glyphs on top of each other and paints over the source.
  */
 export function widgetPreviewQuoteWeightStyle(): {
   fontWeight?: typeof WIDGET_QUOTE_FONT_WEIGHT
@@ -75,7 +78,7 @@ export function widgetPreviewSourceWeightStyle(): {
   return { fontWeight: WIDGET_SOURCE_FONT_WEIGHT }
 }
 
-/** Whether the in-app preview should dual-draw the quote to fake home-widget emboldening. */
+/** Whether the in-app preview should fake home-widget emboldening via text-shadow. */
 export function widgetPreviewUsesFakeQuoteBold(): boolean {
   return Platform.OS === 'android'
 }
