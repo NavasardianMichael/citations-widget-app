@@ -134,10 +134,14 @@ On container start, the entrypoint runs:
 
 Seed JSON lives in `data/seed/` and is baked into the image. Re-deploys skip empty-seed when rows already exist.
 
-**Production seeding (empty DB + manual `--sync`):** see [docs/production-seeding.md](./docs/production-seeding.md).
+**Production seeding (empty DB, `--sync`, or replace bible):** see [docs/production-seeding.md](./docs/production-seeding.md).
 
 ```bash
 # Add new seed IDs after a deploy (most common ops command)
+docker exec citations-server node dist/scripts/seed-citations.js --sync
+
+# Replace bible list after deploy (delete old bible rows, then sync)
+docker exec citations-postgres psql -U citations -d citations -c "DELETE FROM citations WHERE category = 'bible';"
 docker exec citations-server node dist/scripts/seed-citations.js --sync
 ```
 

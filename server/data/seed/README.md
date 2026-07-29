@@ -24,6 +24,6 @@ English `kjv.json` is no longer used or shipped; seed only loads `bible-hy.json`
 
 ## Production
 
-How to seed or sync on the deployed server: [docs/production-seeding.md](../../docs/production-seeding.md).
-
-`--sync` only **adds** missing IDs and does not delete the old full-bible rows. To replace bible citations after this change, delete existing `category = 'bible'` rows (or wipe citations and re-seed), then seed.
+How to seed, sync, or **replace** bible citations on the deployed server:
+[docs/production-seeding.md](../../docs/production-seeding.md)
+(see **Replace bible seed**).

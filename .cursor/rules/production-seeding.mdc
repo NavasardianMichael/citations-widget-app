@@ -9,10 +9,17 @@ When the user asks how to seed (or sync) citations on production / the VPS / `ci
 
 `server/docs/production-seeding.md`
 
-Default ops command after deploying new seed JSON:
+Default ops command after deploying **appended** seed JSON (new IDs only):
 
 ```bash
 docker exec citations-server node dist/scripts/seed-citations.js --sync
 ```
 
-Empty DB is seeded automatically on container boot; `--sync` adds new IDs only.
+When `bible-hy.json` was **replaced** and old bible rows must go (after deploy):
+
+```bash
+docker exec citations-postgres psql -U citations -d citations -c "DELETE FROM citations WHERE category = 'bible';"
+docker exec citations-server node dist/scripts/seed-citations.js --sync
+```
+
+Empty DB is seeded automatically on container boot; `--sync` adds new IDs only and does not delete.
