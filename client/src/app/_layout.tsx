@@ -16,7 +16,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import '../global.css'
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { TutorialModal } from '@/components/tutorial-modal'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
+import { OnboardingProvider } from '@/contexts/onboarding-context'
 import { APP_FONT_SOURCES } from '@/fonts/registry'
 import { initSentry, Sentry } from '@/lib/sentry'
 
@@ -101,10 +103,13 @@ function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider value={DefaultTheme}>
         <AuthProvider>
-          <View style={{ flex: 1, backgroundColor: '#fbf9f8' }}>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </View>
+          <OnboardingProvider>
+            <View style={{ flex: 1, backgroundColor: '#fbf9f8' }}>
+              <StatusBar style="dark" />
+              <RootNavigator />
+            </View>
+            <TutorialModal />
+          </OnboardingProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

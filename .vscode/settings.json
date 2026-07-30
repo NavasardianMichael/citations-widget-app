@@ -1,6 +1,4 @@
 {
-    "postman.settings.dotenv-detection-notification-visibility": false,
-    "cSpell.words": [
-        "Pressable"
-    ]
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "cSpell.words": ["oauthredirect", "Pressable"]
 }

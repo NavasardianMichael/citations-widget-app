@@ -21,6 +21,7 @@ import {
 } from '@/constants/widget-designs'
 import { DEFAULT_QUOTE_FONT_SIZE } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
+import { useOnboarding } from '@/contexts/onboarding-context'
 import { DEFAULT_WIDGET_FONT } from '@/fonts/registry'
 import { t } from '@/i18n'
 import { getUserFacingError } from '@/lib/user-facing-error'
@@ -172,6 +173,7 @@ function libraryTypeLabelKey(item: LibraryItem): LibraryTypeLabelKey | null {
 
 export default function CitationsScreen() {
   const { user, isGuest } = useAuth()
+  const { openTutorial } = useOnboarding()
   const [items, setItems] = useState<LibraryItem[]>([])
   const [filter, setFilter] = useState<LibraryFilter>('all')
   const [fontStyle, setFontStyle] = useState<FontStyle>(DEFAULT_WIDGET_FONT)
@@ -278,7 +280,22 @@ export default function CitationsScreen() {
 
   return (
     <View className='flex-1 bg-background'>
-      <TopAppBar title={t('citations.title')} showBrandIcon />
+      <TopAppBar
+        title={t('citations.title')}
+        showBrandIcon
+        rightAction={
+          <Pressable
+            {...pressableNoRipple}
+            onPress={openTutorial}
+            accessibilityRole='button'
+            accessibilityLabel={t('tutorial.openButton')}
+            hitSlop={8}
+            className='h-10 w-10 items-center justify-center rounded-full'
+          >
+            <MaterialIcons name='help-outline' size={24} color='#44474d' />
+          </Pressable>
+        }
+      />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] gap-8 px-margin-mobile pt-8 md:px-margin-desktop md:pt-12'>
           <View className='gap-3'>

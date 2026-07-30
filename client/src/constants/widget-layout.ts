@@ -9,8 +9,8 @@
 import { Platform } from 'react-native'
 
 export const WIDGET_LAYOUT = {
-  /** Preview `p-8` / rounded-lg */
-  padding: 32,
+  /** Preview `p-6` / rounded-lg */
+  padding: 24,
   borderRadius: 8,
   /** Matches the real widget's declared minHeight (widgetprovider_citationwidget.xml) so the
    *  Settings preview pins its action row to the bottom the same way the real widget does. */

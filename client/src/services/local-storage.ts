@@ -12,6 +12,7 @@ const GUEST_MODE_KEY = "citations_guest_mode";
 const GUEST_WIDGET_SETTINGS_KEY = "citations_guest_widget_settings";
 const GUEST_SAVED_CITATIONS_KEY = "citations_guest_saved_citations";
 const WIDGET_CITATION_CACHE_KEY = "citations_widget_citation_cache";
+const ONBOARDING_SEEN_KEY = "citations_onboarding_seen";
 
 const DEFAULT_GUEST_WIDGET_SETTINGS: WidgetSettingsDraft = {
   sourceSelection: "mixed",
@@ -39,6 +40,15 @@ export async function setGuestMode(value: boolean): Promise<void> {
   } else {
     await AsyncStorage.removeItem(GUEST_MODE_KEY);
   }
+}
+
+/** Device-level flag — survives guest-to-account migration and sign-out, unlike guest data. */
+export async function hasSeenOnboarding(): Promise<boolean> {
+  return (await AsyncStorage.getItem(ONBOARDING_SEEN_KEY)) === "true";
+}
+
+export async function setOnboardingSeen(): Promise<void> {
+  await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, "true");
 }
 
 export async function getGuestWidgetSettings(): Promise<WidgetSettingsDraft> {

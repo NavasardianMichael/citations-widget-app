@@ -48,14 +48,14 @@ export type HomeWidgetSnapshot = {
 };
 
 export const HOME_WIDGET_SNAPSHOT_KEY = "citations_home_widget_snapshot";
-/** Default / legacy Android provider name (3×2). */
+/** Default Android provider name (4×4). */
 export const ANDROID_WIDGET_NAME = "CitationWidget";
 /** All Android size variants shown in the widget picker. */
 export const ANDROID_WIDGET_NAMES = [
-  "CitationWidgetSmall",
+  "CitationWidgetCompact",
   "CitationWidget",
-  "CitationWidgetWide",
   "CitationWidgetLarge",
+  "CitationWidgetFullscreen",
 ] as const;
 export type AndroidWidgetName = (typeof ANDROID_WIDGET_NAMES)[number];
 export const IOS_WIDGET_NAME = "CitationWidget";

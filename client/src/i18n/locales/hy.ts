@@ -279,6 +279,42 @@ export const hy = {
   'settings.saved': 'Կարգավորումները պահված են։',
   'settings.saveFailed': 'Չհաջողվեց պահպանել կարգավորումները',
   'settings.loadFailed': 'Չհաջողվեց բեռնել կարգավորումները',
+
+  'tutorial.openButton': 'Ինչպես ավելացնել վիջեթը էկրանին',
+  'tutorial.close': 'Փակել',
+  'tutorial.next': 'Հաջորդը',
+  'tutorial.done': 'Ավարտել',
+  'tutorial.stepCount': '{current} / {total}',
+  'tutorial.osIos': 'iPhone',
+  'tutorial.osAndroid': 'Android',
+  'tutorial.welcome.title': 'Բարի գալուստ',
+  'tutorial.welcome.body':
+    'Հավելվածի միջոցով կարող եք Ձեր հեռախոսի հիմնական էկրանին տեղադրվել վիջեթ, որոնց վրա կցուցադրվեն մեջբերումներ Աստավածաշնչից և տարբեր գրական ստեղծագործություններից։ Հետևեք հետևյալ քայլերին՝ վիջեթն էկրանի վրա տեղադրելու համար։',
+  'tutorial.longPress.title': 'Երկար սեղմեք հիմնական էկրանին',
+  'tutorial.longPress.body':
+    'Բացեք Ձեր հեռախոսի հիմնական էկրանը և մատը երկար պահեք դատարկ տեղում, մինչև հայտնվի կարգավորումների ընտրացանկը։',
+  'tutorial.ios.addMenu.title': 'Սեղմեք «+» կոճակը',
+  'tutorial.ios.addMenu.body':
+    'Էկրանի վերևի ձախ անկյունում հայտնված «+» կոճակը կբացի վիջեթների պատուհանը։',
+  'tutorial.android.addMenu.title': 'Ընտրեք «Վիջեթներ»',
+  'tutorial.android.addMenu.body':
+    'Հայտնված ցանկից ընտրեք «Վիջեթներ» կետը՝ հասանելի վիջեթների ցանկը բացելու համար։ Կարող եք նաև մատը երկար պահել ուղիղ հավելվածի պատկերակի վրա և ընտրել «Վիջեթներ»՝ նույն ցանկին ավելի արագ հասնելու համար։',
+  'tutorial.ios.chooseSize.title': 'Գտեք հավելվածը և ընտրեք չափսը',
+  'tutorial.ios.chooseSize.body':
+    'Որոնման դաշտում մուտքագրեք «{appName}», սահեցրեք՝ ցանկալի չափսն ընտրելու համար, ապա սեղմեք «Ավելացնել վիջեթը»։',
+  'tutorial.android.dragToScreen.title': 'Քաշեք վիջեթը էկրան',
+  'tutorial.android.dragToScreen.body':
+    'Ցանկում գտեք «{appName}» հավելվածը, մատը երկար պահեք դրա նախադիտման վրա և քաշեք այն հիմնական էկրան։',
+  'tutorial.ios.placeAndDone.title': 'Տեղադրեք և ավարտեք',
+  'tutorial.ios.placeAndDone.body':
+    'Քաշեք վիջեթը ցանկալի տեղը և սեղմեք «Պատրաստ է»։ Չափսը փոխելու համար հեռացրեք վիջեթը և կրկին ավելացրեք այլ չափսով։',
+  'tutorial.android.resize.title': 'Փոխեք չափսը',
+  'tutorial.android.resize.body':
+    'Մատը երկար պահեք արդեն տեղադրված վիջեթի վրա, ապա քաշեք կապույտ սահմանագծերը՝ չափսը մեծացնելու կամ փոքրացնելու համար։',
+  'tutorial.customize.title': 'Պատրաստ է',
+  'tutorial.customize.body':
+    'Ահա թե ինչպիսին կլինի Ձեր վիջեթը։ «Կարգավորումներ» բաժնում կարող եք փոխել աղբյուրը, մեջբերման ավտոմատ փոփոխման հաճախականությունը, վիդջեթի դիզայնը և տառատեսակը։',
+
   'status.pending': 'Սպասում է հաստատման',
   'status.approved': 'Հաստատված',
   'status.rejected': 'Մերժված',
@@ -322,6 +358,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const
+} as const;
 
-export type HyMessages = typeof hy
+export type HyMessages = typeof hy;
