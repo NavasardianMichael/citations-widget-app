@@ -2,11 +2,20 @@
 
 ## `bible-hy.json`
 
-62 popular Eastern Armenian (Նոր վերանայված Արարատ) verses from
-[BibliaTodo — Առավել տպավորիչ](https://www.bibliatodo.com/hy/աստվածաշնչի-խոսքեր/Հայտնի/aravel-tpavorich).
+Eastern Armenian bible verses:
 
-- `source` = `titulo-*` link text (ranges normalized from verse markers when the title omits them)
-- `text` = `verso-*` / `bt-verse-text` content
+1. **188** prior base (62 impact list + Christmas NEB merge, reconstructed)
+2. Plus up to **2** short verses (`text` ≤ 150 chars) from each BibliaTodo
+   category × subcategory page with `?version=NEB`
+
+Rebuild helpers (`server/scripts/`):
+
+- `rebuild_bible_188_plus_short2.py` — current recipe (188 base + short top-2)
+- `scrape_bibliatodo_all_neb.py` — discover/crawl all NEB category pages (cache)
+- `merge_bibliatodo_christmas.py` — merge one BibliaTodo HTML page into the seed
+
+- `source` = book + chapter:verse (`titulo-*` text; ranges normalized when needed)
+- `text` = `bt-verse-text` / verse body
 
 ## `fiction-quotes.json`
 
