@@ -1,4 +1,4 @@
-import type { SourceSelection } from "@prisma/client";
+import type { Citation, SourceSelection } from "@prisma/client";
 
 import { prisma } from "../db/index.js";
 
@@ -23,6 +23,26 @@ async function pickFromSaved(userId: string) {
   `;
   if (!rows[0]) return null;
   return prisma.citation.findUnique({ where: { id: rows[0].id } });
+}
+
+/** Whether a sticky/current citation still belongs in the active widget pool. */
+export async function citationMatchesPool(
+  citation: Citation,
+  pool: SourceSelection,
+  userId: string,
+): Promise<boolean> {
+  if (pool === "saved") {
+    const saved = await prisma.savedCitation.findFirst({
+      where: { userId, citationId: citation.id },
+      select: { userId: true },
+    });
+    return !!saved;
+  }
+  if (citation.status !== "approved") return false;
+  if (pool === "mixed") {
+    return citation.category === "bible" || citation.category === "fiction";
+  }
+  return citation.category === pool;
 }
 
 export async function pickCitationForPool(pool: SourceSelection, userId: string) {

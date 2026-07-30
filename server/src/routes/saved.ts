@@ -22,18 +22,39 @@ savedRouter.get("/saved", async (req, res) => {
 
   // Bookmarks only. Own private/pending submissions are listed via /citations/mine
   // under their status filters — not duplicated here.
+  // Citation deletes CASCADE into saved_citations; still filter defensively so a
+  // broken/orphan row cannot crash toPublicCitation(null).
   const bookmarked = await prisma.savedCitation.findMany({
     where: { userId },
     include: { citation: true },
+    orderBy: { savedAt: "desc" },
   });
 
-  res.json(bookmarked.map(({ citation }) => toPublicCitation(citation)));
+  const orphans = bookmarked.filter((row) => row.citation == null);
+  if (orphans.length > 0) {
+    await prisma.savedCitation.deleteMany({
+      where: {
+        userId,
+        citationId: { in: orphans.map((row) => row.citationId) },
+      },
+    });
+  }
+
+  res.json(
+    bookmarked
+      .filter((row): row is typeof row & { citation: Citation } => row.citation != null)
+      .map(({ citation }) => toPublicCitation(citation)),
+  );
 });
 
 savedRouter.post("/saved/:citationId", async (req, res) => {
   const citationId = String(req.params.citationId);
   const citation = await prisma.citation.findUnique({ where: { id: citationId } });
   if (!citation) {
+    // Drop a stale bookmark if the client still thinks this id is saved.
+    await prisma.savedCitation.deleteMany({
+      where: { userId: req.userId!, citationId },
+    });
     res.status(404).json({ error: "Citation not found" });
     return;
   }

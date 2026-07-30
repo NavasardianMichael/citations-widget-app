@@ -260,7 +260,8 @@ export const hy = {
   'settings.preview': 'Նախադիտում',
   'settings.livePreview': 'Նախադիտում',
   'settings.previewLoading': 'Մեջբերումը բեռնվում է…',
-  'settings.previewEmpty': 'Այս ընտրության համար մեջբերումներ չկան։',
+  'settings.previewEmpty':
+    'Ընտրված աղբյուրից մեջբերումներ չկան․ աղբյուրը փոխելու համար անցեք կարգավորումների էջ։',
   'settings.designLabel': 'Վիջեթի դիզայն',
   'settings.designClassic': 'Դասական',
   'settings.designParchment': 'Մագաղաթ',

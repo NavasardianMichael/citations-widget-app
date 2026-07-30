@@ -53,8 +53,9 @@ export async function resolveCitationIsSaved(
       return saved.some((c) => c.id === citationId);
     }
     const saved = await fetchSavedCitations();
-    return saved.some((c) => c.id === citationId);
+    return saved.some((c) => c?.id === citationId);
   } catch {
+    // Missing/deleted citation or network blip must never break widget render.
     return false;
   }
 }

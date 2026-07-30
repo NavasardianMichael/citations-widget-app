@@ -14,7 +14,7 @@ import { z } from "zod";
 
 import { prisma } from "../db/index.js";
 import { requireAuth } from "../middleware/require-auth.js";
-import { pickCitationForPool } from "../services/widget-citation-picker.js";
+import { pickCitationForPool, citationMatchesPool } from "../services/widget-citation-picker.js";
 
 export const widgetRouter = Router();
 widgetRouter.use(requireAuth);
@@ -163,6 +163,15 @@ widgetRouter.get("/widget/citation", async (req, res) => {
     settings.currentCitationId && !force && !rotationElapsed
       ? await prisma.citation.findUnique({ where: { id: settings.currentCitationId } })
       : null;
+
+  // Drop sticky citation if it no longer matches the pool (e.g. bible wipe left a
+  // fiction id sticky, or status changed away from approved).
+  if (
+    current &&
+    !(await citationMatchesPool(current, settings.sourceSelection, req.userId!))
+  ) {
+    current = null;
+  }
 
   const usesRandomBackground = isRandomBackgroundDesign(settings.widgetDesign);
   let backgroundImageIndex = settings.currentBackgroundImageIndex;
