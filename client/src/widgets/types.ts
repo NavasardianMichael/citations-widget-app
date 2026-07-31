@@ -5,7 +5,13 @@ import type { CitationCategory } from "@/types/citation";
 export type HomeWidgetSnapshot = {
   quoteText: string;
   sourceText: string;
+  /** Full plain attribution line (name only; never embeds the social URL). */
   attributionText: string | null;
+  attributionBefore: string;
+  attributionName: string | null;
+  attributionAfter: string;
+  /** When set, `attributionName` is a tappable/underlined link to this URL. */
+  attributionUrl: string | null;
   showActions: boolean;
   /** Current citation id for in-widget save/unsave; null when empty. */
   citationId: string | null;

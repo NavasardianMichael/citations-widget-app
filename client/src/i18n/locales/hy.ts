@@ -249,7 +249,7 @@ export const hy = {
   'settings.actionSaveSuccess': 'Մեջբերումը պահպանվեց',
   'settings.actionSaveFailed': 'Չհաջողվեց պահպանել մեջբերումը',
   'settings.attributionDesc':
-    'Վիջեթի ներքևում ցույց է տալիս «Ավելացրել է [Անունը]»',
+    'Վիջեթի ներքևում ցույց է տալիս «Ավելացվել է [Անունը]-ի կողմից»',
   'settings.refresh6': '6 ժամը մեկ',
   'settings.refresh12': '12 ժամը մեկ',
   'settings.refresh24': 'Ամեն օր',
@@ -269,7 +269,7 @@ export const hy = {
   'settings.designNoir': 'Մութ',
   'settings.designFrost': 'Ցրտաշունչ',
   'settings.designSanctuary': 'Սրբավայր',
-  'settings.addedBy': 'Ավելացրել է {name}',
+  'settings.addedBy': 'Ավելացվել է {name}-ի կողմից',
   'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',
   'settings.actionBookmark': 'Էջանշել',
@@ -358,6 +358,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const;
+} as const
 
-export type HyMessages = typeof hy;
+export type HyMessages = typeof hy

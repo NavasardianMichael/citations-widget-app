@@ -1,4 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { DEFAULT_SOURCE_SELECTION } from '@citations/shared'
+import { useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Alert,
@@ -32,6 +34,7 @@ import { DEFAULT_QUOTE_FONT_SIZE, FONT_SIZE_MAX, FONT_SIZE_MIN } from '@/constan
 import { useAuth } from '@/contexts/auth-context'
 import {
   DEFAULT_WIDGET_FONT,
+  ensureAllWidgetFontsLoaded,
   ensureWidgetFontLoaded,
   WIDGET_FONT_OPTIONS,
 } from '@/fonts/registry'
@@ -93,7 +96,7 @@ const FONT_OPTIONS = WIDGET_FONT_OPTIONS.map((font) => ({
 }))
 
 const DEFAULT_DRAFT: WidgetSettingsDraft = {
-  sourceSelection: 'bible',
+  sourceSelection: DEFAULT_SOURCE_SELECTION,
   refreshRateHours: 24,
   fontStyle: DEFAULT_WIDGET_FONT,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
@@ -110,8 +113,8 @@ export default function SettingsScreen() {
   const [preview, setPreview] = useState<WidgetCitation | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [shareProfile, setShareProfile] = useState(false)
-  const [savedShareProfile, setSavedShareProfile] = useState(false)
+  const [shareProfile, setShareProfile] = useState(true)
+  const [savedShareProfile, setSavedShareProfile] = useState(true)
   const isFirstSourceRender = useRef(true)
   const suppressNextSourceEffect = useRef(false)
   const draftRef = useRef(draft)
@@ -222,18 +225,34 @@ export default function SettingsScreen() {
     await syncHomeWidget(next, cached?.citation ?? null).catch(() => undefined)
   }, [isGuest, loadWidgetCitation])
 
+  // Tabs stay mounted — reload committed settings on each focus so unsaved draft
+  // edits are discarded when the user leaves and comes back.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false
+      queueMicrotask(() => {
+        if (!cancelled) loadSettings().catch(() => undefined)
+      })
+      return () => {
+        cancelled = true
+      }
+    }, [loadSettings]),
+  )
+
+  // Prefetch all faces so the font picker shows each option in its own family
+  // before that face has ever been selected.
+  const [fontFacesEpoch, setFontFacesEpoch] = useState(0)
   useEffect(() => {
     let cancelled = false
-    queueMicrotask(() => {
-      if (!cancelled) loadSettings().catch(() => undefined)
+    void ensureAllWidgetFontsLoaded().then(() => {
+      if (!cancelled) setFontFacesEpoch((n) => n + 1)
     })
     return () => {
       cancelled = true
     }
-  }, [loadSettings])
+  }, [])
 
   useEffect(() => {
-    // Load the selected face (and default) on demand — not every widget font at once.
     void ensureWidgetFontLoaded(draft.fontStyle)
     if (draft.fontStyle !== DEFAULT_WIDGET_FONT) {
       void ensureWidgetFontLoaded(DEFAULT_WIDGET_FONT)
@@ -416,6 +435,7 @@ export default function SettingsScreen() {
       <SettingsSection title={t('settings.typography')} icon='format-size'>
         <View className='gap-6'>
           <SelectField
+            key={fontFacesEpoch}
             options={FONT_OPTIONS}
             value={draft.fontStyle}
             onChange={(v) => updateDraft('fontStyle', v)}
@@ -447,62 +467,61 @@ export default function SettingsScreen() {
 
   const previewColumn = (
     <View className='gap-8'>
-      <View className='gap-4'>
-        <View className='flex-row items-center gap-2'>
-          <Pressable
-            {...pressableNoRipple}
-            onPress={() => shiftDesign(-1)}
-            accessibilityRole='button'
-            className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
-          >
-            <MaterialIcons name='chevron-left' size={28} color='#021a35' />
-          </Pressable>
+      <SettingsSection title={t('settings.designLabel')} icon='palette'>
+        <View className='gap-4'>
+          <View className='flex-row items-center gap-2'>
+            <Pressable
+              {...pressableNoRipple}
+              onPress={() => shiftDesign(-1)}
+              accessibilityRole='button'
+              className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
+            >
+              <MaterialIcons name='chevron-left' size={28} color='#021a35' />
+            </Pressable>
 
-          <View className='min-w-0 flex-1' {...swipeResponder.panHandlers}>
-            <WidgetPreview
-              citation={previewCitation}
-              fontStyle={draft.fontStyle}
-              fontSize={draft.fontSize}
-              design={draft.widgetDesign}
-              loading={previewLoading}
-              showActions={draft.showActions}
-            />
-          </View>
-
-          <Pressable
-            {...pressableNoRipple}
-            onPress={() => shiftDesign(1)}
-            accessibilityRole='button'
-            className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
-          >
-            <MaterialIcons name='chevron-right' size={28} color='#021a35' />
-          </Pressable>
-        </View>
-
-        <View className='items-center gap-2'>
-          <Text className='font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant'>
-            {t('settings.designLabel')}
-          </Text>
-          <Text className='font-headline-md text-headline-md text-primary'>
-            {t(activeDesign.labelKey)}
-          </Text>
-          <View className='flex-row items-center gap-2 pt-1'>
-            {WIDGET_DESIGN_IDS.map((id, index) => (
-              <Pressable
-                key={id}
-                {...pressableNoRipple}
-                onPress={() => updateDraft('widgetDesign', id)}
-                accessibilityRole='button'
-                accessibilityLabel={t(getWidgetDesign(id).labelKey)}
-                accessibilityState={{ selected: index === designIndex }}
-                className={`h-2 rounded-full ${
-                  index === designIndex ? 'w-5 bg-primary' : 'w-2 bg-outline-variant'
-                }`}
+            <View className='min-w-0 flex-1' {...swipeResponder.panHandlers}>
+              <WidgetPreview
+                citation={previewCitation}
+                fontStyle={draft.fontStyle}
+                fontSize={draft.fontSize}
+                design={draft.widgetDesign}
+                loading={previewLoading}
+                showActions={draft.showActions}
               />
-            ))}
+            </View>
+
+            <Pressable
+              {...pressableNoRipple}
+              onPress={() => shiftDesign(1)}
+              accessibilityRole='button'
+              className='h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface'
+            >
+              <MaterialIcons name='chevron-right' size={28} color='#021a35' />
+            </Pressable>
+          </View>
+
+          <View className='items-center gap-2'>
+            <Text className='font-headline-md text-headline-md text-primary'>
+              {t(activeDesign.labelKey)}
+            </Text>
+            <View className='flex-row items-center gap-2 pt-1'>
+              {WIDGET_DESIGN_IDS.map((id, index) => (
+                <Pressable
+                  key={id}
+                  {...pressableNoRipple}
+                  onPress={() => updateDraft('widgetDesign', id)}
+                  accessibilityRole='button'
+                  accessibilityLabel={t(getWidgetDesign(id).labelKey)}
+                  accessibilityState={{ selected: index === designIndex }}
+                  className={`h-2 rounded-full ${
+                    index === designIndex ? 'w-5 bg-primary' : 'w-2 bg-outline-variant'
+                  }`}
+                />
+              ))}
+            </View>
           </View>
         </View>
-      </View>
+      </SettingsSection>
 
       <View className='flex-row flex-wrap justify-end gap-4'>
         <Button
@@ -525,7 +544,7 @@ export default function SettingsScreen() {
 
   return (
     <View className='flex-1 bg-background'>
-      <TopAppBar title={t('settings.title')} />
+      <TopAppBar title={t('settings.title')} showBrandIcon />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           {isLg ? (

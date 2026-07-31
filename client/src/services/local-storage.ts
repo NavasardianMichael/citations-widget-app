@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { DEFAULT_SOURCE_SELECTION } from "@citations/shared";
+
 import {
   DEFAULT_WIDGET_DESIGN,
   normalizeWidgetDesignId,
@@ -15,7 +17,7 @@ const WIDGET_CITATION_CACHE_KEY = "citations_widget_citation_cache";
 const ONBOARDING_SEEN_KEY = "citations_onboarding_seen";
 
 const DEFAULT_GUEST_WIDGET_SETTINGS: WidgetSettingsDraft = {
-  sourceSelection: "mixed",
+  sourceSelection: DEFAULT_SOURCE_SELECTION,
   refreshRateHours: 24,
   fontStyle: DEFAULT_WIDGET_FONT,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,

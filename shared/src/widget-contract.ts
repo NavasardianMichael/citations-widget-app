@@ -63,6 +63,8 @@ export const SOURCE_SELECTION_IDS = [
 
 export type SourceSelectionId = (typeof SOURCE_SELECTION_IDS)[number]
 
+export const DEFAULT_SOURCE_SELECTION: SourceSelectionId = 'bible'
+
 export const REFRESH_RATE_HOURS = [6, 12, 24] as const
 
 export type RefreshRateHours = (typeof REFRESH_RATE_HOURS)[number]

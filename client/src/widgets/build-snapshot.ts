@@ -9,6 +9,7 @@ import {
   WIDGET_FONT_OPTIONS,
   type WidgetFontId,
 } from "@/fonts/registry";
+import { resolveAttributionParts, splitAddedByLabel } from "@/lib/attribution";
 import { t } from "@/i18n";
 import { fetchSavedCitations } from "@/services/api";
 import {
@@ -67,14 +68,21 @@ export function buildHomeWidgetSnapshot(
 ): HomeWidgetSnapshot {
   const design = getWidgetDesign(settings.widgetDesign ?? DEFAULT_WIDGET_DESIGN);
   const fontId = (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId;
+  const resolved = settings.showAttribution
+    ? resolveAttributionParts(citation?.addedBy, citation?.addedByUrl)
+    : { name: null, url: null };
+  const name = resolved.name;
+  const attribution = name ? splitAddedByLabel(name) : null;
+  const attributionUrl = name ? resolved.url : null;
 
   return {
     quoteText: citation?.text ? `«${citation.text}»` : "",
     sourceText: citation?.source ?? "",
-    attributionText:
-      settings.showAttribution && citation?.addedBy
-        ? t("settings.addedBy", { name: citation.addedBy })
-        : null,
+    attributionText: attribution?.full ?? null,
+    attributionBefore: attribution?.before ?? "",
+    attributionName: name,
+    attributionAfter: attribution?.after ?? "",
+    attributionUrl,
     showActions: settings.showActions,
     citationId: citation?.id ?? null,
     citationText: citation?.text ?? "",

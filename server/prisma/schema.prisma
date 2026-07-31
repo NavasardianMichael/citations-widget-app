@@ -66,7 +66,7 @@ model User {
   locale        String       @default("hy") @db.VarChar(5)
   socialUrl     String?      @map("social_url")
   /** When true, name (+ social link) may appear on other users' widgets. */
-  shareProfile  Boolean      @default(false) @map("share_profile")
+  shareProfile  Boolean      @default(true) @map("share_profile")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
@@ -207,7 +207,7 @@ enum WidgetDesign {
 
 model WidgetSettings {
   userId                      String          @id @map("user_id")
-  sourceSelection             SourceSelection @default(mixed) @map("source_selection")
+  sourceSelection             SourceSelection @default(bible) @map("source_selection")
   refreshRateHours            Int             @default(24) @map("refresh_rate_hours")
   fontStyle                   FontStyle       @default(davel_aghvor) @map("font_style")
   fontSize                    Int             @default(20) @map("font_size")

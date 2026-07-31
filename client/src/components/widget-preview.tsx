@@ -1,7 +1,15 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { ImageBackground, Platform, Pressable, Text, View } from 'react-native'
+import {
+  ImageBackground,
+  Linking,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from 'react-native'
 
 import { pressableNoRipple } from '@/constants/pressable'
+import { resolveAttributionParts, splitAddedByLabel } from '@/lib/attribution'
 import {
   DEFAULT_WIDGET_DESIGN,
   getWidgetDesign,
@@ -11,6 +19,7 @@ import {
 import {
   colorWithOpacity,
   getQuoteLineHeight,
+  WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
   WIDGET_LAYOUT,
   widgetPreviewQuoteWeightStyle,
   widgetPreviewSourceWeightStyle,
@@ -91,6 +100,57 @@ function PreviewActionIcon({
   )
 }
 
+function AttributionLine({
+  name,
+  url,
+  fontFamily,
+  color,
+}: {
+  name: string
+  url?: string | null
+  fontFamily: string
+  color: string
+}) {
+  const { before, after } = splitAddedByLabel(name)
+  const href = url?.trim() || null
+  const androidTextMetrics =
+    Platform.OS === 'android' ? ({ includeFontPadding: false } as const) : null
+  const baseStyle = {
+    fontFamily,
+    fontSize: WIDGET_LAYOUT.attributionFontSize,
+    lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+    color,
+    ...androidTextMetrics,
+  }
+  const nameStyle = {
+    ...baseStyle,
+    fontWeight: WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
+  }
+
+  return (
+    <Text style={baseStyle}>
+      {before}
+      {href ? (
+        <Text
+          accessibilityRole='link'
+          onPress={() => {
+            void Linking.openURL(href).catch(() => undefined)
+          }}
+          style={{
+            ...nameStyle,
+            textDecorationLine: 'underline',
+          }}
+        >
+          {name}
+        </Text>
+      ) : (
+        <Text style={nameStyle}>{name}</Text>
+      )}
+      {after}
+    </Text>
+  )
+}
+
 export function WidgetPreview({
   citation,
   fontStyle,
@@ -112,6 +172,10 @@ export function WidgetPreview({
   const hasPhoto = Boolean(backgroundImage)
   const fontFamily = getWidgetFontFamily(fontStyle)
   const quoteLineHeight = getQuoteLineHeight(fontSize)
+  const attributionParts = resolveAttributionParts(
+    citation?.addedBy,
+    citation?.addedByUrl,
+  )
   const previewActions: {
     icon: keyof typeof MaterialIcons.glyphMap
     label: string
@@ -137,8 +201,7 @@ export function WidgetPreview({
 
   const contentPad = {
     padding: WIDGET_LAYOUT.padding,
-    // Matches the real widget: top content and the meta/actions row anchor to
-    // opposite ends of the frame instead of flowing directly under the quote.
+    // Quote + source stay together at the top; actions/attribution pin to the bottom.
     flex: 1,
     justifyContent: 'space-between' as const,
   }
@@ -224,11 +287,26 @@ export function WidgetPreview({
           fakeQuoteBold,
         )
       )}
+      {citation && !showLoading
+        ? renderFaceText(
+            citation.source || citation.category,
+            {
+              width: '100%',
+              fontFamily,
+              fontSize,
+              lineHeight: quoteLineHeight,
+              color: tokens.metaColor,
+              marginTop: WIDGET_LAYOUT.quoteSourceGap,
+            },
+            sourceWeight,
+            false,
+          )
+        : null}
     </View>
   )
 
   const metaContent =
-    citation || showActions ? (
+    showActions || attributionParts.name ? (
       <View
         style={{
           gap: WIDGET_LAYOUT.metaBlockGap,
@@ -236,20 +314,6 @@ export function WidgetPreview({
           flexShrink: 0,
         }}
       >
-        {citation && !showLoading
-          ? renderFaceText(
-              citation.source || citation.category,
-              {
-                width: '100%',
-                fontFamily,
-                fontSize,
-                lineHeight: quoteLineHeight,
-                color: tokens.metaColor,
-              },
-              sourceWeight,
-              false,
-            )
-          : null}
         {showActions ? (
           <View
             className='w-full flex-row flex-wrap justify-end'
@@ -270,18 +334,13 @@ export function WidgetPreview({
             ))}
           </View>
         ) : null}
-        {citation?.addedBy ? (
-          <Text
-            style={{
-              fontFamily,
-              fontSize: WIDGET_LAYOUT.attributionFontSize,
-              lineHeight: WIDGET_LAYOUT.attributionLineHeight,
-              color: tokens.attributionColor,
-              ...androidTextMetrics,
-            }}
-          >
-            {t('settings.addedBy', { name: citation.addedBy })}
-          </Text>
+        {attributionParts.name ? (
+          <AttributionLine
+            name={attributionParts.name}
+            url={attributionParts.url}
+            fontFamily={fontFamily}
+            color={tokens.attributionColor}
+          />
         ) : null}
       </View>
     ) : null

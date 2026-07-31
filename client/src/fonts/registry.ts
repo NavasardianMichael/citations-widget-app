@@ -149,6 +149,13 @@ export function ensureWidgetFontLoaded(id: WidgetFontId): Promise<void> {
   return promise
 }
 
+/** Prefetch every widget face (e.g. settings font picker labels). */
+export function ensureAllWidgetFontsLoaded(): Promise<void> {
+  return Promise.all(WIDGET_FONT_IDS.map((id) => ensureWidgetFontLoaded(id))).then(
+    () => undefined,
+  )
+}
+
 export function getWidgetFontFamily(id: WidgetFontId): string {
   return byId[id].family
 }

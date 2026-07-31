@@ -1,6 +1,7 @@
 import {
   DEFAULT_FONT_STYLE,
   DEFAULT_QUOTE_FONT_SIZE,
+  DEFAULT_SOURCE_SELECTION,
   FONT_STYLE_IDS,
   REFRESH_RATE_HOURS,
   SOURCE_SELECTION_IDS,
@@ -16,7 +17,7 @@ import type { WidgetSettingsDraft } from "@/types/citation";
 
 /** Must match Prisma `WidgetSettings` column defaults for a brand-new account. */
 const DEFAULT_ACCOUNT_SETTINGS: WidgetSettingsDraft = {
-  sourceSelection: "mixed",
+  sourceSelection: DEFAULT_SOURCE_SELECTION,
   refreshRateHours: 24,
   fontStyle: DEFAULT_FONT_STYLE,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,

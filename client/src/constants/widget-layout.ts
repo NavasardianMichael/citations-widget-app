@@ -18,9 +18,11 @@ export const WIDGET_LAYOUT = {
   /** Tailwind `text-sm` */
   attributionFontSize: 14,
   attributionLineHeight: 20,
-  /** Preview `gap-6` between quote and meta block */
+  /** Gap between the quote/source block and bottom actions/attribution */
   sectionGap: 24,
-  /** Preview `gap-3` inside meta block */
+  /** Tight gap between citation quote and its source line */
+  quoteSourceGap: 4,
+  /** Gap inside the bottom meta block (actions / attribution) */
   metaBlockGap: 12,
   /** Vertical space when source and actions wrap onto separate rows */
   sourceActionsGap: 16,
@@ -51,6 +53,8 @@ export function getQuoteLineHeight(fontSize: number): number {
 /** Citation quote vs source weights — keep preview, saved cards, and widgets in sync. */
 export const WIDGET_QUOTE_FONT_WEIGHT = '600' as const;
 export const WIDGET_SOURCE_FONT_WEIGHT = 'normal' as const;
+/** Submitter name in the attribution line (“added by …”). */
+export const WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT = '600' as const;
 
 /**
  * In-app `Text` (Settings / library preview) weight styles.

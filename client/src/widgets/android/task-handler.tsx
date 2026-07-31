@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
+import { DEFAULT_SOURCE_SELECTION } from "@citations/shared";
 
 import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
@@ -28,7 +29,7 @@ import {
 } from "@/widgets/types";
 
 const FALLBACK_SETTINGS = {
-  sourceSelection: "mixed" as const,
+  sourceSelection: DEFAULT_SOURCE_SELECTION,
   refreshRateHours: 24 as const,
   fontStyle: DEFAULT_WIDGET_FONT,
   fontSize: DEFAULT_QUOTE_FONT_SIZE,

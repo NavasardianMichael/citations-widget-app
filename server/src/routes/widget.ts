@@ -134,21 +134,26 @@ async function withAttribution(
   };
 
   if (!showAttribution || !citation.submittedByUserId) {
-    return { ...base, addedBy: null };
+    return { ...base, addedBy: null, addedByUrl: null };
   }
 
   const submitter = await prisma.user.findUnique({
     where: { id: citation.submittedByUserId },
   });
   if (!submitter?.shareProfile) {
-    return { ...base, addedBy: null };
+    return { ...base, addedBy: null, addedByUrl: null };
   }
 
   const name = submitter.name.trim();
-  const socialUrl = submitter.socialUrl?.trim();
+  if (!name) {
+    return { ...base, addedBy: null, addedByUrl: null };
+  }
+  const socialUrl = submitter.socialUrl?.trim() || null;
   return {
     ...base,
-    addedBy: socialUrl ? `${name} · ${socialUrl}` : name || null,
+    // Name only — clients turn this into a link when addedByUrl is set.
+    addedBy: name,
+    addedByUrl: socialUrl,
   };
 }
 

@@ -12,6 +12,7 @@ import { resolveWidgetBackgroundImage } from "@/constants/widget-designs";
 import {
   colorWithOpacity,
   getQuoteLineHeight,
+  WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
   WIDGET_ICON_FONT_FAMILY,
   WIDGET_ICON_GLYPH,
   WIDGET_LAYOUT,
@@ -180,14 +181,19 @@ function WidgetBody({
         height: "match_parent",
         width: "match_parent",
         flexDirection: "column",
-        // Two groups (top content, bottom meta/actions) pushed to opposite ends — a
-        // flex:1 spacer between siblings isn't reliably honored by RemoteViews' weight
-        // translation, so the action row must always sit at the bottom of the widget.
+        // Quote + source stay together at the top; actions/attribution pin to the
+        // bottom. A flex:1 spacer between siblings isn't reliably honored by
+        // RemoteViews' weight translation, so use space-between instead.
         justifyContent: "space-between",
         padding: WIDGET_LAYOUT.padding,
       }}
     >
-      <FlexWidget style={{ width: "match_parent", flexDirection: "column" }}>
+      <FlexWidget
+        style={{
+          width: "match_parent",
+          flexDirection: "column",
+        }}
+      >
         {snapshot.showOrnament ? (
           <FlexWidget
             style={{
@@ -234,16 +240,7 @@ function WidgetBody({
             width: "match_parent",
           }}
         />
-      </FlexWidget>
 
-      <FlexWidget
-        style={{
-          width: "match_parent",
-          flexDirection: "column",
-          flexGap: WIDGET_LAYOUT.metaBlockGap,
-          marginTop: WIDGET_LAYOUT.sectionGap,
-        }}
-      >
         {!isRefreshing && snapshot.sourceText ? (
           <TextWidget
             text={snapshot.sourceText}
@@ -257,61 +254,129 @@ function WidgetBody({
               fontFamily: snapshot.androidFontFile,
               fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
               width: "match_parent",
-            }}
-          />
-        ) : null}
-
-        {actionRows.length > 0 ? (
-          <FlexWidget
-            style={{
-              width: "match_parent",
-              flexDirection: "column",
-              flexGap: WIDGET_LAYOUT.sourceActionsGap,
-            }}
-          >
-            {actionRows.map((row, rowIndex) => (
-              <FlexWidget
-                key={`action-row-${rowIndex}`}
-                style={{
-                  width: "match_parent",
-                  flexDirection: "row",
-                  flexGap: WIDGET_LAYOUT.actionGap,
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                }}
-              >
-                {row.map((action) => (
-                  <ActionChip
-                    key={action.id}
-                    icon={action.icon}
-                    color={snapshot.actionIconColor}
-                    backgroundColor={snapshot.actionBg}
-                    clickAction={action.clickAction}
-                    clickActionData={action.clickActionData}
-                    loading={action.loading}
-                  />
-                ))}
-              </FlexWidget>
-            ))}
-          </FlexWidget>
-        ) : null}
-
-        {!isRefreshing && snapshot.attributionText ? (
-          <TextWidget
-            text={snapshot.attributionText}
-            maxLines={1}
-            truncate="END"
-            allowFontScaling={false}
-            style={{
-              fontSize: WIDGET_LAYOUT.attributionFontSize,
-              lineHeight: WIDGET_LAYOUT.attributionLineHeight,
-              color: asColor(snapshot.attributionColor),
-              fontFamily: snapshot.androidFontFile,
-              width: "match_parent",
+              marginTop: WIDGET_LAYOUT.quoteSourceGap,
             }}
           />
         ) : null}
       </FlexWidget>
+
+      {actionRows.length > 0 || (!isRefreshing && snapshot.attributionName) ? (
+        <FlexWidget
+          style={{
+            width: "match_parent",
+            flexDirection: "column",
+            flexGap: WIDGET_LAYOUT.metaBlockGap,
+            marginTop: WIDGET_LAYOUT.sectionGap,
+          }}
+        >
+          {actionRows.length > 0 ? (
+            <FlexWidget
+              style={{
+                width: "match_parent",
+                flexDirection: "column",
+                flexGap: WIDGET_LAYOUT.sourceActionsGap,
+              }}
+            >
+              {actionRows.map((row, rowIndex) => (
+                <FlexWidget
+                  key={`action-row-${rowIndex}`}
+                  style={{
+                    width: "match_parent",
+                    flexDirection: "row",
+                    flexGap: WIDGET_LAYOUT.actionGap,
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  {row.map((action) => (
+                    <ActionChip
+                      key={action.id}
+                      icon={action.icon}
+                      color={snapshot.actionIconColor}
+                      backgroundColor={snapshot.actionBg}
+                      clickAction={action.clickAction}
+                      clickActionData={action.clickActionData}
+                      loading={action.loading}
+                    />
+                  ))}
+                </FlexWidget>
+              ))}
+            </FlexWidget>
+          ) : null}
+
+          {!isRefreshing && snapshot.attributionName ? (
+            <FlexWidget
+              style={{
+                width: "match_parent",
+                flexDirection: "row",
+                flexWrap: "wrap",
+                alignItems: "flex-end",
+              }}
+            >
+              {snapshot.attributionBefore ? (
+                <TextWidget
+                  text={snapshot.attributionBefore}
+                  allowFontScaling={false}
+                  style={{
+                    fontSize: WIDGET_LAYOUT.attributionFontSize,
+                    lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+                    color: asColor(snapshot.attributionColor),
+                    fontFamily: snapshot.androidFontFile,
+                  }}
+                />
+              ) : null}
+              {snapshot.attributionUrl ? (
+                // Library TextWidget has no underline style — bottom border approximates it.
+                <FlexWidget
+                  clickAction="OPEN_URI"
+                  clickActionData={{ uri: snapshot.attributionUrl }}
+                  style={{
+                    flexDirection: "row",
+                    borderBottomWidth: 1,
+                    borderBottomColor: asColor(snapshot.attributionColor),
+                  }}
+                >
+                  <TextWidget
+                    text={snapshot.attributionName}
+                    allowFontScaling={false}
+                    style={{
+                      fontSize: WIDGET_LAYOUT.attributionFontSize,
+                      lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+                      color: asColor(snapshot.attributionColor),
+                      fontFamily: snapshot.androidFontFile,
+                      fontWeight: WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
+                    }}
+                  />
+                </FlexWidget>
+              ) : (
+                <TextWidget
+                  text={snapshot.attributionName}
+                  allowFontScaling={false}
+                  style={{
+                    fontSize: WIDGET_LAYOUT.attributionFontSize,
+                    lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+                    color: asColor(snapshot.attributionColor),
+                    fontFamily: snapshot.androidFontFile,
+                    fontWeight: WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
+                  }}
+                />
+              )}
+              {snapshot.attributionAfter ? (
+                <TextWidget
+                  text={snapshot.attributionAfter}
+                  allowFontScaling={false}
+                  style={{
+                    fontSize: WIDGET_LAYOUT.attributionFontSize,
+                    lineHeight: WIDGET_LAYOUT.attributionLineHeight,
+                    color: asColor(snapshot.attributionColor),
+                    fontFamily: snapshot.androidFontFile,
+                  }}
+                />
+              ) : null}
+            </FlexWidget>
+          ) : null}
+        </FlexWidget>
+      ) : null}
     </FlexWidget>
   );
 }

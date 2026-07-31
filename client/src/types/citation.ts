@@ -28,7 +28,10 @@ export type OwnedCitation = Citation & {
 }
 
 export type WidgetCitation = Citation & {
+  /** Display name of the submitter when profile sharing is on. */
   addedBy: string | null
+  /** Optional profile social URL — name is rendered as the link, URL is not shown. */
+  addedByUrl?: string | null
   /**
    * Ephemeral display index into WIDGET_BACKGROUND_IMAGES for the sanctuary
    * (random) design only — not a permanent property of the citation.

@@ -30,6 +30,10 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   quoteText: '',
   sourceText: '',
   attributionText: null,
+  attributionBefore: '',
+  attributionName: null,
+  attributionAfter: '',
+  attributionUrl: null,
   showActions: false,
   citationId: null,
   citationText: '',
@@ -182,7 +186,7 @@ function CitationWidgetView(
               family: data.fontFamily,
             }),
             foregroundStyle(toArgbHex(data.metaColor)),
-            padding({ top: WIDGET_LAYOUT.metaBlockGap }),
+            padding({ top: WIDGET_LAYOUT.quoteSourceGap }),
             frame({ maxWidth: Infinity, alignment: 'leading' }),
           ]}
         >
@@ -225,19 +229,50 @@ function CitationWidgetView(
           </HStack>
         ) : null}
 
-        {data.attributionText ? (
-          <Text
-            modifiers={[
-              font({
-                size: WIDGET_LAYOUT.attributionFontSize,
-                weight: 'regular',
-                family: data.fontFamily,
-              }),
-              foregroundStyle(toArgbHex(data.attributionColor)),
-            ]}
-          >
-            {data.attributionText}
-          </Text>
+        {data.attributionName ? (
+          <HStack spacing={0} alignment='lastTextBaseline'>
+            {/* Home-screen widgets cannot open arbitrary URLs here; show name only (no URL). */}
+            {data.attributionBefore ? (
+              <Text
+                modifiers={[
+                  font({
+                    size: WIDGET_LAYOUT.attributionFontSize,
+                    weight: 'regular',
+                    family: data.fontFamily,
+                  }),
+                  foregroundStyle(toArgbHex(data.attributionColor)),
+                ]}
+              >
+                {data.attributionBefore}
+              </Text>
+            ) : null}
+            <Text
+              modifiers={[
+                font({
+                  size: WIDGET_LAYOUT.attributionFontSize,
+                  weight: 'semibold',
+                  family: data.fontFamily,
+                }),
+                foregroundStyle(toArgbHex(data.attributionColor)),
+              ]}
+            >
+              {data.attributionName}
+            </Text>
+            {data.attributionAfter ? (
+              <Text
+                modifiers={[
+                  font({
+                    size: WIDGET_LAYOUT.attributionFontSize,
+                    weight: 'regular',
+                    family: data.fontFamily,
+                  }),
+                  foregroundStyle(toArgbHex(data.attributionColor)),
+                ]}
+              >
+                {data.attributionAfter}
+              </Text>
+            ) : null}
+          </HStack>
         ) : null}
       </VStack>
     </VStack>

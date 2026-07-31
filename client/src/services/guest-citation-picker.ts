@@ -22,6 +22,7 @@ function toWidgetCitation(
   return {
     ...citation,
     addedBy: null,
+    addedByUrl: null,
     ...(designUsesRandomBackground(designId)
       ? { backgroundImageIndex: pickBackgroundImageIndex() }
       : {}),

@@ -1,6 +1,13 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useMemo, useState, type ComponentType } from 'react'
-import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import {
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/button'
@@ -45,7 +52,7 @@ const SAMPLE_CITATION: WidgetCitation = {
 
 function CustomizeIllustration() {
   return (
-    <View className='w-56'>
+    <View className='w-full max-w-sm px-1'>
       <WidgetPreview
         citation={SAMPLE_CITATION}
         fontStyle={DEFAULT_WIDGET_FONT}
@@ -129,7 +136,9 @@ const OS_TOGGLE_STEP_KEYS = new Set(['addMenu', 'place', 'finish'])
 export function TutorialModal() {
   const { visible, closeTutorial } = useOnboarding()
   const insets = useSafeAreaInsets()
-  const [os, setOs] = useState<TutorialOS>(Platform.OS === 'android' ? 'android' : 'ios')
+  const [os, setOs] = useState<TutorialOS>(
+    Platform.OS === 'android' ? 'android' : 'ios',
+  )
   const [stepIndex, setStepIndex] = useState(0)
 
   const [wasVisible, setWasVisible] = useState(visible)
@@ -170,7 +179,10 @@ export function TutorialModal() {
           style={{ paddingTop: insets.top || 12 }}
         >
           <Text className='font-label-sm text-label-sm text-on-surface-variant'>
-            {t('tutorial.stepCount', { current: stepIndex + 1, total: steps.length })}
+            {t('tutorial.stepCount', {
+              current: stepIndex + 1,
+              total: steps.length,
+            })}
           </Text>
           <Pressable
             {...pressableNoRipple}
@@ -187,8 +199,16 @@ export function TutorialModal() {
         <ScrollView contentContainerClassName='flex-grow items-center justify-center gap-6 px-6 py-8'>
           {showOsToggle ? (
             <View className='flex-row gap-2'>
-              <FilterPill label={t('tutorial.osIos')} selected={os === 'ios'} onPress={() => setOs('ios')} />
-              <FilterPill label={t('tutorial.osAndroid')} selected={os === 'android'} onPress={() => setOs('android')} />
+              <FilterPill
+                label={t('tutorial.osAndroid')}
+                selected={os === 'android'}
+                onPress={() => setOs('android')}
+              />
+              <FilterPill
+                label={t('tutorial.osIos')}
+                selected={os === 'ios'}
+                onPress={() => setOs('ios')}
+              />
             </View>
           ) : null}
 
@@ -220,9 +240,16 @@ export function TutorialModal() {
           </View>
           <View className='flex-row gap-3'>
             {!isFirstStep ? (
-              <Button variant='secondary' label={t('common.back')} onPress={goBack} />
+              <Button
+                variant='secondary'
+                label={t('common.back')}
+                onPress={goBack}
+              />
             ) : null}
-            <Button label={isLastStep ? t('tutorial.done') : t('tutorial.next')} onPress={goNext} />
+            <Button
+              label={isLastStep ? t('tutorial.done') : t('tutorial.next')}
+              onPress={goNext}
+            />
           </View>
         </View>
       </View>
