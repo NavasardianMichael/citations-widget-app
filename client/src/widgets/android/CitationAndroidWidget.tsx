@@ -420,7 +420,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
           style={{
             width: "match_parent",
             height: "match_parent",
-            backgroundColor: asColor(snapshot.overlayColor),
+            backgroundColor: asColor(snapshot.overlayColor ?? "transparent"),
           }}
         >
           <WidgetBody snapshot={snapshot} width={width} />
