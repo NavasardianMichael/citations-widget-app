@@ -64,6 +64,7 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   loadingMessage: '',
   isRefreshing: false,
   isSaving: false,
+  quotePageIndex: 0,
   fetchedAt: 0,
 }
 
@@ -157,42 +158,47 @@ function CitationWidgetView(
         </Text>
       ) : null}
 
-      <Text
-        modifiers={[
-          font({
-            size: data.fontSize,
-            weight: 'semibold',
-            family: data.fontFamily,
-          }),
-          foregroundStyle(
-            toArgbHex(
-              data.isRefreshing ? data.attributionColor : data.quoteColor,
-            ),
-          ),
-          frame({ maxWidth: Infinity, alignment: 'leading' }),
-        ]}
+      <VStack
+        spacing={WIDGET_LAYOUT.quoteSourceGap}
+        alignment='leading'
+        modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}
       >
-        {data.isRefreshing
-          ? data.loadingMessage || data.emptyMessage
-          : data.quoteText || data.emptyMessage}
-      </Text>
-
-      {!data.isRefreshing && data.sourceText ? (
         <Text
           modifiers={[
             font({
               size: data.fontSize,
-              weight: 'regular',
+              weight: 'semibold',
               family: data.fontFamily,
             }),
-            foregroundStyle(toArgbHex(data.metaColor)),
-            padding({ top: WIDGET_LAYOUT.quoteSourceGap }),
+            foregroundStyle(
+              toArgbHex(
+                data.isRefreshing ? data.attributionColor : data.quoteColor,
+              ),
+            ),
             frame({ maxWidth: Infinity, alignment: 'leading' }),
           ]}
         >
-          {data.sourceText}
+          {data.isRefreshing
+            ? data.loadingMessage || data.emptyMessage
+            : data.quoteText || data.emptyMessage}
         </Text>
-      ) : null}
+
+        {!data.isRefreshing && data.sourceText ? (
+          <Text
+            modifiers={[
+              font({
+                size: data.fontSize,
+                weight: 'regular',
+                family: data.fontFamily,
+              }),
+              foregroundStyle(toArgbHex(data.metaColor)),
+              frame({ maxWidth: Infinity, alignment: 'leading' }),
+            ]}
+          >
+            {data.sourceText}
+          </Text>
+        ) : null}
+      </VStack>
 
       <Spacer />
 

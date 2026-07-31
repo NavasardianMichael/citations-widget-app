@@ -20,6 +20,12 @@ import {
   WIDGET_SOURCE_FONT_WEIGHT,
 } from "@/constants/widget-layout";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
+import {
+  clampQuotePageIndex,
+  computeQuotePages,
+  QUOTE_PAGE_ARROW_ICON_SIZE,
+  QUOTE_PAGE_ARROW_SIZE,
+} from "@/widgets/android/quote-paging";
 
 type Props = {
   snapshot: HomeWidgetSnapshot;
@@ -123,16 +129,53 @@ function chunkActions(actions: WidgetAction[], perRow: number): WidgetAction[][]
   return rows;
 }
 
+function PageArrow({
+  icon,
+  color,
+  backgroundColor,
+  clickAction,
+}: {
+  icon: string;
+  color: string;
+  backgroundColor: string;
+  clickAction?: string;
+}) {
+  const enabled = Boolean(clickAction);
+  const iconColor = enabled ? color : colorWithOpacity(color, 0.35);
+  return (
+    <FlexWidget
+      clickAction={enabled ? clickAction : undefined}
+      style={{
+        height: QUOTE_PAGE_ARROW_SIZE,
+        width: QUOTE_PAGE_ARROW_SIZE,
+        borderRadius: QUOTE_PAGE_ARROW_SIZE / 2,
+        backgroundColor: asColor(backgroundColor),
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <IconWidget
+        icon={icon}
+        size={QUOTE_PAGE_ARROW_ICON_SIZE}
+        font={WIDGET_ICON_FONT_FAMILY}
+        style={{ color: asColor(iconColor) }}
+      />
+    </FlexWidget>
+  );
+}
+
 function WidgetBody({
   snapshot,
   width,
+  height,
 }: {
   snapshot: HomeWidgetSnapshot;
   width: number;
+  height: number;
 }) {
   const isRefreshing = Boolean(snapshot.isRefreshing);
   const isSaving = Boolean(snapshot.isSaving);
-  const content = isRefreshing
+  const fullQuote = isRefreshing
     ? snapshot.loadingMessage || snapshot.emptyMessage
     : snapshot.quoteText || snapshot.emptyMessage;
   const quoteColor = isRefreshing
@@ -173,7 +216,46 @@ function WidgetBody({
         },
       ]
     : [];
-  const actionRows = chunkActions(actions, actionsPerRow(width));
+  const perRow = actionsPerRow(width);
+  const actionRows = chunkActions(actions, perRow);
+  const hasSource = !isRefreshing && Boolean(snapshot.sourceText);
+  const hasAttribution = !isRefreshing && Boolean(snapshot.attributionName);
+
+  const pagingBase = {
+    text: fullQuote,
+    widgetWidth: width,
+    widgetHeight: height,
+    fontSize: snapshot.fontSize,
+    showOrnament: snapshot.showOrnament,
+    showLargeQuotes: snapshot.showLargeQuotes,
+    hasSource,
+    showActions: actions.length > 0,
+    actionRowCount: actionRows.length,
+    hasAttribution,
+  };
+  // First pass without arrow column; if we need pages, re-measure with reserved width.
+  let paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: false });
+  if (paging.pageCount > 1) {
+    paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: true });
+  }
+  const showPageControls = !isRefreshing && paging.pageCount > 1;
+  const pageIndex = clampQuotePageIndex(
+    snapshot.quotePageIndex ?? 0,
+    paging.pageCount,
+  );
+  const content = showPageControls
+    ? paging.pages[pageIndex] ?? fullQuote
+    : fullQuote;
+  const quoteLineHeight = getQuoteLineHeight(snapshot.fontSize);
+  const quoteMaxLines = showPageControls
+    ? paging.linesPerPage
+    : Math.max(paging.linesPerPage, 8);
+  const quoteTextWidth = Math.max(
+    40,
+    width -
+      WIDGET_LAYOUT.padding * 2 -
+      (showPageControls ? QUOTE_PAGE_ARROW_SIZE + WIDGET_LAYOUT.actionGap : 0),
+  );
 
   return (
     <FlexWidget
@@ -226,38 +308,89 @@ function WidgetBody({
           />
         ) : null}
 
-        <TextWidget
-          text={content}
-          maxLines={8}
-          truncate="END"
-          allowFontScaling={false}
+        <FlexWidget
           style={{
-            fontSize: snapshot.fontSize,
-            lineHeight: getQuoteLineHeight(snapshot.fontSize),
-            color: asColor(quoteColor),
-            fontFamily: snapshot.androidFontFile,
-            fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
             width: "match_parent",
+            flexDirection: "column",
+            flexGap: WIDGET_LAYOUT.quoteSourceGap,
           }}
-        />
-
-        {!isRefreshing && snapshot.sourceText ? (
-          <TextWidget
-            text={snapshot.sourceText}
-            maxLines={2}
-            truncate="END"
-            allowFontScaling={false}
+        >
+          <FlexWidget
             style={{
-              fontSize: snapshot.fontSize,
-              lineHeight: getQuoteLineHeight(snapshot.fontSize),
-              color: asColor(snapshot.metaColor),
-              fontFamily: snapshot.androidFontFile,
-              fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
               width: "match_parent",
-              marginTop: WIDGET_LAYOUT.quoteSourceGap,
+              flexDirection: "row",
+              alignItems: "flex-start",
+              flexGap: WIDGET_LAYOUT.actionGap,
             }}
-          />
-        ) : null}
+          >
+            <TextWidget
+              text={content}
+              maxLines={quoteMaxLines}
+              truncate={showPageControls ? undefined : "END"}
+              allowFontScaling={false}
+              style={{
+                fontSize: snapshot.fontSize,
+                lineHeight: quoteLineHeight,
+                color: asColor(quoteColor),
+                fontFamily: snapshot.androidFontFile,
+                fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
+                width: quoteTextWidth,
+              }}
+            />
+            {showPageControls ? (
+              <FlexWidget
+                style={{
+                  flexDirection: "column",
+                  flexGap: 6,
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                <PageArrow
+                  icon={WIDGET_ICON_GLYPH.expandLess}
+                  color={snapshot.actionIconColor}
+                  backgroundColor={snapshot.actionBg}
+                  clickAction={pageIndex > 0 ? "PAGE_PREV" : undefined}
+                />
+                <TextWidget
+                  text={`${pageIndex + 1}/${paging.pageCount}`}
+                  allowFontScaling={false}
+                  style={{
+                    fontSize: 11,
+                    lineHeight: 14,
+                    color: asColor(snapshot.metaColor),
+                    fontFamily: snapshot.androidFontFile,
+                  }}
+                />
+                <PageArrow
+                  icon={WIDGET_ICON_GLYPH.expandMore}
+                  color={snapshot.actionIconColor}
+                  backgroundColor={snapshot.actionBg}
+                  clickAction={
+                    pageIndex < paging.pageCount - 1 ? "PAGE_NEXT" : undefined
+                  }
+                />
+              </FlexWidget>
+            ) : null}
+          </FlexWidget>
+
+          {hasSource ? (
+            <TextWidget
+              text={snapshot.sourceText}
+              maxLines={2}
+              truncate="END"
+              allowFontScaling={false}
+              style={{
+                fontSize: snapshot.fontSize,
+                lineHeight: quoteLineHeight,
+                color: asColor(snapshot.metaColor),
+                fontFamily: snapshot.androidFontFile,
+                fontWeight: WIDGET_SOURCE_FONT_WEIGHT,
+                width: "match_parent",
+              }}
+            />
+          ) : null}
+        </FlexWidget>
       </FlexWidget>
 
       {actionRows.length > 0 || (!isRefreshing && snapshot.attributionName) ? (
@@ -309,7 +442,6 @@ function WidgetBody({
               style={{
                 width: "match_parent",
                 flexDirection: "row",
-                flexWrap: "wrap",
                 alignItems: "flex-end",
               }}
             >
@@ -423,7 +555,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
             backgroundColor: asColor(snapshot.overlayColor ?? "transparent"),
           }}
         >
-          <WidgetBody snapshot={snapshot} width={width} />
+          <WidgetBody snapshot={snapshot} width={width} height={height} />
         </FlexWidget>
       </OverlapWidget>
     );
@@ -445,7 +577,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
         borderRadius: WIDGET_LAYOUT.borderRadius,
       }}
     >
-      <WidgetBody snapshot={snapshot} width={width} />
+      <WidgetBody snapshot={snapshot} width={width} height={height} />
     </FlexWidget>
   );
 }

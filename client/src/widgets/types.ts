@@ -50,6 +50,11 @@ export type HomeWidgetSnapshot = {
   isRefreshing: boolean;
   /** True while save/unsave is in flight — spinner on the save action only. */
   isSaving: boolean;
+  /**
+   * Android home-widget quote page (0-based). Reset when the citation refreshes.
+   * Ignored on iOS / in-app preview.
+   */
+  quotePageIndex: number;
   fetchedAt: number;
 };
 

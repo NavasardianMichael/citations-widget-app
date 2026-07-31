@@ -248,8 +248,9 @@ export function WidgetPreview({
     )
   }
 
+  // Settings live preview + Citations library cards share this layout (and quoteSourceGap).
   const topContent = (
-    <View style={{ flexShrink: 1 }}>
+    <View style={{ flexShrink: 1, gap: WIDGET_LAYOUT.quoteSourceGap }}>
       {showLoading ? (
         renderFaceText(
           t('settings.previewLoading'),
@@ -296,7 +297,6 @@ export function WidgetPreview({
               fontSize,
               lineHeight: quoteLineHeight,
               color: tokens.metaColor,
-              marginTop: WIDGET_LAYOUT.quoteSourceGap,
             },
             sourceWeight,
             false,

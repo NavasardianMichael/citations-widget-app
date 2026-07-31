@@ -3,7 +3,10 @@ import type { WidgetTaskHandlerProps } from "react-native-android-widget";
 import { DEFAULT_SOURCE_SELECTION } from "@citations/shared";
 
 import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
-import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
+import {
+  DEFAULT_QUOTE_FONT_SIZE,
+  WIDGET_LAYOUT,
+} from "@/constants/widget-layout";
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
 import { t } from "@/i18n";
 import { fetchWidgetCitation, saveCitation, unsaveCitation } from "@/services/api";
@@ -22,6 +25,10 @@ import {
   buildHomeWidgetSnapshotAsync,
 } from "@/widgets/build-snapshot";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
+import {
+  clampQuotePageIndex,
+  computeQuotePages,
+} from "@/widgets/android/quote-paging";
 import {
   HOME_WIDGET_SNAPSHOT_KEY,
   isAndroidWidgetName,
@@ -43,6 +50,7 @@ function withDefaults(snapshot: HomeWidgetSnapshot): HomeWidgetSnapshot {
     ...buildHomeWidgetSnapshot(FALLBACK_SETTINGS, null),
     ...snapshot,
     loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
+    quotePageIndex: snapshot.quotePageIndex ?? 0,
   };
 }
 
@@ -105,6 +113,59 @@ async function refreshCitationSnapshot(): Promise<HomeWidgetSnapshot> {
   } catch {
     return loadSnapshot();
   }
+}
+
+function estimateActionRowCount(
+  widgetWidth: number,
+  showActions: boolean,
+): number {
+  if (!showActions) return 0;
+  const actionCount = 3;
+  const inner = Math.max(0, widgetWidth - WIDGET_LAYOUT.padding * 2);
+  const cell = WIDGET_LAYOUT.actionSize + WIDGET_LAYOUT.actionGap;
+  const perRow = Math.max(1, Math.floor((inner + WIDGET_LAYOUT.actionGap) / cell));
+  return Math.ceil(actionCount / perRow);
+}
+
+/** Advance/rewind quote page and persist — no network. */
+async function shiftQuotePage(
+  snapshot: HomeWidgetSnapshot,
+  delta: number,
+  widgetWidth: number,
+  widgetHeight: number,
+): Promise<HomeWidgetSnapshot> {
+  const quote = snapshot.quoteText || snapshot.emptyMessage;
+  const pagingBase = {
+    text: quote,
+    widgetWidth,
+    widgetHeight,
+    fontSize: snapshot.fontSize,
+    showOrnament: snapshot.showOrnament,
+    showLargeQuotes: snapshot.showLargeQuotes,
+    hasSource: Boolean(snapshot.sourceText),
+    showActions: snapshot.showActions,
+    actionRowCount: estimateActionRowCount(widgetWidth, snapshot.showActions),
+    hasAttribution: Boolean(snapshot.attributionName),
+  };
+  let paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: false });
+  if (paging.pageCount > 1) {
+    paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: true });
+  }
+  const current = clampQuotePageIndex(
+    snapshot.quotePageIndex ?? 0,
+    paging.pageCount,
+  );
+  const nextIndex = clampQuotePageIndex(current + delta, paging.pageCount);
+  if (nextIndex === current) return snapshot;
+
+  const next: HomeWidgetSnapshot = {
+    ...snapshot,
+    quotePageIndex: nextIndex,
+    isRefreshing: false,
+    isSaving: false,
+  };
+  await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(next));
+  return next;
 }
 
 /** Save / unsave the current citation without opening the app. */
@@ -176,6 +237,24 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
         isRefreshing: false,
       });
       snapshot = await toggleSaveCitation(snapshot);
+    }
+
+    if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "PAGE_NEXT") {
+      snapshot = await shiftQuotePage(
+        snapshot,
+        1,
+        props.widgetInfo.width,
+        props.widgetInfo.height,
+      );
+    }
+
+    if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "PAGE_PREV") {
+      snapshot = await shiftQuotePage(
+        snapshot,
+        -1,
+        props.widgetInfo.width,
+        props.widgetInfo.height,
+      );
     }
 
     snapshot = withDefaults({

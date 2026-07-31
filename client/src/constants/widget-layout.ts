@@ -20,8 +20,11 @@ export const WIDGET_LAYOUT = {
   attributionLineHeight: 20,
   /** Gap between the quote/source block and bottom actions/attribution */
   sectionGap: 24,
-  /** Tight gap between citation quote and its source line */
-  quoteSourceGap: 4,
+  /**
+   * Gap between citation quote and its source line.
+   * Shared by: home widgets (Android/iOS), Settings live preview, Citations library cards.
+   */
+  quoteSourceGap: 16,
   /** Gap inside the bottom meta block (actions / attribution) */
   metaBlockGap: 12,
   /** Vertical space when source and actions wrap onto separate rows */
@@ -112,7 +115,7 @@ export function widgetPreviewUsesFakeQuoteBold(): boolean {
  *     const fs = require('fs');
  *     const src = fs.readFileSync('node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf');
  *     // Keep this codepoint list in sync with WIDGET_ICON_GLYPH below.
- *     const text = [0xe5d5, 0xe866, 0xe867, 0xe59a, 0xe80d, 0xe3e4].map(cp => String.fromCodePoint(cp)).join('');
+ *     const text = [0xe5d5, 0xe866, 0xe867, 0xe59a, 0xe80d, 0xe3e4, 0xe5ce, 0xe5cf].map(cp => String.fromCodePoint(cp)).join('');
  *     subsetFont(src, text, { targetFormat: 'sfnt' }).then(buf => fs.writeFileSync('assets/fonts/widget-glyphs/WidgetGlyphs.ttf', buf));
  *   "
  */
@@ -126,6 +129,10 @@ export const WIDGET_ICON_GLYPH = {
   bookmarkRemove: "",
   share: "",
   flare: "",
+  /** expand_less — quote page up */
+  expandLess: "",
+  /** expand_more — quote page down */
+  expandMore: "",
 } as const;
 
 /** Apply alpha to `#RRGGBB` or `rgba(...)` for ornament colors. */
