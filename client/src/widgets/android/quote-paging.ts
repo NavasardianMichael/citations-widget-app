@@ -28,11 +28,13 @@ export type QuotePagingResult = {
 };
 
 /**
- * Average glyph width for Armenian/Latin at this size (dp).
- * Armenian is wider than Latin; 0.55 under-wrapped and produced too many short pages.
+ * Average glyph width factor for wrap *budgeting* (page splits only).
+ * Display wrapping is done by TextWidget at the real view width — we must not
+ * inject `\n` or lines stay short while empty space remains on the right.
+ * ~0.5 matches Armenian UI fonts better than 0.72 (which forced 2–3 words/line).
  */
 function avgCharWidth(fontSize: number): number {
-  return fontSize * 0.72;
+  return fontSize * 0.5;
 }
 
 export function wrapTextToLines(text: string, maxChars: number): string[] {
@@ -82,9 +84,9 @@ function chunkLines(lines: string[], linesPerPage: number): string[] {
   const per = Math.max(1, linesPerPage);
   const pages: string[] = [];
   for (let i = 0; i < lines.length; i += per) {
-    // Newlines keep the pre-wrapped line breaks; space-join let TextWidget
-    // reflow and often showed a single short line beside the arrow column.
-    pages.push(lines.slice(i, i + per).join("\n"));
+    // Spaces only — TextWidget wraps to the real column width. Newlines made
+    // every estimated line break visible and left a wide empty gutter.
+    pages.push(lines.slice(i, i + per).join(" "));
   }
   return pages;
 }
@@ -125,7 +127,10 @@ function estimateChromeHeight(
 }
 
 function quoteTextWidth(widgetWidth: number, reserveArrowColumn: boolean): number {
-  let textWidth = widgetWidth - WIDGET_LAYOUT.padding * 2;
+  // Portrait often reports APPWIDGET_MIN_WIDTH, which can track minResize (~110dp)
+  // after we allow shrinking. Floor helps page budgets match the drawn size.
+  const layoutWidth = Math.max(widgetWidth, 250);
+  let textWidth = layoutWidth - WIDGET_LAYOUT.padding * 2;
   if (reserveArrowColumn) {
     textWidth -= QUOTE_PAGE_ARROW_SIZE + WIDGET_LAYOUT.actionGap;
   }
@@ -148,7 +153,7 @@ export function computeQuotePages(input: QuotePagingInput): QuotePagingResult {
   let pages = chunkLines(lines, linesPerPage);
 
   if (pages.length > 1) {
-    // Arrows appear — re-wrap for the narrower column and fill at least the
+    // Arrows appear — re-budget for the narrower column and fill at least the
     // control stack height so we don't show one lonely line beside ↑ 1/N ↓.
     textWidth = quoteTextWidth(input.widgetWidth, true);
     maxChars = Math.max(8, Math.floor(textWidth / avgCharWidth(input.fontSize)));

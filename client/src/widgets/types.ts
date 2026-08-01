@@ -66,7 +66,6 @@ export const ANDROID_WIDGET_NAMES = [
   "CitationWidget",
   "CitationWidgetCompact",
   "CitationWidgetLarge",
-  "CitationWidgetFullscreen",
 ] as const;
 export type AndroidWidgetName = (typeof ANDROID_WIDGET_NAMES)[number];
 export const IOS_WIDGET_NAME = "CitationWidget";

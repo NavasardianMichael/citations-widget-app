@@ -245,12 +245,6 @@ function WidgetBody({
   const quoteMaxLines = showPageControls
     ? paging.linesPerPage
     : Math.max(paging.linesPerPage, 8);
-  const quoteTextWidth = Math.max(
-    40,
-    width -
-      WIDGET_LAYOUT.padding * 2 -
-      (showPageControls ? QUOTE_PAGE_ARROW_SIZE + WIDGET_LAYOUT.actionGap : 0),
-  );
 
   return (
     <FlexWidget
@@ -318,20 +312,32 @@ function WidgetBody({
               flexGap: WIDGET_LAYOUT.actionGap,
             }}
           >
-            <TextWidget
-              text={content}
-              maxLines={quoteMaxLines}
-              truncate={showPageControls ? undefined : "END"}
-              allowFontScaling={false}
+            {/*
+              flex:1 fills leftover width from the real layout (not widgetInfo's
+              often-too-small MIN_WIDTH), so wraps use the full quote column.
+            */}
+            <FlexWidget
               style={{
-                fontSize: snapshot.fontSize,
-                lineHeight: quoteLineHeight,
-                color: asColor(quoteColor),
-                fontFamily: snapshot.androidFontFile,
-                fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
-                width: quoteTextWidth,
+                flex: 1,
+                width: 0,
+                flexDirection: "column",
               }}
-            />
+            >
+              <TextWidget
+                text={content}
+                maxLines={quoteMaxLines}
+                truncate="END"
+                allowFontScaling={false}
+                style={{
+                  fontSize: snapshot.fontSize,
+                  lineHeight: quoteLineHeight,
+                  color: asColor(quoteColor),
+                  fontFamily: snapshot.androidFontFile,
+                  fontWeight: WIDGET_QUOTE_FONT_WEIGHT,
+                  width: "match_parent",
+                }}
+              />
+            </FlexWidget>
             {showPageControls ? (
               <FlexWidget
                 style={{

@@ -131,17 +131,6 @@
               "targetCellHeight": 5,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
-            },
-            {
-              "name": "CitationWidgetFullscreen",
-              "label": "Թվային սրբարան · Լիաէկրան",
-              "description": "Լիաէկրան մեջբերում՝ զբաղեցնում է գրեթե ամբողջ գլխավոր էկրանը",
-              "minWidth": "320dp",
-              "minHeight": "460dp",
-              "targetCellWidth": 5,
-              "targetCellHeight": 7,
-              "resizeMode": "horizontal|vertical",
-              "updatePeriodMillis": 1800000
             }
           ]
         }
