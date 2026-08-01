@@ -135,7 +135,7 @@ async function shiftQuotePage(
   widgetHeight: number,
 ): Promise<HomeWidgetSnapshot> {
   const quote = snapshot.quoteText || snapshot.emptyMessage;
-  const pagingBase = {
+  const paging = computeQuotePages({
     text: quote,
     widgetWidth,
     widgetHeight,
@@ -146,11 +146,7 @@ async function shiftQuotePage(
     showActions: snapshot.showActions,
     actionRowCount: estimateActionRowCount(widgetWidth, snapshot.showActions),
     hasAttribution: Boolean(snapshot.attributionName),
-  };
-  let paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: false });
-  if (paging.pageCount > 1) {
-    paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: true });
-  }
+  });
   const current = clampQuotePageIndex(
     snapshot.quotePageIndex ?? 0,
     paging.pageCount,

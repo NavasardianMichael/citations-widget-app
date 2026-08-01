@@ -15,6 +15,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx src/scripts/seed-citations.ts",
     "db:seed:sync": "tsx src/scripts/seed-citations.ts --sync",
+    "seed:review": "node scripts/seed-review/server.mjs",
     "envtobase64": "node scripts/env-to-base64.cjs",
     "postinstall": "node postinstall.cjs"
   },

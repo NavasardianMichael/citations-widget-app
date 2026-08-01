@@ -145,7 +145,8 @@
             }
           ]
         }
-      ]
+      ],
+      "./plugins/withAndroidWidgetResize"
     ],
     "owner": "michael.navasardyan",
     "extra": {

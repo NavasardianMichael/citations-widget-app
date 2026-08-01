@@ -175,6 +175,8 @@ export const hy = {
   'approvalConditions.reqValidSource':
     'Աղբյուրը կամ հեղինակը պետք է լինի վավեր և ստուգելի (օր․՝ գրքի անուն, Աստվածաշնչի հատված)։',
   'approvalConditions.reqArmenian': 'Մեջբերումը պետք է լինի հայերեն։',
+  'approvalConditions.reqNotDuplicate':
+    'Մեջբերումը չպետք է կրկնվի՝ նույն կամ շատ նման տեքստը չպետք է արդեն իսկ լինի առկա հավաքածուի մեջ։',
   'approvalConditions.notesHeading': 'Լրացուցիչ նշումներ',
   'approvalConditions.noteEdit':
     'Հաստատման ժամանակ մեջբերումը կարող է փոքր-ինչ խմբագրվել՝ պարզության կամ ոճի համար, առանց իմաստը փոխելու։',
@@ -285,12 +287,10 @@ export const hy = {
   'tutorial.welcome.title': 'Բարի գալուստ',
   'tutorial.welcome.body':
     'Հավելվածի միջոցով կարող եք Ձեր հեռախոսի հիմնական էկրանին տեղադրվել վիջեթ, որոնց վրա կցուցադրվեն մեջբերումներ Աստավածաշնչից և տարբեր գրական ստեղծագործություններից։ Հետևեք հետևյալ քայլերին՝ վիջեթն էկրանի վրա տեղադրելու համար։',
-  'tutorial.longPress.title': 'Բացեք վիջեթների ցանկը',
-  'tutorial.longPress.body':
-    'Ընտրեք ստորև երկու եղանակներից մեկը՝ վիջեթների ցանկը բացելու համար։',
-  'tutorial.longPress.appIcon.title': 'Ավելի հեշտ՝ հավելվածի պատկերակից',
+  'tutorial.longPress.title': 'Ինչպես տեղադրել վիջեթը էկրանին',
+  'tutorial.longPress.appIcon.title': 'Երկար սեղմեք հավելվածի նշանի վրա',
   'tutorial.longPress.appIcon.body':
-    'Հիմնական էկրանին մատը երկար պահեք հավելվածի պատկերակի վրա, ապա ցանկից ընտրեք «Վիջեթներ»։',
+    'Մատը երկար սեղմած պահեք հավելվածի նշանի վրա:',
   'tutorial.longPress.or': 'կամ',
   'tutorial.longPress.homeScreen.title': 'Երկար սեղմեք հիմնական էկրանին',
   'tutorial.longPress.homeScreen.body':

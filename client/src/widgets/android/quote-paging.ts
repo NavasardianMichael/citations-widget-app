@@ -4,6 +4,10 @@ import { getQuoteLineHeight, WIDGET_LAYOUT } from "@/constants/widget-layout";
 export const QUOTE_PAGE_ARROW_SIZE = 32;
 export const QUOTE_PAGE_ARROW_ICON_SIZE = 20;
 
+/** Up + gap + "n/m" + gap + down — quote should fill at least this when paging. */
+const ARROW_COLUMN_HEIGHT =
+  QUOTE_PAGE_ARROW_SIZE + 6 + 14 + 6 + QUOTE_PAGE_ARROW_SIZE;
+
 export type QuotePagingInput = {
   text: string;
   widgetWidth: number;
@@ -15,8 +19,6 @@ export type QuotePagingInput = {
   showActions: boolean;
   actionRowCount: number;
   hasAttribution: boolean;
-  /** Reserve trailing width for the arrow column. */
-  reserveArrowColumn: boolean;
 };
 
 export type QuotePagingResult = {
@@ -25,9 +27,12 @@ export type QuotePagingResult = {
   pageCount: number;
 };
 
-/** Rough average glyph width for Armenian/Latin at this size (dp). */
+/**
+ * Average glyph width for Armenian/Latin at this size (dp).
+ * Armenian is wider than Latin; 0.55 under-wrapped and produced too many short pages.
+ */
 function avgCharWidth(fontSize: number): number {
-  return fontSize * 0.55;
+  return fontSize * 0.72;
 }
 
 export function wrapTextToLines(text: string, maxChars: number): string[] {
@@ -77,28 +82,30 @@ function chunkLines(lines: string[], linesPerPage: number): string[] {
   const per = Math.max(1, linesPerPage);
   const pages: string[] = [];
   for (let i = 0; i < lines.length; i += per) {
-    // Space join: TextWidget wraps naturally; newlines forced exact N lines.
-    pages.push(lines.slice(i, i + per).join(" "));
+    // Newlines keep the pre-wrapped line breaks; space-join let TextWidget
+    // reflow and often showed a single short line beside the arrow column.
+    pages.push(lines.slice(i, i + per).join("\n"));
   }
   return pages;
 }
 
-/**
- * Estimate how many quote lines fit and paginate the text.
- * Source / actions / attribution stay outside the paged area.
- */
-export function computeQuotePages(input: QuotePagingInput): QuotePagingResult {
-  const lineHeight = getQuoteLineHeight(input.fontSize);
-  let used = WIDGET_LAYOUT.padding * 2 + WIDGET_LAYOUT.sectionGap;
+function estimateChromeHeight(
+  input: QuotePagingInput,
+  lineHeight: number,
+): number {
+  // Padding only — do not add sectionGap: justifyContent space-between already
+  // separates the top quote block from bottom actions, and counting it here
+  // made linesPerPage collapse to 1 on typical 4×4 sizes.
+  let used = WIDGET_LAYOUT.padding * 2;
 
   if (input.showOrnament) {
     used += WIDGET_LAYOUT.ornamentIconSize + 4;
   }
   if (input.showLargeQuotes) {
-    // TextWidget uses lineHeight = fontSize and marginBottom: -8.
     used += Math.max(0, WIDGET_LAYOUT.largeQuoteFontSize - 8);
   }
   if (input.hasSource) {
+    // Source allows maxLines={2}; reserve one line (common) + gap.
     used += WIDGET_LAYOUT.quoteSourceGap + lineHeight;
   }
   if (input.showActions && input.actionRowCount > 0) {
@@ -112,21 +119,48 @@ export function computeQuotePages(input: QuotePagingInput): QuotePagingResult {
       WIDGET_LAYOUT.attributionLineHeight;
   }
 
-  const available = Math.max(lineHeight, input.widgetHeight - used);
-  const linesPerPage = Math.max(1, Math.floor(available / lineHeight));
+  // Small RemoteViews / launcher inset fudge — keep tiny so we actually fill.
+  used += 8;
+  return used;
+}
 
-  let textWidth = input.widgetWidth - WIDGET_LAYOUT.padding * 2;
-  if (input.reserveArrowColumn) {
+function quoteTextWidth(widgetWidth: number, reserveArrowColumn: boolean): number {
+  let textWidth = widgetWidth - WIDGET_LAYOUT.padding * 2;
+  if (reserveArrowColumn) {
     textWidth -= QUOTE_PAGE_ARROW_SIZE + WIDGET_LAYOUT.actionGap;
   }
-  textWidth = Math.max(40, textWidth);
+  return Math.max(40, textWidth);
+}
 
-  const maxChars = Math.max(
-    8,
-    Math.floor(textWidth / avgCharWidth(input.fontSize)),
-  );
-  const lines = wrapTextToLines(input.text, maxChars);
-  const pages = chunkLines(lines, linesPerPage);
+/**
+ * Estimate how many quote lines fit and paginate the text.
+ * Source / actions / attribution stay outside the paged area.
+ */
+export function computeQuotePages(input: QuotePagingInput): QuotePagingResult {
+  const lineHeight = getQuoteLineHeight(input.fontSize);
+  const chrome = estimateChromeHeight(input, lineHeight);
+  const available = Math.max(lineHeight, input.widgetHeight - chrome);
+  let linesPerPage = Math.max(1, Math.floor(available / lineHeight));
+
+  let textWidth = quoteTextWidth(input.widgetWidth, false);
+  let maxChars = Math.max(8, Math.floor(textWidth / avgCharWidth(input.fontSize)));
+  let lines = wrapTextToLines(input.text, maxChars);
+  let pages = chunkLines(lines, linesPerPage);
+
+  if (pages.length > 1) {
+    // Arrows appear — re-wrap for the narrower column and fill at least the
+    // control stack height so we don't show one lonely line beside ↑ 1/N ↓.
+    textWidth = quoteTextWidth(input.widgetWidth, true);
+    maxChars = Math.max(8, Math.floor(textWidth / avgCharWidth(input.fontSize)));
+    lines = wrapTextToLines(input.text, maxChars);
+
+    const minBesideArrows = Math.max(
+      2,
+      Math.ceil(ARROW_COLUMN_HEIGHT / lineHeight),
+    );
+    linesPerPage = Math.max(linesPerPage, minBesideArrows);
+    pages = chunkLines(lines, linesPerPage);
+  }
 
   return {
     pages,

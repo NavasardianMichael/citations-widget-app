@@ -10,6 +10,7 @@ const REQUIREMENT_KEYS = [
   'approvalConditions.reqExactMatch',
   'approvalConditions.reqValidSource',
   'approvalConditions.reqArmenian',
+  'approvalConditions.reqNotDuplicate',
 ] as const
 
 export default function ApprovalConditionsScreen() {

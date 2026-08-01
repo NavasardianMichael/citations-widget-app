@@ -76,12 +76,6 @@ function buildSteps(os: TutorialOS): TutorialStep[] {
       bodyKey: 'tutorial.welcome.body',
       Illustration: WelcomeIllustration,
     },
-    {
-      key: 'longPress',
-      titleKey: 'tutorial.longPress.title',
-      bodyKey: 'tutorial.longPress.body',
-      Illustration: LongPressIllustration,
-    },
     os === 'ios'
       ? {
           key: 'addMenu',

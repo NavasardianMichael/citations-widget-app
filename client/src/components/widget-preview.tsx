@@ -188,8 +188,12 @@ export function WidgetPreview({
 
   const showLoading = loading || (!!citation && !fontReady)
 
+  // Settings live preview keeps widget-sized height so actions pin to the bottom.
+  // Citations library / tutorial cards wrap content — no empty bottom pad.
+  const fillWidgetHeight = showActions || showLivePreviewLabel
+
   const frameStyle = {
-    minHeight: WIDGET_LAYOUT.previewMinHeight,
+    ...(fillWidgetHeight ? { minHeight: WIDGET_LAYOUT.previewMinHeight } : null),
     borderRadius: WIDGET_LAYOUT.borderRadius,
     borderWidth: 1,
     borderColor: tokens.panelBorderColor,
@@ -202,8 +206,9 @@ export function WidgetPreview({
   const contentPad = {
     padding: WIDGET_LAYOUT.padding,
     // Quote + source stay together at the top; actions/attribution pin to the bottom.
-    flex: 1,
-    justifyContent: 'space-between' as const,
+    ...(fillWidgetHeight
+      ? { flex: 1, justifyContent: 'space-between' as const }
+      : { justifyContent: 'flex-start' as const }),
   }
 
   const quoteWeight = widgetPreviewQuoteWeightStyle()

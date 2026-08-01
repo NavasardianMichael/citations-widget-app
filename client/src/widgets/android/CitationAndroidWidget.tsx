@@ -221,7 +221,7 @@ function WidgetBody({
   const hasSource = !isRefreshing && Boolean(snapshot.sourceText);
   const hasAttribution = !isRefreshing && Boolean(snapshot.attributionName);
 
-  const pagingBase = {
+  const paging = computeQuotePages({
     text: fullQuote,
     widgetWidth: width,
     widgetHeight: height,
@@ -232,12 +232,7 @@ function WidgetBody({
     showActions: actions.length > 0,
     actionRowCount: actionRows.length,
     hasAttribution,
-  };
-  // First pass without arrow column; if we need pages, re-measure with reserved width.
-  let paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: false });
-  if (paging.pageCount > 1) {
-    paging = computeQuotePages({ ...pagingBase, reserveArrowColumn: true });
-  }
+  });
   const showPageControls = !isRefreshing && paging.pageCount > 1;
   const pageIndex = clampQuotePageIndex(
     snapshot.quotePageIndex ?? 0,

@@ -31,6 +31,17 @@ Hand-translated Eastern Armenian literary/philosophical quotes.
 
 English `kjv.json` is no longer used or shipped; seed only loads `bible-hy.json` + `fiction-quotes.json`.
 
+## Temporary local review UI
+
+Filter seed rows in the browser and delete from the JSON files on disk:
+
+```bash
+npm run seed:review
+```
+
+Open http://127.0.0.1:9191 — Remove writes immediately to `bible-hy.json` /
+`fiction-quotes.json`. Then deploy and sync on the server as usual.
+
 ## Production
 
 How to seed, sync, or **replace** bible citations on the deployed server:

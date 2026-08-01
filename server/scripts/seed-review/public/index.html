@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="hy">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Seed citation review (temporary)</title>
+    <style>
+      :root {
+        --bg: #f4f1ec;
+        --panel: #fffdf9;
+        --ink: #1b1c1c;
+        --muted: #5c6570;
+        --line: #d9d2c5;
+        --bible: #2f5f8f;
+        --fiction: #735c00;
+        --danger: #8b1e1e;
+        --danger-bg: #f8e8e6;
+        --ok: #1f5c3a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: linear-gradient(180deg, #efe8dc 0%, var(--bg) 40%);
+        color: var(--ink);
+        min-height: 100vh;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        backdrop-filter: blur(8px);
+        background: rgba(244, 241, 236, 0.92);
+        border-bottom: 1px solid var(--line);
+        padding: 1rem 1.25rem;
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.25rem;
+        font-weight: 650;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.9rem;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: center;
+      }
+      input[type="search"] {
+        flex: 1 1 220px;
+        min-width: 180px;
+        padding: 0.55rem 0.75rem;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        font-size: 0.95rem;
+      }
+      select,
+      button.filter {
+        padding: 0.55rem 0.75rem;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+      button.filter.active {
+        background: #021a35;
+        color: #fff;
+        border-color: #021a35;
+      }
+      .stats {
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .stats strong {
+        color: var(--ink);
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1rem 1.25rem 3rem;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.85rem;
+        align-items: start;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 0.65rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 0.65rem;
+        align-items: center;
+        margin-bottom: 0.4rem;
+        font-size: 0.8rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+      }
+      .badge.bible {
+        background: #e4eef8;
+        color: var(--bible);
+      }
+      .badge.fiction {
+        background: #f3ead0;
+        color: var(--fiction);
+      }
+      .id {
+        font-family: ui-monospace, Consolas, monospace;
+        color: var(--muted);
+      }
+      .source {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .text {
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      .remove {
+        border: 1px solid #d9a6a0;
+        background: var(--danger-bg);
+        color: var(--danger);
+        border-radius: 8px;
+        padding: 0.45rem 0.7rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .remove:hover {
+        background: #f3d5d1;
+      }
+      .remove:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      .empty,
+      .error {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: var(--muted);
+      }
+      .error {
+        color: var(--danger);
+      }
+      .toast {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        background: #12301f;
+        color: #e8f6ee;
+        padding: 0.7rem 0.95rem;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: 0.2s ease;
+        pointer-events: none;
+        max-width: min(420px, calc(100vw - 2rem));
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Seed citation review</h1>
+      <p class="sub">
+        Temporary local tool. Remove writes straight to
+        <code>server/data/seed/*.json</code>. Filter, delete, then sync on the server.
+      </p>
+      <div class="controls">
+        <input
+          id="q"
+          type="search"
+          placeholder="Filter by text, source, or id…"
+          autocomplete="off"
+        />
+        <button type="button" class="filter active" data-cat="all">All</button>
+        <button type="button" class="filter" data-cat="bible">Bible</button>
+        <button type="button" class="filter" data-cat="fiction">Fiction</button>
+      </div>
+      <div class="stats" id="stats">Loading…</div>
+    </header>
+    <main id="list"></main>
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      let citations = [];
+      let category = "all";
+      let query = "";
+      let removedThisSession = 0;
+
+      const listEl = document.getElementById("list");
+      const statsEl = document.getElementById("stats");
+      const qEl = document.getElementById("q");
+      const toastEl = document.getElementById("toast");
+      let toastTimer;
+
+      function showToast(message) {
+        toastEl.textContent = message;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      }
+
+      function matches(row) {
+        if (category !== "all" && row.category !== category) return false;
+        const q = query.trim().toLowerCase();
+        if (!q) return true;
+        return (
+          row.text.toLowerCase().includes(q) ||
+          row.source.toLowerCase().includes(q) ||
+          row.id.toLowerCase().includes(q)
+        );
+      }
+
+      function visibleRows() {
+        return citations.filter(matches);
+      }
+
+      function renderStats() {
+        const visible = visibleRows().length;
+        const bible = citations.filter((c) => c.category === "bible").length;
+        const fiction = citations.filter((c) => c.category === "fiction").length;
+        statsEl.innerHTML =
+          `Showing <strong>${visible}</strong> of <strong>${citations.length}</strong>` +
+          ` · bible <strong>${bible}</strong> · fiction <strong>${fiction}</strong>` +
+          ` · removed this session <strong>${removedThisSession}</strong>`;
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function render() {
+        const rows = visibleRows();
+        renderStats();
+        if (!rows.length) {
+          listEl.innerHTML = `<div class="empty">No citations match.</div>`;
+          return;
+        }
+        listEl.innerHTML = rows
+          .map(
+            (row) => `
+          <article class="row" data-id="${escapeHtml(row.id)}">
+            <div>
+              <div class="meta">
+                <span class="badge ${escapeHtml(row.category)}">${escapeHtml(row.category)}</span>
+                <span class="id">${escapeHtml(row.id)}</span>
+              </div>
+              <div class="source">${escapeHtml(row.source)}</div>
+              <div class="text">${escapeHtml(row.text)}</div>
+            </div>
+            <button type="button" class="remove" data-remove="${escapeHtml(row.id)}">Remove</button>
+          </article>`,
+          )
+          .join("");
+      }
+
+      async function load() {
+        listEl.innerHTML = `<div class="empty">Loading…</div>`;
+        const res = await fetch("/api/citations");
+        if (!res.ok) throw new Error(`Load failed (${res.status})`);
+        const data = await res.json();
+        citations = data.citations || [];
+        render();
+      }
+
+      async function removeCitation(id, button) {
+        if (!confirm(`Remove from seed JSON?\n\n${id}`)) return;
+        button.disabled = true;
+        try {
+          const res = await fetch(`/api/citations/${encodeURIComponent(id)}`, {
+            method: "DELETE",
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || `Delete failed (${res.status})`);
+          citations = citations.filter((c) => c.id !== id);
+          removedThisSession += 1;
+          render();
+          showToast(`Removed ${id} from ${data.file}`);
+        } catch (err) {
+          button.disabled = false;
+          alert(err.message || String(err));
+        }
+      }
+
+      qEl.addEventListener("input", () => {
+        query = qEl.value;
+        render();
+      });
+
+      document.querySelectorAll("button.filter").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("button.filter").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          category = btn.dataset.cat;
+          render();
+        });
+      });
+
+      listEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-remove]");
+        if (!button) return;
+        removeCitation(button.dataset.remove, button);
+      });
+
+      load().catch((err) => {
+        listEl.innerHTML = `<div class="error">${escapeHtml(err.message || String(err))}</div>`;
+        statsEl.textContent = "Failed to load";
+      });
+    </script>
+  </body>
+</html>
