@@ -47,3 +47,6 @@ Open http://127.0.0.1:9191 — Remove writes immediately to `bible-hy.json` /
 How to seed, sync, or **replace** bible citations on the deployed server:
 [docs/production-seeding.md](../../docs/production-seeding.md)
 (see **Replace bible seed**).
+
+Cheat sheet of common commands (prod sync, seed review, Android APK):
+[`commands.md`](../../../commands.md) at the repo root.
