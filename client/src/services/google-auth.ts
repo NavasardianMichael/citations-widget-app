@@ -90,41 +90,40 @@ export function useGoogleSignIn() {
     ...(redirectUri ? { redirectUri } : {}),
   });
 
-  const signInWithGoogle = useCallback(
-    async (
-      forceLogin = false,
-    ): Promise<{ user: UserPublic; accessToken: string; refreshToken: string } | null> => {
-      if (!clientId) {
-        throw new Error("Google sign-in is not configured. Set EXPO_PUBLIC_GOOGLE_CLIENT_ID.");
-      }
-      if (Platform.OS === "android" && !androidClientId) {
-        throw new Error(
-          "Google sign-in is not configured for Android. Set EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID.",
-        );
+  const signInWithGoogle = useCallback(async (): Promise<{
+    user: UserPublic;
+    accessToken: string;
+    refreshToken: string;
+  } | null> => {
+    if (!clientId) {
+      throw new Error("Google sign-in is not configured. Set EXPO_PUBLIC_GOOGLE_CLIENT_ID.");
+    }
+    if (Platform.OS === "android" && !androidClientId) {
+      throw new Error(
+        "Google sign-in is not configured for Android. Set EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID.",
+      );
+    }
+
+    googleSignInPending = true;
+    try {
+      const result = await promptAsync();
+      if (result.type !== "success") {
+        return null;
       }
 
-      googleSignInPending = true;
-      try {
-        const result = await promptAsync();
-        if (result.type !== "success") {
-          return null;
-        }
-
-        const platformClientId = getPlatformClientId(clientId, androidClientId, iosClientId);
-        const idToken = await resolveIdToken(result, request, platformClientId);
-        if (!idToken) {
-          return null;
-        }
-
-        const data = await googleMobileRequest(idToken, forceLogin);
-        await setTokens(data.accessToken, data.refreshToken);
-        return data;
-      } finally {
-        googleSignInPending = false;
+      const platformClientId = getPlatformClientId(clientId, androidClientId, iosClientId);
+      const idToken = await resolveIdToken(result, request, platformClientId);
+      if (!idToken) {
+        return null;
       }
-    },
-    [clientId, androidClientId, iosClientId, promptAsync, request],
-  );
+
+      const data = await googleMobileRequest(idToken);
+      await setTokens(data.accessToken, data.refreshToken);
+      return data;
+    } finally {
+      googleSignInPending = false;
+    }
+  }, [clientId, androidClientId, iosClientId, promptAsync, request]);
 
   return {
     request,

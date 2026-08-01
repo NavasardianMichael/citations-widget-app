@@ -12,14 +12,14 @@ export const WIDGET_LAYOUT = {
   /** Preview `p-6` / rounded-lg */
   padding: 24,
   borderRadius: 8,
-  /** Matches the real widget's declared minHeight (widgetprovider_citationwidget.xml) so the
+  /** Matches the default 4×4 widget minHeight (widgetprovider_citationwidget.xml) so the
    *  Settings preview pins its action row to the bottom the same way the real widget does. */
-  previewMinHeight: 180,
+  previewMinHeight: 250,
   /** Tailwind `text-sm` */
   attributionFontSize: 14,
   attributionLineHeight: 20,
   /** Gap between the quote/source block and bottom actions/attribution */
-  sectionGap: 24,
+  sectionGap: 16,
   /**
    * Gap between citation quote and its source line.
    * Shared by: home widgets (Android/iOS), Settings live preview, Citations library cards.

@@ -1,6 +1,6 @@
 ﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useFocusEffect } from 'expo-router'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -46,14 +46,6 @@ type LibraryItem = {
   isSaved: boolean
   owned: OwnedCitation | null
 }
-
-const GUEST_FILTERS: {
-  value: LibraryFilter
-  labelKey: 'citations.filterAll' | 'citations.filterSaved'
-}[] = [
-  { value: 'all', labelKey: 'citations.filterAll' },
-  { value: 'saved', labelKey: 'citations.filterSaved' },
-]
 
 const SIGNED_IN_FILTERS: {
   value: LibraryFilter
@@ -184,7 +176,7 @@ export default function CitationsScreen() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const filterOptions = isGuest || !user ? GUEST_FILTERS : SIGNED_IN_FILTERS
+  const isSignedIn = Boolean(user) && !isGuest
 
   const loadLibrary = useCallback(async () => {
     setLoading(true)
@@ -224,9 +216,16 @@ export default function CitationsScreen() {
     }, [loadLibrary]),
   )
 
+  useEffect(() => {
+    if (!isSignedIn) setFilter('all')
+  }, [isSignedIn])
+
   const filteredItems = useMemo(
-    () => items.filter((item) => matchesFilter(item, filter)),
-    [items, filter],
+    () =>
+      isSignedIn
+        ? items.filter((item) => matchesFilter(item, filter))
+        : items,
+    [items, filter, isSignedIn],
   )
 
   async function handleUnsave(id: string) {
@@ -298,32 +297,34 @@ export default function CitationsScreen() {
       />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] gap-8 px-margin-mobile pt-8 md:px-margin-desktop md:pt-12'>
-          <View className='gap-3'>
-            <View className='flex-row flex-wrap gap-2'>
-              {filterOptions.map((option) => (
-                <FilterPill
-                  key={option.value}
-                  label={t(option.labelKey)}
-                  selected={filter === option.value}
-                  onPress={() => setFilter(option.value)}
-                />
-              ))}
+          {isSignedIn ? (
+            <View className='gap-3'>
+              <View className='flex-row flex-wrap gap-2'>
+                {SIGNED_IN_FILTERS.map((option) => (
+                  <FilterPill
+                    key={option.value}
+                    label={t(option.labelKey)}
+                    selected={filter === option.value}
+                    onPress={() => setFilter(option.value)}
+                  />
+                ))}
+              </View>
+              {filter !== 'all' ? (
+                <Text className='font-label-sm text-label-sm text-on-surface-variant'>
+                  {t(
+                    (
+                      {
+                        saved: 'citations.filterSavedHint',
+                        pending: 'citations.filterPendingHint',
+                        approved: 'citations.filterApprovedHint',
+                        private: 'citations.filterPrivateHint',
+                      } as const
+                    )[filter],
+                  )}
+                </Text>
+              ) : null}
             </View>
-            {filter !== 'all' ? (
-              <Text className='font-label-sm text-label-sm text-on-surface-variant'>
-                {t(
-                  (
-                    {
-                      saved: 'citations.filterSavedHint',
-                      pending: 'citations.filterPendingHint',
-                      approved: 'citations.filterApprovedHint',
-                      private: 'citations.filterPrivateHint',
-                    } as const
-                  )[filter],
-                )}
-              </Text>
-            ) : null}
-          </View>
+          ) : null}
 
           {loading ? (
             <ActivityIndicator size='large' color='#021a35' className='py-12' />

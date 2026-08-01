@@ -23,7 +23,7 @@ import {
   verifyEmailSchema,
 } from "../schemas/auth.js";
 import { authService } from "../services/auth-service.js";
-import { enforceSessionLimit, establishSession, issueAuthTokens } from "../services/auth-session.js";
+import { establishSession, issueAuthTokens } from "../services/auth-session.js";
 import { buildAppDeepLink } from "../services/email-service.js";
 import { ErrorCode, HttpStatus } from "../types/api.js";
 import type { UserPublic } from "../types/auth.js";
@@ -88,7 +88,6 @@ router.post("/register", authLimiter, validate(registerSchema), async (req, res,
 router.post("/login", authLimiter, validate(loginSchema), async (req, res, next) => {
   try {
     const result = await authService.login(req.body);
-    await enforceSessionLimit(result.user.id, req.body.forceLogin);
     const session = await establishSession(req, result.user.id);
     res.json({
       success: true,
@@ -178,15 +177,9 @@ router.get("/google/callback", (req, res, next) => {
         return res.redirect(`${env.CLIENT_URL.replace(/\/$/, "")}/auth/login?error=google_auth_failed`);
       }
 
-      await enforceSessionLimit(typedUser.id, req.query.state === "force");
       await establishSession(req, typedUser.id);
       res.redirect(`${env.CLIENT_URL.replace(/\/$/, "")}/auth/callback`);
     } catch (error) {
-      if (error instanceof AppError && error.code === ErrorCode.SESSION_LIMIT_REACHED) {
-        return res.redirect(
-          `${env.CLIENT_URL.replace(/\/$/, "")}/auth/login?error=session_limit&max=${env.MAX_CONCURRENT_SESSIONS}`,
-        );
-      }
       logger.error({ err: error }, "Google callback error");
       res.redirect(`${env.CLIENT_URL.replace(/\/$/, "")}/auth/login?error=google_auth_failed`);
     }
@@ -218,7 +211,6 @@ router.post("/google/mobile", authLimiter, validate(googleMobileSchema), async (
       avatarUrl: payload.picture,
     });
 
-    await enforceSessionLimit(user.id, req.body.forceLogin);
     const session = await establishSession(req, user.id);
 
     res.json({

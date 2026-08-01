@@ -16,6 +16,7 @@ import {
   AndroidDragIllustration,
   AndroidResizeIllustration,
   AndroidWidgetsMenuIllustration,
+  AppIconLongPressIllustration,
   IosAddButtonIllustration,
   IosChooseSizeIllustration,
   IosPlaceDoneIllustration,
@@ -212,18 +213,74 @@ export function TutorialModal() {
             </View>
           ) : null}
 
-          <View accessibilityRole='image' accessibilityLabel={t(step.titleKey)}>
-            <Illustration />
-          </View>
+          {step.key === 'longPress' ? (
+            <View className='w-full max-w-sm gap-5'>
+              <View className='gap-2'>
+                <Text className='text-center font-headline-md text-headline-md text-primary'>
+                  {t(step.titleKey)}
+                </Text>
+                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
+                  {t(step.bodyKey)}
+                </Text>
+              </View>
 
-          <View className='max-w-sm gap-2'>
-            <Text className='text-center font-headline-md text-headline-md text-primary'>
-              {t(step.titleKey)}
-            </Text>
-            <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
-              {t(step.bodyKey, step.bodyParams)}
-            </Text>
-          </View>
+              <View className='items-center gap-2'>
+                <View
+                  accessibilityRole='image'
+                  accessibilityLabel={t('tutorial.longPress.appIcon.title')}
+                >
+                  <AppIconLongPressIllustration compact />
+                </View>
+                <Text className='text-center font-body-lg text-body-lg text-primary'>
+                  {t('tutorial.longPress.appIcon.title')}
+                </Text>
+                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
+                  {t('tutorial.longPress.appIcon.body')}
+                </Text>
+              </View>
+
+              <View className='flex-row items-center gap-3 px-2'>
+                <View className='h-px flex-1 bg-outline-variant' />
+                <Text className='font-label-sm text-label-sm uppercase text-on-surface-variant'>
+                  {t('tutorial.longPress.or')}
+                </Text>
+                <View className='h-px flex-1 bg-outline-variant' />
+              </View>
+
+              <View className='items-center gap-2'>
+                <View
+                  accessibilityRole='image'
+                  accessibilityLabel={t('tutorial.longPress.homeScreen.title')}
+                >
+                  <LongPressIllustration compact />
+                </View>
+                <Text className='text-center font-body-lg text-body-lg text-primary'>
+                  {t('tutorial.longPress.homeScreen.title')}
+                </Text>
+                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
+                  {t('tutorial.longPress.homeScreen.body')}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <>
+              <View
+                accessibilityRole='image'
+                accessibilityLabel={t(step.titleKey)}
+              >
+                <Illustration />
+              </View>
+
+              <View className='max-w-sm gap-2'>
+                <Text className='text-center font-headline-md text-headline-md text-primary'>
+                  {t(step.titleKey)}
+                </Text>
+                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
+                  {t(step.bodyKey, step.bodyParams)}
+                </Text>
+              </View>
+            </>
+          )}
         </ScrollView>
 
         <View

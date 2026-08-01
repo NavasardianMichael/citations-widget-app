@@ -50,10 +50,10 @@ async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return body.data;
 }
 
-export async function loginRequest(email: string, password: string, forceLogin = false) {
+export async function loginRequest(email: string, password: string) {
   return authFetch<AuthSession & { message: string }>("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password, forceLogin }),
+    body: JSON.stringify({ email, password }),
   });
 }
 
@@ -119,10 +119,10 @@ export async function deleteAccountRequest(accessToken: string) {
   });
 }
 
-export async function googleMobileRequest(idToken: string, forceLogin = false) {
+export async function googleMobileRequest(idToken: string) {
   return authFetch<AuthSession & { message: string }>("/api/auth/google/mobile", {
     method: "POST",
-    body: JSON.stringify({ idToken, forceLogin }),
+    body: JSON.stringify({ idToken }),
   });
 }
 

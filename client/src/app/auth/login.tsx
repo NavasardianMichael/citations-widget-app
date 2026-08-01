@@ -20,7 +20,6 @@ import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
 import { t } from '@/i18n'
 import { hasErrors, validateLogin, type FieldErrors } from '@/lib/validation'
-import { AuthApiError } from '@/services/auth-api'
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -36,56 +35,35 @@ export default function LoginScreen() {
     FieldErrors<'email' | 'password'>
   >({})
   const [error, setError] = useState<string | null>(null)
-  const [sessionLimitReached, setSessionLimitReached] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin(forceLogin = false) {
+  async function handleLogin() {
     setError(null)
-    setSessionLimitReached(false)
     const nextErrors = validateLogin({ email, password })
     setFieldErrors(nextErrors)
     if (hasErrors(nextErrors)) return
 
     setLoading(true)
     try {
-      await signIn(email.trim(), password, forceLogin)
+      await signIn(email.trim(), password)
       router.replace('/(tabs)')
     } catch (e) {
-      if (
-        e instanceof AuthApiError &&
-        e.code === 'SESSION_LIMIT_REACHED' &&
-        !forceLogin
-      ) {
-        setSessionLimitReached(true)
-        setError(t('auth.login.sessionLimit'))
-      } else {
-        setError(e instanceof Error ? e.message : t('auth.login.failed'))
-      }
+      setError(e instanceof Error ? e.message : t('auth.login.failed'))
     } finally {
       setLoading(false)
     }
   }
 
-  async function handleGoogleLogin(forceLogin = false) {
+  async function handleGoogleLogin() {
     setError(null)
     setFieldErrors({})
-    setSessionLimitReached(false)
     setLoading(true)
     try {
-      const signedIn = await signInWithGoogle(forceLogin)
+      const signedIn = await signInWithGoogle()
       if (!signedIn) return
       router.replace('/(tabs)')
     } catch (e) {
-      if (
-        e instanceof AuthApiError &&
-        e.code === 'SESSION_LIMIT_REACHED' &&
-        !forceLogin
-      ) {
-        setSessionLimitReached(true)
-        setError(t('auth.login.sessionLimitGoogle'))
-      } else {
-        setError(e instanceof Error ? e.message : t('auth.login.googleFailed'))
-      }
+      setError(e instanceof Error ? e.message : t('auth.login.googleFailed'))
     } finally {
       setLoading(false)
     }
@@ -153,35 +131,26 @@ export default function LoginScreen() {
               </TextLink>
 
               <View className='gap-3'>
-                <Button
-                  label={
-                    loading
-                      ? t('auth.login.submitting')
-                      : t('auth.login.submit')
-                  }
-                  onPress={() => handleLogin()}
-                  disabled={loading}
-                />
-
-                {isGoogleConfigured ? (
                   <Button
-                    label={t('auth.login.google')}
-                    variant='secondary'
-                    leading={<GoogleLogo />}
-                    onPress={() => handleGoogleLogin()}
-                    disabled={loading || !googleAuthReady}
-                  />
-                ) : null}
-
-                {sessionLimitReached ? (
-                  <Button
-                    label={t('auth.login.forceDevices')}
-                    variant='ghost'
-                    onPress={() => handleLogin(true)}
+                    label={
+                      loading
+                        ? t('auth.login.submitting')
+                        : t('auth.login.submit')
+                    }
+                    onPress={() => handleLogin()}
                     disabled={loading}
                   />
-                ) : null}
-              </View>
+
+                  {isGoogleConfigured ? (
+                    <Button
+                      label={t('auth.login.google')}
+                      variant='secondary'
+                      leading={<GoogleLogo />}
+                      onPress={() => handleGoogleLogin()}
+                      disabled={loading || !googleAuthReady}
+                    />
+                  ) : null}
+                </View>
             </View>
 
             <View className='gap-4'>

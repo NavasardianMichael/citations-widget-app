@@ -29,8 +29,8 @@ type AuthContextValue = {
   isLoading: boolean;
   /** One-shot post-sign-out route; consumed by the root auth gate. */
   pendingAuthRoute: Href | null;
-  signIn: (email: string, password: string, forceLogin?: boolean) => Promise<void>;
-  signInWithGoogle: (forceLogin?: boolean) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<boolean>;
   googleAuthReady: boolean;
   isGoogleConfigured: boolean;
   signUp: (email: string, password: string, name: string) => Promise<string>;
@@ -126,8 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(
-    async (email: string, password: string, forceLogin = false) => {
-      const data = await loginRequest(email, password, forceLogin);
+    async (email: string, password: string) => {
+      const data = await loginRequest(email, password);
       await persistSession(data);
       setUser(data.user);
       await completeGuestSignIn();
@@ -135,16 +135,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [completeGuestSignIn],
   );
 
-  const signInWithGoogle = useCallback(
-    async (forceLogin = false) => {
-      const data = await promptGoogleSignIn(forceLogin);
-      if (!data) return false;
-      setUser(data.user);
-      await completeGuestSignIn();
-      return true;
-    },
-    [promptGoogleSignIn, completeGuestSignIn],
-  );
+  const signInWithGoogle = useCallback(async () => {
+    const data = await promptGoogleSignIn();
+    if (!data) return false;
+    setUser(data.user);
+    await completeGuestSignIn();
+    return true;
+  }, [promptGoogleSignIn, completeGuestSignIn]);
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
     const data = await registerRequest(email, password, name);

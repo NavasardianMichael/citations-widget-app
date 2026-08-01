@@ -32,6 +32,7 @@ import {
 } from '@/constants/widget-designs'
 import { DEFAULT_QUOTE_FONT_SIZE, FONT_SIZE_MAX, FONT_SIZE_MIN } from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
+import { useOnboarding } from '@/contexts/onboarding-context'
 import {
   DEFAULT_WIDGET_FONT,
   ensureAllWidgetFontsLoaded,
@@ -107,6 +108,7 @@ const DEFAULT_DRAFT: WidgetSettingsDraft = {
 
 export default function SettingsScreen() {
   const { isGuest } = useAuth()
+  const { openTutorial } = useOnboarding()
   const { isLg } = useBreakpoint()
   const [saved, setSaved] = useState<WidgetSettingsDraft | null>(null)
   const [draft, setDraft] = useState<WidgetSettingsDraft>(DEFAULT_DRAFT)
@@ -544,7 +546,22 @@ export default function SettingsScreen() {
 
   return (
     <View className='flex-1 bg-background'>
-      <TopAppBar title={t('settings.title')} showBrandIcon />
+      <TopAppBar
+        title={t('settings.title')}
+        showBrandIcon
+        rightAction={
+          <Pressable
+            {...pressableNoRipple}
+            onPress={openTutorial}
+            accessibilityRole='button'
+            accessibilityLabel={t('tutorial.openButton')}
+            hitSlop={8}
+            className='h-10 w-10 items-center justify-center rounded-full'
+          >
+            <MaterialIcons name='help-outline' size={24} color='#44474d' />
+          </Pressable>
+        }
+      />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           {isLg ? (

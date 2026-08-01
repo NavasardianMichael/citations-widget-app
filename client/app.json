@@ -25,8 +25,15 @@
         {
           "action": "VIEW",
           "autoVerify": false,
-          "data": [{ "scheme": "citationswidget" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "citationswidget"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -35,6 +42,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/withAndroidWorkManagerAlign",
       "expo-dev-client",
       "expo-router",
       [
@@ -89,17 +97,6 @@
           ],
           "widgets": [
             {
-              "name": "CitationWidgetCompact",
-              "label": "Թվային սրբարան · 4×3",
-              "description": "Կոմպակտ մեջբերում ձեր գլխավոր էկրանին (4×3)",
-              "minWidth": "250dp",
-              "minHeight": "180dp",
-              "targetCellWidth": 4,
-              "targetCellHeight": 3,
-              "resizeMode": "horizontal|vertical",
-              "updatePeriodMillis": 1800000
-            },
-            {
               "name": "CitationWidget",
               "label": "Թվային սրբարան · 4×4",
               "description": "Մեջբերում ձեր գլխավոր էկրանին (4×4)",
@@ -107,6 +104,17 @@
               "minHeight": "250dp",
               "targetCellWidth": 4,
               "targetCellHeight": 4,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "CitationWidgetCompact",
+              "label": "Թվային սրբարան · 4×3",
+              "description": "Կոմպակտ մեջբերում ձեր գլխավոր էկրանին (4×3)",
+              "minWidth": "250dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 3,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
             },

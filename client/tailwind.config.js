@@ -77,7 +77,7 @@ module.exports = {
         'body-lg': ['GHEAGrapalat-Regular'],
       },
       fontSize: {
-        'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+        'headline-md': ['20px', { lineHeight: '28px', fontWeight: '600' }],
         'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
         'citation-xl': ['22px', { lineHeight: '36px', fontWeight: '400' }],
         'label-sm': [

@@ -63,8 +63,8 @@ export const HOME_WIDGET_SNAPSHOT_KEY = "citations_home_widget_snapshot";
 export const ANDROID_WIDGET_NAME = "CitationWidget";
 /** All Android size variants shown in the widget picker. */
 export const ANDROID_WIDGET_NAMES = [
-  "CitationWidgetCompact",
   "CitationWidget",
+  "CitationWidgetCompact",
   "CitationWidgetLarge",
   "CitationWidgetFullscreen",
 ] as const;

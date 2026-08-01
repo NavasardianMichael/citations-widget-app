@@ -20,10 +20,7 @@ export function SettingsSection({
     >
       <View className='flex-row items-start gap-3'>
         <MaterialIcons name={icon} size={22} color='#735c00' style={{ marginTop: 4 }} />
-        <Text
-          className='min-w-0 flex-1 font-headline-md text-primary'
-          style={{ fontSize: 20, lineHeight: 28, fontWeight: '600' }}
-        >
+        <Text className='min-w-0 flex-1 font-headline-md text-headline-md text-primary'>
           {title}
         </Text>
       </View>

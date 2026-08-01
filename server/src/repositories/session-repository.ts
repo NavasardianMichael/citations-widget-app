@@ -20,20 +20,4 @@ export const sessionRepository = {
       // ignore
     }
   },
-
-  async deleteExpiredByUserId(userId: string): Promise<void> {
-    await prisma.session.deleteMany({
-      where: { userId, expiresAt: { lte: new Date() } },
-    });
-  },
-
-  async countActiveByUserId(userId: string): Promise<number> {
-    return prisma.session.count({
-      where: { userId, expiresAt: { gt: new Date() } },
-    });
-  },
-
-  async deleteAllSessionsByUserId(userId: string): Promise<void> {
-    await prisma.session.deleteMany({ where: { userId } });
-  },
 };

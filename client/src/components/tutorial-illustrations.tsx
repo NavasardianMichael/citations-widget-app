@@ -9,6 +9,8 @@ import Svg, { Circle, Line, Path, Rect } from 'react-native-svg'
 const CANVAS_W = 200
 const CANVAS_H = 240
 const DISPLAY_SIZE = { width: 180, height: 216 }
+/** Compact phone diagram for the split long-press step. */
+const DISPLAY_SIZE_COMPACT = { width: 132, height: 158 }
 
 const PHONE_X = 30
 const PHONE_Y = 6
@@ -102,18 +104,78 @@ export function WelcomeIllustration() {
   )
 }
 
-/** Step 1 — shared: long-press an empty spot on the home screen. */
-export function LongPressIllustration() {
+/** Step 1 (lower) — long-press an empty spot on the home screen. */
+export function LongPressIllustration({
+  compact = false,
+}: {
+  compact?: boolean
+}) {
+  const size = compact ? DISPLAY_SIZE_COMPACT : DISPLAY_SIZE
   const cx = PHONE_X + PHONE_W / 2
   const cy = PHONE_Y + 150
   return (
-    <Svg {...DISPLAY_SIZE} viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`} {...decorative}>
+    <Svg {...size} viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`} {...decorative}>
       <PhoneOutline />
       <AppIconRow y={PHONE_Y + 24} />
       <AppIconRow y={PHONE_Y + 58} />
       <Circle cx={cx} cy={cy} r={34} stroke={ACCENT_INK} strokeWidth={2} strokeDasharray='4 6' fill='none' opacity={0.55} />
       <Circle cx={cx} cy={cy} r={20} stroke={ACCENT_INK} strokeWidth={2} strokeDasharray='4 6' fill='none' opacity={0.75} />
       <Circle cx={cx} cy={cy} r={9} fill={INK} />
+    </Svg>
+  )
+}
+
+/** Step 1 (upper) — easier path: long-press the app icon, then Widgets. */
+export function AppIconLongPressIllustration({
+  compact = false,
+}: {
+  compact?: boolean
+}) {
+  const size = compact ? DISPLAY_SIZE_COMPACT : DISPLAY_SIZE
+  const iconSize = 22
+  const gap = 12
+  const startX = PHONE_X + 16
+  const iconY = PHONE_Y + 58
+  // Second icon in the second row — “our” app.
+  const targetX = startX + 1 * (iconSize + gap)
+  const cx = targetX + iconSize / 2
+  const cy = iconY + iconSize / 2
+  const menuX = PHONE_X + 28
+  const menuY = iconY + iconSize + 10
+  const menuW = PHONE_W - 56
+  return (
+    <Svg {...size} viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`} {...decorative}>
+      <PhoneOutline />
+      <AppIconRow y={PHONE_Y + 24} />
+      <AppIconRow y={iconY} />
+      {/* Highlight the target app icon */}
+      <Rect
+        x={targetX - 3}
+        y={iconY - 3}
+        width={iconSize + 6}
+        height={iconSize + 6}
+        rx={8}
+        fill={ACCENT}
+        opacity={0.35}
+      />
+      <Rect
+        x={targetX}
+        y={iconY}
+        width={iconSize}
+        height={iconSize}
+        rx={6}
+        fill={ACCENT}
+        stroke={ACCENT_INK}
+        strokeWidth={1.5}
+      />
+      <Circle cx={cx} cy={cy} r={28} stroke={ACCENT_INK} strokeWidth={2} strokeDasharray='4 6' fill='none' opacity={0.55} />
+      <Circle cx={cx} cy={cy} r={16} stroke={ACCENT_INK} strokeWidth={2} strokeDasharray='4 6' fill='none' opacity={0.75} />
+      {/* Shortcut menu with Widgets row highlighted */}
+      <Rect x={menuX} y={menuY} width={menuW} height={72} rx={10} fill={CARD_BG} stroke={LINE} strokeWidth={1.5} />
+      <Rect x={menuX + 8} y={menuY + 8} width={menuW - 16} height={18} rx={4} fill={ICON_BG} />
+      <Rect x={menuX + 8} y={menuY + 30} width={menuW - 16} height={18} rx={4} fill={ACCENT} />
+      <Rect x={menuX + 8} y={menuY + 52} width={menuW - 16} height={12} rx={4} fill={ICON_BG} />
+      <Circle cx={cx} cy={cy} r={7} fill={INK} />
     </Svg>
   )
 }

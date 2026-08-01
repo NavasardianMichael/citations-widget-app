@@ -15,7 +15,6 @@ const passwordSchema = z
 export const loginSchema = z.object({
   email: z.string().email(email.messages.invalid).max(email.maxLength),
   password: z.string().min(1, password.messages.required).max(password.maxLength),
-  forceLogin: z.boolean().optional(),
 });
 
 export const registerSchema = z.object({
@@ -63,7 +62,6 @@ export const updateAuthProfileSchema = z
 
 export const googleMobileSchema = z.object({
   idToken: z.string().min(1),
-  forceLogin: z.boolean().optional(),
 });
 
 export const refreshTokenSchema = z.object({

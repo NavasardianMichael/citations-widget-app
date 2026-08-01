@@ -77,7 +77,8 @@ function chunkLines(lines: string[], linesPerPage: number): string[] {
   const per = Math.max(1, linesPerPage);
   const pages: string[] = [];
   for (let i = 0; i < lines.length; i += per) {
-    pages.push(lines.slice(i, i + per).join("\n"));
+    // Space join: TextWidget wraps naturally; newlines forced exact N lines.
+    pages.push(lines.slice(i, i + per).join(" "));
   }
   return pages;
 }
