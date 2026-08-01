@@ -98,6 +98,16 @@ Install: `adb install -r <that-path>` (or copy the file to the phone).
 
 Set `EXPO_PUBLIC_API_URL=http://YOUR_PC_LAN_IP:9003` in `client/.env` before building if the phone should hit your local server.
 
+## iOS release (Windows — no Mac)
+
+Build and install via **EAS + TestFlight**. Exact steps: [`docs/ios-eas-build.md`](./docs/ios-eas-build.md).
+
+```bash
+cd C:\cw\client
+npx eas-cli build --platform ios --profile production
+npx eas-cli submit --platform ios --latest
+```
+
 ## Scripts
 
 | Script | Purpose |

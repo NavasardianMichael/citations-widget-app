@@ -10,7 +10,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.citationswidgetapp"
+      "bundleIdentifier": "com.anonymous.citationswidgetapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -144,6 +147,12 @@
         }
       ]
     ],
+    "owner": "michael.navasardyan",
+    "extra": {
+      "eas": {
+        "projectId": "9160cf46-3fa2-462c-8970-508420d5b806"
+      }
+    },
     "experiments": {
       "typedRoutes": true
     }

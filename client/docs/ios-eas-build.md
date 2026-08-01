@@ -1,0 +1,100 @@
+# iOS build on Windows (EAS + TestFlight)
+
+You do **not** need a Mac. EAS builds the IPA in the cloud; you install it on a real iPhone with **TestFlight**.
+
+Requires:
+
+- Expo account (already used with `eas-cli`)
+- Paid [Apple Developer Program](https://developer.apple.com/programs/) ($99/year)
+- This app’s EAS project already linked in [`../app.json`](../app.json) (`extra.eas.projectId`)
+
+## 1. One-time: Google iOS OAuth client
+
+In [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services** → **Credentials**:
+
+1. **Create credentials** → **OAuth client ID** (not an API key).
+2. Application type: **iOS**.
+3. **Bundle ID:** `com.anonymous.citationswidgetapp` (must match `app.json`).
+4. Leave App Store ID / Team ID empty until the app is on the App Store (optional later).
+5. Create → copy the Client ID (`….apps.googleusercontent.com`).
+
+That value is `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`.
+
+Also keep your existing **Web** client as `EXPO_PUBLIC_GOOGLE_CLIENT_ID`.
+
+## 2. Set EAS environment variables (production)
+
+Build-time env for the release binary (not only local `.env`). From `client/`:
+
+```bash
+npx eas-cli env:create --name EXPO_PUBLIC_API_URL --value "https://YOUR_PUBLIC_API_HOST" --environment production --visibility plaintext
+npx eas-cli env:create --name EXPO_PUBLIC_GOOGLE_CLIENT_ID --value "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com" --environment production --visibility plaintext
+npx eas-cli env:create --name EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID --value "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com" --environment production --visibility plaintext
+```
+
+Optional: `EXPO_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (see [`sentry.md`](./sentry.md)).
+
+Or set the same names under [Expo dashboard](https://expo.dev) → project → **Environment variables** → **production**.
+
+Check:
+
+```bash
+npx eas-cli env:list --environment production
+```
+
+## 3. Build the iOS app (interactive)
+
+From `client/` on Windows:
+
+```bash
+cd C:\cw\client
+npx eas-cli login
+npx eas-cli build --platform ios --profile production
+```
+
+When prompted:
+
+1. Sign in with your **Apple ID** (Apple Developer membership).
+2. Allow EAS to create/manage the **Distribution Certificate**.
+3. Allow provisioning profiles for **both** targets:
+   - `com.anonymous.citationswidgetapp` (main app)
+   - `com.anonymous.citationswidgetapp.widgets` (home-screen widget)
+
+Wait for the cloud build to finish (link shown in the terminal / [expo.dev builds](https://expo.dev/accounts/michael.navasardyan/projects/citations-widget-app/builds)).
+
+Profiles are defined in [`../eas.json`](../eas.json):
+
+| Profile | Use |
+|---------|-----|
+| `production` | App Store / TestFlight (this guide) |
+| `preview` | Internal/ad hoc install (needs device UDID registration) |
+
+## 4. Submit to TestFlight
+
+```bash
+npx eas-cli submit --platform ios --latest
+```
+
+Complete any App Store Connect prompts (app record, encryption export = already set `ITSAppUsesNonExemptEncryption: false` in `app.json`).
+
+## 5. Install on iPhone
+
+1. Install **TestFlight** from the App Store.
+2. Accept the invite / open the build in TestFlight.
+3. Install and open the app.
+
+## Notes
+
+- **No Mac / Xcode** is required for this path.
+- Re-run step 3 after native changes (plugins, bundle ID, widgets, fonts). JS-only changes still need a new native build for TestFlight unless you add EAS Update later.
+- Bundle ID must stay `com.anonymous.citationswidgetapp` everywhere (Apple, Google iOS OAuth, Expo).
+- Local `npm run ios` / `expo run:ios` needs a Mac; ignore that on Windows.
+
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `Cannot automatically write to dynamic config` | Project ID already lives in `app.json` → `extra.eas.projectId`. Do not rely on `eas build:configure` rewriting `app.config.js`. |
+| Credentials / non-interactive failure | Run `eas build` **without** `--non-interactive` so Apple login/2FA works. |
+| Google Sign-In fails on device | Confirm iOS OAuth Bundle ID matches; wait a few minutes after creating the client; rebuild so env vars are baked in. |
+| API calls fail | `EXPO_PUBLIC_API_URL` on EAS must be a URL the phone can reach (HTTPS public API, not `localhost`). |
