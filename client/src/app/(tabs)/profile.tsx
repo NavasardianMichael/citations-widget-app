@@ -2,12 +2,21 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { Image } from 'expo-image'
 import { Link, useFocusEffect, useRouter } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native'
 
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
 import { TopAppBar } from '@/components/ui/top-app-bar'
+import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
+import { useOnboarding } from '@/contexts/onboarding-context'
 import { t } from '@/i18n'
 import {
   hasErrors,
@@ -60,6 +69,7 @@ function ProfileAvatar({ avatarUrl }: { avatarUrl: string | null }) {
 
 export default function ProfileScreen() {
   const { user, isGuest, signOut } = useAuth()
+  const { openTutorial } = useOnboarding()
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [name, setName] = useState('')
@@ -70,6 +80,19 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const tutorialAction = (
+    <Pressable
+      {...pressableNoRipple}
+      onPress={openTutorial}
+      accessibilityRole='button'
+      accessibilityLabel={t('tutorial.openButton')}
+      hitSlop={8}
+      className='h-10 w-10 items-center justify-center rounded-full'
+    >
+      <MaterialIcons name='help-outline' size={24} color='#44474d' />
+    </Pressable>
+  )
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -97,7 +120,11 @@ export default function ProfileScreen() {
   if (!user && isGuest) {
     return (
       <View className='flex-1 bg-background'>
-        <TopAppBar title={t('profile.title')} showBrandIcon />
+        <TopAppBar
+          title={t('profile.title')}
+          showBrandIcon
+          rightAction={tutorialAction}
+        />
         <View className='flex-1 items-center justify-center gap-6 px-margin-mobile py-12'>
           <Text className='text-center font-headline-md text-headline-md text-primary'>
             {t('guest.signInRequiredTitle')}
@@ -204,15 +231,26 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View className='flex-1 items-center justify-center bg-background'>
-        <ActivityIndicator size='large' color='#021a35' />
+      <View className='flex-1 bg-background'>
+        <TopAppBar
+          title={t('profile.title')}
+          showBrandIcon
+          rightAction={tutorialAction}
+        />
+        <View className='flex-1 items-center justify-center'>
+          <ActivityIndicator size='large' color='#021a35' />
+        </View>
       </View>
     )
   }
 
   return (
     <View className='flex-1 bg-background'>
-      <TopAppBar title={t('profile.title')} showBrandIcon />
+      <TopAppBar
+        title={t('profile.title')}
+        showBrandIcon
+        rightAction={tutorialAction}
+      />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-xl px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           <View

@@ -3,6 +3,7 @@ import { router, type Href } from 'expo-router'
 import { useState } from 'react'
 import {
   Alert,
+  Pressable,
   ScrollView,
   Text,
   useWindowDimensions,
@@ -17,7 +18,9 @@ import {
 } from '@/components/citation-form'
 import { SignInRequired } from '@/components/sign-in-required'
 import { TopAppBar } from '@/components/ui/top-app-bar'
+import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
+import { useOnboarding } from '@/contexts/onboarding-context'
 import { t } from '@/i18n'
 import {
   hasErrors,
@@ -29,6 +32,7 @@ import { createCitation } from '@/services/api'
 
 export default function SubmitScreen() {
   const { user, isGuest } = useAuth()
+  const { openTutorial } = useOnboarding()
   const { width } = useWindowDimensions()
   const isMd = width >= 768
 
@@ -38,6 +42,19 @@ export default function SubmitScreen() {
   const [fieldErrors, setFieldErrors] = useState<
     FieldErrors<'text' | 'source'>
   >({})
+
+  const tutorialAction = (
+    <Pressable
+      {...pressableNoRipple}
+      onPress={openTutorial}
+      accessibilityRole='button'
+      accessibilityLabel={t('tutorial.openButton')}
+      hitSlop={8}
+      className='h-10 w-10 items-center justify-center rounded-full'
+    >
+      <MaterialIcons name='help-outline' size={24} color='#44474d' />
+    </Pressable>
+  )
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(visibility: 'private' | 'pending') {
@@ -83,7 +100,11 @@ export default function SubmitScreen() {
   if (!user && isGuest) {
     return (
       <View className='flex-1 bg-background'>
-        <TopAppBar title={t('submit.title')} showBrandIcon />
+        <TopAppBar
+          title={t('submit.title')}
+          showBrandIcon
+          rightAction={tutorialAction}
+        />
         <SignInRequired />
       </View>
     )
@@ -91,7 +112,11 @@ export default function SubmitScreen() {
 
   return (
     <View className='flex-1 bg-background'>
-      <TopAppBar title={t('submit.title')} showBrandIcon />
+      <TopAppBar
+        title={t('submit.title')}
+        showBrandIcon
+        rightAction={tutorialAction}
+      />
       <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
         <View className='mx-auto w-full max-w-2xl gap-12 px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           <View

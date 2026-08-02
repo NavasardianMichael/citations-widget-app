@@ -127,6 +127,16 @@ try {
   Import-DotEnv (Join-Path $clientDir ".env")
   Import-DotEnv (Join-Path $clientDir ".env.local")
 
+  # Regenerate android/ from app.json before every build. Without this, a
+  # stale android/ (e.g. from before a widget was removed from app.json)
+  # never re-runs withAndroidWidgetResize's orphan-provider cleanup, so
+  # retired widgets (like the old 2x2) keep getting compiled into "new" APKs.
+  Write-Host "Running expo prebuild to sync android/ with app.json..." -ForegroundColor Cyan
+  npx expo prebuild --clean -p android
+  if ($LASTEXITCODE -ne 0) {
+    throw "expo prebuild failed with exit $LASTEXITCODE"
+  }
+
   $googleScheme = Get-GoogleReversedScheme $env:EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
   if (-not $googleScheme) {
     Write-Host "WARNING: EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID unset/invalid - Google login redirect will fail on device." -ForegroundColor Yellow
@@ -138,7 +148,9 @@ try {
     Write-Host "WARNING: EXPO_PUBLIC_GOOGLE_CLIENT_ID unset - Google button may be disabled or misconfigured." -ForegroundColor Yellow
   }
 
-  # Config plugins only copy fonts on prebuild; keep WidgetGlyphs in sync for APK.
+  # Belt-and-suspenders: prebuild above already copies fonts via config plugins,
+  # but re-assert WidgetGlyphs in case that step's font-family collision logic
+  # (see widget-layout.ts) ever loses the race with the full MaterialIcons copy.
   $widgetGlyphSrc = Join-Path $clientDir "assets\fonts\widget-glyphs\WidgetGlyphs.ttf"
   $androidFontsDir = Join-Path $clientDir "android\app\src\main\assets\fonts"
   if (Test-Path $widgetGlyphSrc) {

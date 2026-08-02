@@ -37,7 +37,7 @@ type TutorialOS = 'ios' | 'android'
 type TutorialStep = {
   key: string
   titleKey: MessageKey
-  bodyKey: MessageKey
+  bodyKey?: MessageKey
   bodyParams?: Record<string, string>
   Illustration: ComponentType
 }
@@ -75,6 +75,11 @@ function buildSteps(os: TutorialOS): TutorialStep[] {
       titleKey: 'tutorial.welcome.title',
       bodyKey: 'tutorial.welcome.body',
       Illustration: WelcomeIllustration,
+    },
+    {
+      key: 'longPress',
+      titleKey: 'tutorial.longPress.title',
+      Illustration: LongPressIllustration,
     },
     os === 'ios'
       ? {
@@ -213,9 +218,6 @@ export function TutorialModal() {
                 <Text className='text-center font-headline-md text-headline-md text-primary'>
                   {t(step.titleKey)}
                 </Text>
-                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
-                  {t(step.bodyKey)}
-                </Text>
               </View>
 
               <View className='items-center gap-2'>
@@ -269,9 +271,11 @@ export function TutorialModal() {
                 <Text className='text-center font-headline-md text-headline-md text-primary'>
                   {t(step.titleKey)}
                 </Text>
-                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
-                  {t(step.bodyKey, step.bodyParams)}
-                </Text>
+                {step.bodyKey ? (
+                  <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
+                    {t(step.bodyKey, step.bodyParams)}
+                  </Text>
+                ) : null}
               </View>
             </>
           )}

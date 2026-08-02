@@ -79,18 +79,6 @@ export function wrapTextToLines(text: string, maxChars: number): string[] {
   return lines;
 }
 
-function chunkLines(lines: string[], linesPerPage: number): string[] {
-  if (lines.length === 0) return [""];
-  const per = Math.max(1, linesPerPage);
-  const pages: string[] = [];
-  for (let i = 0; i < lines.length; i += per) {
-    // Spaces only — TextWidget wraps to the real column width. Newlines made
-    // every estimated line break visible and left a wide empty gutter.
-    pages.push(lines.slice(i, i + per).join(" "));
-  }
-  return pages;
-}
-
 function estimateChromeHeight(
   input: QuotePagingInput,
   lineHeight: number,
@@ -149,22 +137,26 @@ export function computeQuotePages(input: QuotePagingInput): QuotePagingResult {
 
   let textWidth = quoteTextWidth(input.widgetWidth, false);
   let maxChars = Math.max(8, Math.floor(textWidth / avgCharWidth(input.fontSize)));
-  let lines = wrapTextToLines(input.text, maxChars);
-  let pages = chunkLines(lines, linesPerPage);
+  // Budget each page as one word-wrap pass over its *whole* character budget
+  // (linesPerPage * maxChars), not linesPerPage separate per-line wraps then
+  // joined. Wrapping line-by-line and re-joining with spaces throws away the
+  // greedy-wrap's leftover slack once per fake line instead of once per page,
+  // which under-fills a page by up to a full line and defers that text to
+  // the next page even though it would have fit here.
+  let pages = wrapTextToLines(input.text, linesPerPage * maxChars);
 
   if (pages.length > 1) {
     // Arrows appear — re-budget for the narrower column and fill at least the
     // control stack height so we don't show one lonely line beside ↑ 1/N ↓.
     textWidth = quoteTextWidth(input.widgetWidth, true);
     maxChars = Math.max(8, Math.floor(textWidth / avgCharWidth(input.fontSize)));
-    lines = wrapTextToLines(input.text, maxChars);
 
     const minBesideArrows = Math.max(
       2,
       Math.ceil(ARROW_COLUMN_HEIGHT / lineHeight),
     );
     linesPerPage = Math.max(linesPerPage, minBesideArrows);
-    pages = chunkLines(lines, linesPerPage);
+    pages = wrapTextToLines(input.text, linesPerPage * maxChars);
   }
 
   return {
