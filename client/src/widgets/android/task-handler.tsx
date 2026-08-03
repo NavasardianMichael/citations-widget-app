@@ -214,6 +214,22 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
   try {
     snapshot = await loadSnapshot();
 
+    // First placement (or any update before a citation has ever loaded) — nothing has
+    // populated the cache yet, since that normally only happens via the Settings tab.
+    // Fetch now instead of leaving the widget stuck on the empty-state message.
+    if (
+      !snapshot.citationText &&
+      (props.widgetAction === "WIDGET_ADDED" || props.widgetAction === "WIDGET_UPDATE")
+    ) {
+      renderSnapshot(props, {
+        ...snapshot,
+        isRefreshing: true,
+        isSaving: false,
+        loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
+      });
+      snapshot = await refreshCitationSnapshot();
+    }
+
     if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
       // Paint loading copy + refresh-button spinner first, then fetch.
       renderSnapshot(props, {

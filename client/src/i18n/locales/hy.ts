@@ -256,7 +256,7 @@ export const hy = {
   'settings.livePreview': 'Նախադիտում',
   'settings.previewLoading': 'Մեջբերումը բեռնվում է…',
   'settings.previewEmpty':
-    'Ընտրված աղբյուրից մեջբերումներ չկան․ աղբյուրը փոխելու համար անցեք կարգավորումների էջ։',
+    'Ընտրված աղբյուրից մեջբերումներ չկան․ սեղմե՛ք «թարմացնել» կոճակը կամ փոխեք աղբյուրը կարգավորումների էջում։',
   'settings.designLabel': 'Վիջեթի դիզայն',
   'settings.designClassic': 'Դասական',
   'settings.designParchment': 'Մագաղաթ',
@@ -358,6 +358,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const
+} as const;
 
-export type HyMessages = typeof hy
+export type HyMessages = typeof hy;

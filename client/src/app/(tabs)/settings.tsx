@@ -113,7 +113,7 @@ export default function SettingsScreen() {
   const [saved, setSaved] = useState<WidgetSettingsDraft | null>(null)
   const [draft, setDraft] = useState<WidgetSettingsDraft>(DEFAULT_DRAFT)
   const [preview, setPreview] = useState<WidgetCitation | null>(null)
-  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewLoading, setPreviewLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [shareProfile, setShareProfile] = useState(true)
   const [savedShareProfile, setSavedShareProfile] = useState(true)
