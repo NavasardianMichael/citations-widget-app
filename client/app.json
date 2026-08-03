@@ -46,6 +46,16 @@
     },
     "plugins": [
       "./plugins/withAndroidWorkManagerAlign",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "# Expo modules are resolved/instantiated via reflection by expo-modules-core\n-keep class expo.modules.** { *; }\n-keep interface expo.modules.** { *; }\n# @expo/ui references optional Jetpack Compose classes on some codepaths that\n# aren't present in this build variant's classpath (e.g. expo.modules.kotlin.types.ColorCompat).\n# They're compile-time-optional, not runtime-missing, so silence R8's missing-class check.\n-dontwarn expo.modules.**\n\n# react-native-android-widget: widget provider/receiver classes are instantiated\n# by the Android AppWidget framework via reflection (declared in AndroidManifest).\n-keep class com.reactnativeandroidwidget.** { *; }\n-keep class * extends android.appwidget.AppWidgetProvider { *; }\n\n# Sentry: keep SDK classes so ProGuard mapping stays useful and crash reports\n# keep symbolicating after obfuscation.\n-keep class io.sentry.** { *; }\n-dontwarn io.sentry.**"
+          }
+        }
+      ],
       "expo-dev-client",
       "expo-router",
       [

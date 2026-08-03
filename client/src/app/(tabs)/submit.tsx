@@ -123,21 +123,18 @@ export default function SubmitScreen() {
             className={`max-w-lg gap-3 ${isMd ? '' : 'items-center self-center'}`}
           >
             <Text
-              className={`font-body-md text-body-md text-on-surface-variant`}
+              className={`font-body-sm text-body-sm text-on-surface-variant`}
             >
               {t('submit.heroBody')}
             </Text>
+
             <Text
-              className={`font-label-sm text-label-sm text-on-surface-variant`}
+              className='font-label-sm text-label-sm text-primary underline'
+              onPress={() => router.push('/approval-conditions' as Href)}
+              accessibilityRole='link'
             >
               {t('submit.conditionsNoteBefore')}
-              <Text
-                className='font-label-sm text-label-sm text-primary underline'
-                onPress={() => router.push('/approval-conditions' as Href)}
-                accessibilityRole='link'
-              >
-                {t('submit.conditionsLink')}
-              </Text>
+              {t('submit.conditionsLink')}
               {t('submit.conditionsNoteAfter')}
             </Text>
           </View>

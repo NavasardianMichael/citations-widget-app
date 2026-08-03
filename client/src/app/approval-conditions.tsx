@@ -32,7 +32,7 @@ export default function ApprovalConditionsScreen() {
           </Pressable>
         }
       />
-      <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
+      <ScrollView className='flex-1' contentContainerClassName='pb-8'>
         <View className='mx-auto w-full max-w-2xl gap-10 px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           <Text className='font-body-md text-body-md text-on-surface-variant'>
             {t('approvalConditions.intro')}
@@ -45,7 +45,11 @@ export default function ApprovalConditionsScreen() {
             <View className='gap-3'>
               {REQUIREMENT_KEYS.map((key) => (
                 <View key={key} className='flex-row gap-3'>
-                  <MaterialIcons name='check-circle-outline' size={22} color='#021a35' />
+                  <MaterialIcons
+                    name='check-circle-outline'
+                    size={22}
+                    color='#021a35'
+                  />
                   <Text className='flex-1 font-body-md text-body-md text-on-surface'>
                     {t(key)}
                   </Text>
@@ -65,17 +69,6 @@ export default function ApprovalConditionsScreen() {
               {t('approvalConditions.noteBeautify')}
             </Text>
           </View>
-
-          <Pressable
-            {...pressableNoRipple}
-            onPress={() => router.replace('/submit' as Href)}
-            accessibilityRole='button'
-            className='self-start'
-          >
-            <Text className='font-body-md text-body-md text-primary underline'>
-              {t('approvalConditions.backToSubmit')}
-            </Text>
-          </Pressable>
         </View>
       </ScrollView>
     </View>

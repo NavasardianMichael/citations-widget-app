@@ -137,6 +137,19 @@ export function computeQuotePages(input: QuotePagingInput): QuotePagingResult {
 
   let textWidth = quoteTextWidth(input.widgetWidth, false);
   let maxChars = Math.max(8, Math.floor(textWidth / avgCharWidth(input.fontSize)));
+
+  // avgCharWidth is a rough per-font guess — RemoteViews gives us no real text
+  // metrics to measure against. When the whole quote is only marginally over
+  // the estimated single-page budget, greedily packing to the exact budget
+  // strands a tiny trailing chunk (sometimes one word) alone on page 2, while
+  // page 1 still has real spare room below it (the estimate ran conservative).
+  // Give a single page some slack before committing to pagination at all.
+  const normalized = input.text.replace(/\s+/g, " ").trim();
+  const SINGLE_PAGE_TOLERANCE = 1.2;
+  if (normalized.length <= linesPerPage * maxChars * SINGLE_PAGE_TOLERANCE) {
+    return { pages: [normalized], linesPerPage, pageCount: 1 };
+  }
+
   // Budget each page as one word-wrap pass over its *whole* character budget
   // (linesPerPage * maxChars), not linesPerPage separate per-line wraps then
   // joined. Wrapping line-by-line and re-joining with spaces throws away the
