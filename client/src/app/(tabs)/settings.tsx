@@ -303,6 +303,14 @@ export default function SettingsScreen() {
     return preview
   }, [preview, usesSanctuaryBg, sanctuaryBgPick])
 
+  const hasChanges = useMemo(() => {
+    if (!saved) return false
+    return (
+      JSON.stringify(draft) !== JSON.stringify(saved) ||
+      shareProfile !== savedShareProfile
+    )
+  }, [draft, saved, shareProfile, savedShareProfile])
+
   function updateDraft<K extends keyof WidgetSettingsDraft>(
     key: K,
     value: WidgetSettingsDraft[K],
@@ -532,13 +540,14 @@ export default function SettingsScreen() {
           variant='secondary'
           secondaryBorder='secondary'
           onPress={handleDiscard}
+          disabled={!hasChanges}
         />
         <Button
           className='min-w-[14rem] flex-1'
           label={saving ? t('common.saving') : t('common.save')}
           icon='save'
           onPress={handleSave}
-          disabled={saving}
+          disabled={saving || !hasChanges}
         />
       </View>
     </View>

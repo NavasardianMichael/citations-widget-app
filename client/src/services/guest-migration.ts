@@ -49,14 +49,11 @@ function sanitizeGuestSettings(draft: WidgetSettingsDraft): WidgetSettingsDraft 
 }
 
 function isUnchanged(draft: WidgetSettingsDraft): boolean {
-  // fontSize 16 = historical Prisma default; 20 = current shared default.
-  const defaultFontSize =
-    draft.fontSize === DEFAULT_QUOTE_FONT_SIZE || draft.fontSize === 16;
   return (
     draft.sourceSelection === DEFAULT_ACCOUNT_SETTINGS.sourceSelection &&
     draft.refreshRateHours === DEFAULT_ACCOUNT_SETTINGS.refreshRateHours &&
     draft.fontStyle === DEFAULT_ACCOUNT_SETTINGS.fontStyle &&
-    defaultFontSize &&
+    draft.fontSize === DEFAULT_ACCOUNT_SETTINGS.fontSize &&
     draft.widgetDesign === DEFAULT_ACCOUNT_SETTINGS.widgetDesign &&
     draft.showAttribution === DEFAULT_ACCOUNT_SETTINGS.showAttribution &&
     draft.showActions === DEFAULT_ACCOUNT_SETTINGS.showActions

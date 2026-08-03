@@ -19,6 +19,7 @@ import {
   WIDGET_QUOTE_FONT_WEIGHT,
   WIDGET_SOURCE_FONT_WEIGHT,
 } from "@/constants/widget-layout";
+import { buildShareText } from "@/services/build-share-text";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
 import {
   clampQuotePageIndex,
@@ -35,14 +36,6 @@ type Props = {
 
 function asColor(value: string): ColorProp {
   return value as ColorProp;
-}
-
-/** Plain-text body for the system share sheet (no app UI). */
-function buildShareText(snapshot: HomeWidgetSnapshot): string | null {
-  const text = snapshot.citationText.trim();
-  if (!text) return null;
-  const source = snapshot.citationSource.trim();
-  return source ? `${text}\n\n— ${source}` : text;
 }
 
 /**
@@ -189,7 +182,10 @@ function WidgetBody({
     snapshot.ornamentColor,
     Math.min(1, snapshot.ornamentOpacity + 0.15),
   );
-  const shareText = buildShareText(snapshot);
+  const shareText = buildShareText(
+    snapshot.citationText,
+    snapshot.citationSource,
+  );
   const actions: WidgetAction[] = snapshot.showActions
     ? [
         {

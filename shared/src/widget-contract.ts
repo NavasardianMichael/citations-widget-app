@@ -6,7 +6,7 @@
 /** Typography range for Settings → Typography and PUT /widget-settings. */
 export const FONT_SIZE_MIN = 10
 export const FONT_SIZE_MAX = 40
-export const DEFAULT_QUOTE_FONT_SIZE = 20
+export const DEFAULT_QUOTE_FONT_SIZE = 24
 
 export const WIDGET_DESIGN_IDS = [
   'classic',
@@ -19,7 +19,7 @@ export const WIDGET_DESIGN_IDS = [
 
 export type WidgetDesignId = (typeof WIDGET_DESIGN_IDS)[number]
 
-export const DEFAULT_WIDGET_DESIGN: WidgetDesignId = 'classic'
+export const DEFAULT_WIDGET_DESIGN: WidgetDesignId = 'sanctuary'
 
 /** Sole photo design — rolls a fresh image from the sanctuary pool per new citation. */
 export const RANDOM_BACKGROUND_DESIGN: WidgetDesignId = 'sanctuary'
