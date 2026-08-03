@@ -127,6 +127,19 @@ try {
   Import-DotEnv (Join-Path $clientDir ".env")
   Import-DotEnv (Join-Path $clientDir ".env.local")
 
+  # @citations/shared ships from dist/ (gitignored). Rebuild so defaults like
+  # DEFAULT_WIDGET_DESIGN = sanctuary are what the JS bundle actually embeds.
+  Write-Host "Building @citations/shared..." -ForegroundColor Cyan
+  Push-Location (Join-Path $clientDir "..\shared")
+  try {
+    npm run build
+    if ($LASTEXITCODE -ne 0) {
+      throw "shared build failed with exit $LASTEXITCODE"
+    }
+  } finally {
+    Pop-Location
+  }
+
   # Regenerate android/ from app.json before every build. Without this, a
   # stale android/ (e.g. from before a widget was removed from app.json)
   # never re-runs withAndroidWidgetResize's orphan-provider cleanup, so

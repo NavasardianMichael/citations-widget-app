@@ -10,6 +10,7 @@ import {
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
 import { t } from "@/i18n";
 import { fetchWidgetCitation, saveCitation, unsaveCitation } from "@/services/api";
+import { getAccessToken } from "@/services/auth-storage";
 import { pickGuestWidgetCitation } from "@/services/guest-citation-picker";
 import {
   getCachedWidgetCitation,
@@ -44,6 +45,12 @@ const FALLBACK_SETTINGS = {
   showAttribution: true,
   showActions: true,
 };
+
+/** Guest mode, or not signed in yet (first widget add before Continue as guest / login). */
+async function useLocalWidgetSettings(): Promise<boolean> {
+  if (await isGuestMode()) return true;
+  return !(await getAccessToken());
+}
 
 function withDefaults(snapshot: HomeWidgetSnapshot): HomeWidgetSnapshot {
   return {
@@ -84,8 +91,8 @@ async function loadSnapshot(): Promise<HomeWidgetSnapshot> {
   }
 
   try {
-    const guest = await isGuestMode();
-    const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
+    const local = await useLocalWidgetSettings();
+    const settings = local ? await getGuestWidgetSettings() : await getWidgetSettings();
     const cached = await getCachedWidgetCitation();
     return buildHomeWidgetSnapshotAsync(settings, cached?.citation ?? null);
   } catch {
@@ -97,9 +104,9 @@ async function loadSnapshot(): Promise<HomeWidgetSnapshot> {
 
 async function refreshCitationSnapshot(): Promise<HomeWidgetSnapshot> {
   try {
-    const guest = await isGuestMode();
-    const settings = guest ? await getGuestWidgetSettings() : await getWidgetSettings();
-    const result = guest
+    const local = await useLocalWidgetSettings();
+    const settings = local ? await getGuestWidgetSettings() : await getWidgetSettings();
+    const result = local
       ? await pickGuestWidgetCitation(settings.sourceSelection, settings.widgetDesign)
       : await fetchWidgetCitation(true);
     await setCachedWidgetCitation({

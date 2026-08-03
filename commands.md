@@ -85,6 +85,8 @@ npm run android:apk
 # → android/app/build/outputs/apk/release/app-release.apk
 ```
 
+Rebuilds `@citations/shared` (so defaults like Սրբավայր are baked in), runs `expo prebuild --clean`, then Gradle.
+
 ### EAS preview APK
 
 ```bash
