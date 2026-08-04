@@ -102,24 +102,68 @@ async function loadSnapshot(): Promise<HomeWidgetSnapshot> {
   }
 }
 
-async function refreshCitationSnapshot(): Promise<HomeWidgetSnapshot> {
-  try {
-    const local = await useLocalWidgetSettings();
-    const settings = local ? await getGuestWidgetSettings() : await getWidgetSettings();
-    const result = local
-      ? await pickGuestWidgetCitation(settings.sourceSelection, settings.widgetDesign)
-      : await fetchWidgetCitation(true);
-    await setCachedWidgetCitation({
-      citation: result.citation,
-      fetchedAt: Date.now(),
-      sourceSelection: settings.sourceSelection,
-    });
-    const snapshot = await buildHomeWidgetSnapshotAsync(settings, result.citation);
-    await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(snapshot));
-    return snapshot;
-  } catch {
-    return loadSnapshot();
+/**
+ * Coalesce concurrent refreshes (same JS isolate). First place often enqueues
+ * WIDGET_ADDED + WIDGET_UPDATE back-to-back; without this each would pick a new
+ * citation and sanctuary background.
+ */
+let refreshInFlight: Promise<HomeWidgetSnapshot> | null = null;
+
+async function refreshCitationSnapshot(
+  force: boolean,
+): Promise<HomeWidgetSnapshot> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    try {
+      const local = await useLocalWidgetSettings();
+      const settings = local
+        ? await getGuestWidgetSettings()
+        : await getWidgetSettings();
+      const result = local
+        ? await pickGuestWidgetCitation(
+            settings.sourceSelection,
+            settings.widgetDesign,
+          )
+        : await fetchWidgetCitation(force);
+      await setCachedWidgetCitation({
+        citation: result.citation,
+        fetchedAt: Date.now(),
+        sourceSelection: settings.sourceSelection,
+      });
+      const snapshot = await buildHomeWidgetSnapshotAsync(
+        settings,
+        result.citation,
+      );
+      await AsyncStorage.setItem(
+        HOME_WIDGET_SNAPSHOT_KEY,
+        JSON.stringify(snapshot),
+      );
+      return snapshot;
+    } catch {
+      return loadSnapshot();
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+/** Poll storage while a sibling task (often WIDGET_ADDED) finishes the first fetch. */
+async function awaitBootstrapSnapshot(
+  timeoutMs = 4000,
+): Promise<HomeWidgetSnapshot> {
+  if (refreshInFlight) return refreshInFlight;
+
+  const deadline = Date.now() + timeoutMs;
+  let snapshot = await loadSnapshot();
+  while (!snapshot.citationText && Date.now() < deadline) {
+    if (refreshInFlight) return refreshInFlight;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    snapshot = await loadSnapshot();
   }
+  return snapshot;
 }
 
 function estimateActionRowCount(
@@ -221,20 +265,30 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
   try {
     snapshot = await loadSnapshot();
 
-    // First placement (or any update before a citation has ever loaded) — nothing has
-    // populated the cache yet, since that normally only happens via the Settings tab.
-    // Fetch now instead of leaving the widget stuck on the empty-state message.
-    if (
-      !snapshot.citationText &&
-      (props.widgetAction === "WIDGET_ADDED" || props.widgetAction === "WIDGET_UPDATE")
-    ) {
+    // First placement only — Android often fires WIDGET_ADDED then WIDGET_UPDATE in
+    // quick succession; fetching on both used to paint 2–3 different citations/images.
+    if (!snapshot.citationText && props.widgetAction === "WIDGET_ADDED") {
       renderSnapshot(props, {
         ...snapshot,
         isRefreshing: true,
         isSaving: false,
         loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
       });
-      snapshot = await refreshCitationSnapshot();
+      // force=false: reuse server sticky citation/bg if one already exists.
+      snapshot = await refreshCitationSnapshot(false);
+    } else if (
+      !snapshot.citationText &&
+      (props.widgetAction === "WIDGET_UPDATE" ||
+        props.widgetAction === "WIDGET_RESIZED")
+    ) {
+      // Sibling ADDED may still be fetching — show loading and wait; do not fetch again.
+      renderSnapshot(props, {
+        ...snapshot,
+        isRefreshing: true,
+        isSaving: false,
+        loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
+      });
+      snapshot = await awaitBootstrapSnapshot();
     }
 
     if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
@@ -245,7 +299,7 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
         isSaving: false,
         loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
       });
-      snapshot = await refreshCitationSnapshot();
+      snapshot = await refreshCitationSnapshot(true);
     }
 
     if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "TOGGLE_SAVE") {

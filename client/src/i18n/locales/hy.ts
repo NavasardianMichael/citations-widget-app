@@ -271,7 +271,7 @@ export const hy = {
   'settings.actionShare': 'Կիսվել',
   'settings.shareCardFooter': 'Մեջբերումներ Աստվածաշնչից',
   'settings.shareTextFooter':
-    'Ուղարկվել է «Մեջբերումներ Աստվածաշնչից» հավելվածից՝\nAndroid:  {androidUrl}\nIOS: {iosUrl}',
+    'Ուղարկվել է «Մեջբերումներ Աստվածաշնչից» հավելվածից',
   'settings.shareFailed': 'Չհաջողվեց կիսվել մեջբերմամբ',
   'settings.saved': 'Կարգավորումները պահված են։',
   'settings.saveFailed': 'Չհաջողվեց պահպանել կարգավորումները',
@@ -360,6 +360,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const;
+} as const
 
-export type HyMessages = typeof hy;
+export type HyMessages = typeof hy
