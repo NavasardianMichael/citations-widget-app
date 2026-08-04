@@ -60,14 +60,34 @@ function isUnchanged(draft: WidgetSettingsDraft): boolean {
   );
 }
 
-export async function migrateGuestDataToAccount(): Promise<void> {
+export type GuestMigrationCheck =
+  /** Nothing on this device to migrate. */
+  | { status: "none" }
+  /** Guest data exists and the account is untouched — safe to copy over silently. */
+  | { status: "auto" }
+  /** Both sides have data — the user must pick which one to keep. */
+  | { status: "conflict" };
+
+export type GuestMigrationStrategy = "keep-local" | "use-remote";
+
+/** Call right after sign-in, before touching guest data, to decide whether a user choice is needed. */
+export async function checkGuestMigration(): Promise<GuestMigrationCheck> {
+  if (!(await hasGuestData())) return { status: "none" };
+
+  const [accountSettings, accountSaved] = await Promise.all([getWidgetSettings(), fetchSavedCitations()]);
+  const accountUnchanged = isUnchanged(accountSettings) && accountSaved.length === 0;
+
+  return accountUnchanged ? { status: "auto" } : { status: "conflict" };
+}
+
+/**
+ * Applies the migration decision (the user's choice for a `conflict`, or the
+ * only sensible option for `auto`) and always clears local guest data after —
+ * whether we copied it into the account or the account's own data won out.
+ */
+export async function applyGuestMigration(strategy: GuestMigrationStrategy): Promise<void> {
   try {
-    if (!(await hasGuestData())) return;
-
-    const [accountSettings, accountSaved] = await Promise.all([getWidgetSettings(), fetchSavedCitations()]);
-    const accountUnchanged = isUnchanged(accountSettings) && accountSaved.length === 0;
-
-    if (accountUnchanged) {
+    if (strategy === "keep-local") {
       const guestSettings = sanitizeGuestSettings(await getGuestWidgetSettings());
       await saveWidgetSettings(guestSettings).catch(() => undefined);
 
@@ -76,7 +96,15 @@ export async function migrateGuestDataToAccount(): Promise<void> {
         await saveCitation(citation.id).catch(() => undefined);
       }
     }
+    // "use-remote": the account's existing settings/saved citations are left as-is.
   } finally {
     await clearGuestData();
   }
+}
+
+/** Back-compat entry point for callers that don't need to handle a conflict prompt. */
+export async function migrateGuestDataToAccount(): Promise<void> {
+  const check = await checkGuestMigration();
+  if (check.status === "none") return;
+  await applyGuestMigration("keep-local");
 }

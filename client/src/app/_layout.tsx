@@ -16,6 +16,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import '../global.css'
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { GuestConflictModal } from '@/components/guest-conflict-modal'
 import { TutorialModal } from '@/components/tutorial-modal'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { OnboardingProvider } from '@/contexts/onboarding-context'
@@ -79,6 +80,7 @@ function RootNavigator() {
         <Stack.Screen name='(tabs)' />
         <Stack.Screen name='auth' />
         <Stack.Screen name='oauthredirect' options={{ headerShown: false }} />
+        <Stack.Screen name='widget-action' options={{ headerShown: false }} />
         <Stack.Screen name='contact' options={{ headerShown: false }} />
         <Stack.Screen name='approval-conditions' options={{ headerShown: false }} />
       </Stack>
@@ -109,6 +111,7 @@ function RootLayout() {
               <RootNavigator />
             </View>
             <TutorialModal />
+            <GuestConflictModal />
           </OnboardingProvider>
         </AuthProvider>
       </ThemeProvider>

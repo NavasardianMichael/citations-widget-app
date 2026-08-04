@@ -91,6 +91,9 @@ export function buildHomeWidgetSnapshot(
     isSaved: Boolean(citation && isSaved),
     designId: design.id,
     backgroundImageIndex: citation?.backgroundImageIndex ?? 0,
+    // Populated for iOS only, in `home-widget-sync.tsx`'s `pushIosWidget` — file
+    // I/O has no place in this platform-agnostic, otherwise-synchronous builder.
+    backgroundImageUri: null,
     fontFamily: getWidgetFontFamily(fontId),
     androidFontFile: FONT_FILE_BY_ID[fontId] ?? FONT_FILE_BY_ID[DEFAULT_WIDGET_FONT],
     fontSize: settings.fontSize ?? DEFAULT_QUOTE_FONT_SIZE,

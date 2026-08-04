@@ -10,7 +10,7 @@ import { pinoHttp } from "pino-http";
 import { configurePassport } from "./auth/passport.js";
 import { env, isProd } from "./config/env.js";
 import { logger } from "./lib/logger.js";
-import { redis } from "./lib/redis.js";
+import { redis, SESSION_KEY_PREFIX } from "./lib/redis.js";
 import { errorHandler, notFound } from "./middleware/error-handler.js";
 import { generalLimiter } from "./middleware/rate-limiter.js";
 import { apiRouter } from "./routes/index.js";
@@ -52,7 +52,7 @@ export function createApp() {
 
   const store = new RedisStore({
     client: redis,
-    prefix: "citations:session:",
+    prefix: SESSION_KEY_PREFIX,
     disableTouch: false,
   });
 

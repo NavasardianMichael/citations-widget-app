@@ -2,9 +2,11 @@ import type { User } from "@prisma/client";
 
 import { hashPassword, needsRehash, verifyPassword } from "../lib/password.js";
 import { logger } from "../lib/logger.js";
+import { deleteSessionsByIds } from "../lib/redis.js";
 import { AppError } from "../middleware/error-handler.js";
 import { emailVerificationRepository } from "../repositories/email-verification-repository.js";
 import { passwordResetRepository } from "../repositories/password-reset-repository.js";
+import { sessionRepository } from "../repositories/session-repository.js";
 import { userRepository } from "../repositories/user-repository.js";
 import type {
   ChangePasswordInput,
@@ -211,10 +213,19 @@ export const authService = {
       throw new AppError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Օգտատերը չի գտնվել");
     }
 
+    // Captured before the cascade delete removes the `sessions` rows below —
+    // these ids are the only way to find this user's Redis-backed session
+    // blobs (on other devices), which live outside Postgres entirely.
+    const sessionIds = await sessionRepository.findIdsByUserId(userId);
+
     const deleted = await userRepository.delete(userId);
     if (!deleted) {
       throw new AppError(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "Չհաջողվեց ջնջել հաշիվը");
     }
+
+    await deleteSessionsByIds(sessionIds).catch((error) => {
+      logger.error({ error, userId }, "Failed to purge Redis sessions on account deletion");
+    });
 
     emailService.sendAccountDeleted(user.email, user.name).catch((error) => {
       logger.error({ error, userId }, "Failed to send account deletion email");
