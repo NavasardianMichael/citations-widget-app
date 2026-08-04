@@ -54,7 +54,7 @@ export function getQuoteLineHeight(fontSize: number): number {
 }
 
 /** Citation quote vs source weights — keep preview, saved cards, and widgets in sync. */
-export const WIDGET_QUOTE_FONT_WEIGHT = '600' as const;
+export const WIDGET_QUOTE_FONT_WEIGHT = 'normal' as const;
 export const WIDGET_SOURCE_FONT_WEIGHT = 'normal' as const;
 /** Submitter name in the attribution line (“added by …”). */
 export const WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT = '600' as const;
@@ -87,7 +87,7 @@ export function widgetPreviewSourceWeightStyle(): {
 
 /** Whether the in-app preview should fake home-widget emboldening via text-shadow. */
 export function widgetPreviewUsesFakeQuoteBold(): boolean {
-  return Platform.OS === 'android'
+  return Platform.OS === 'android' && WIDGET_QUOTE_FONT_WEIGHT !== 'normal'
 }
 
 /**
