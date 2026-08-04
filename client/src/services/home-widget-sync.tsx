@@ -29,7 +29,12 @@ export async function syncHomeWidget(
 async function pushIosWidget(snapshot: HomeWidgetSnapshot) {
   try {
     const CitationWidget = (await import("@/widgets/CitationWidget")).default;
-    CitationWidget.updateSnapshot(snapshot);
+    const { resolveIosBackgroundImageUri } = await import("@/widgets/ios-background");
+    const backgroundImageUri = await resolveIosBackgroundImageUri(
+      snapshot.designId,
+      snapshot.backgroundImageIndex,
+    );
+    CitationWidget.updateSnapshot({ ...snapshot, backgroundImageUri });
   } catch {
     // Widget extension unavailable until a native rebuild with expo-widgets.
   }

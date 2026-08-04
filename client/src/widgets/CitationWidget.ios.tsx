@@ -1,13 +1,17 @@
-import { HStack, Spacer, Text, VStack } from '@expo/ui/swift-ui'
+import { HStack, Image, Link, Spacer, Text, VStack, ZStack } from '@expo/ui/swift-ui'
 import {
+  aspectRatio,
   background,
+  clipped,
   containerBackground,
   font,
   foregroundStyle,
   frame,
   opacity,
   padding,
+  resizable,
   shapes,
+  underline,
 } from '@expo/ui/swift-ui/modifiers'
 import { createWidget, type WidgetEnvironment } from 'expo-widgets'
 
@@ -20,6 +24,8 @@ import {
   DEFAULT_QUOTE_FONT_SIZE,
   WIDGET_LAYOUT,
 } from '@/constants/widget-layout'
+import { buildShareText } from '@/services/build-share-text'
+import { buildWidgetActionUri } from '@/widgets/widget-action-uri'
 import { toArgbHex } from '@/widgets/color'
 import type { HomeWidgetSnapshot } from '@/widgets/types'
 import { IOS_WIDGET_NAME } from '@/widgets/types'
@@ -42,6 +48,7 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   isSaved: false,
   designId: emptyDesign.id,
   backgroundImageIndex: 0,
+  backgroundImageUri: null,
   fontFamily: 'DavelAghvor',
   androidFontFile: 'davel-aghvor',
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
@@ -68,20 +75,31 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   fetchedAt: 0,
 }
 
+/**
+ * `destination` deep-links into the app (`citationswidget://widget-action?…`) —
+ * WidgetKit extensions on iOS can only run pure, I/O-free JS at tap time
+ * (no fetch, no native modules), so anything needing the network or the
+ * share sheet opens the app briefly to do the work, unlike Android's fully
+ * headless task handler. Omitting `destination` renders an inert, dimmed chip.
+ */
 function ActionChip({
   label,
   iconColor,
   actionBg,
+  destination,
 }: {
   label: string
   iconColor: string
   actionBg: string
+  destination?: string
 }) {
-  return (
+  const chip = (
     <Text
       modifiers={[
         font({ size: WIDGET_LAYOUT.actionIconSize, weight: 'medium' }),
-        foregroundStyle(toArgbHex(iconColor)),
+        foregroundStyle(
+          toArgbHex(destination ? iconColor : colorWithOpacity(iconColor, 0.45)),
+        ),
         background(
           toArgbHex(actionBg),
           shapes.roundedRectangle({
@@ -98,6 +116,8 @@ function ActionChip({
       {label}
     </Text>
   )
+
+  return destination ? <Link destination={destination}>{chip}</Link> : chip
 }
 
 function CitationWidgetView(
@@ -110,178 +130,227 @@ function CitationWidgetView(
     data.ornamentColor,
     Math.min(1, data.ornamentOpacity + 0.15),
   )
-  // Photo bitmaps are not available in the iOS widget extension yet — use the
-  // design's dark panel / overlay so text contrast still matches preview.
+  // Solid designs paint their panel color directly as the container background.
+  // Sanctuary (photo) falls back to the same color if the image failed to copy
+  // into the shared App Group directory (see `resolveIosBackgroundImageUri`).
   const iosBg = data.overlayColor || data.panelBg
 
   return (
-    <VStack
-      spacing={0}
-      alignment='leading'
+    <ZStack
+      alignment='topLeading'
       modifiers={[
         containerBackground(toArgbHex(iosBg), 'widget'),
-        padding({ all: WIDGET_LAYOUT.padding }),
-        frame({
-          maxWidth: Infinity,
-          maxHeight: Infinity,
-          alignment: 'topLeading',
-        }),
+        frame({ maxWidth: Infinity, maxHeight: Infinity }),
       ]}
     >
-      {data.showOrnament ? (
-        <HStack modifiers={[frame({ maxWidth: Infinity })]}>
-          <Spacer />
-          <Text
-            modifiers={[
-              font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: 'regular' }),
-              foregroundStyle(toArgbHex(data.ornamentColor)),
-              opacity(data.ornamentOpacity),
-            ]}
-          >
-            ✦
-          </Text>
-        </HStack>
-      ) : null}
-
-      {data.showLargeQuotes ? (
-        <Text
+      {data.backgroundImageUri ? (
+        <Image
+          uiImage={data.backgroundImageUri}
           modifiers={[
-            font({
-              size: WIDGET_LAYOUT.largeQuoteFontSize,
-              weight: 'bold',
-              family: data.fontFamily,
-            }),
-            foregroundStyle(toArgbHex(largeQuoteColor)),
+            resizable(),
+            aspectRatio({ contentMode: 'fill' }),
+            frame({ maxWidth: Infinity, maxHeight: Infinity }),
+            clipped(),
           ]}
-        >
-          “
-        </Text>
+        />
       ) : null}
 
       <VStack
-        spacing={WIDGET_LAYOUT.quoteSourceGap}
+        spacing={0}
         alignment='leading'
-        modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}
+        modifiers={[
+          ...(data.backgroundImageUri && data.overlayColor
+            ? [background(toArgbHex(data.overlayColor))]
+            : []),
+          padding({ all: WIDGET_LAYOUT.padding }),
+          frame({
+            maxWidth: Infinity,
+            maxHeight: Infinity,
+            alignment: 'topLeading',
+          }),
+        ]}
       >
-        <Text
-          modifiers={[
-            font({
-              size: data.fontSize,
-              weight: 'semibold',
-              family: data.fontFamily,
-            }),
-            foregroundStyle(
-              toArgbHex(
-                data.isRefreshing ? data.attributionColor : data.quoteColor,
-              ),
-            ),
-            frame({ maxWidth: Infinity, alignment: 'leading' }),
-          ]}
-        >
-          {data.isRefreshing
-            ? data.loadingMessage || data.emptyMessage
-            : data.quoteText || data.emptyMessage}
-        </Text>
+        {data.showOrnament ? (
+          <HStack modifiers={[frame({ maxWidth: Infinity })]}>
+            <Spacer />
+            <Text
+              modifiers={[
+                font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: 'regular' }),
+                foregroundStyle(toArgbHex(data.ornamentColor)),
+                opacity(data.ornamentOpacity),
+              ]}
+            >
+              ✦
+            </Text>
+          </HStack>
+        ) : null}
 
-        {!data.isRefreshing && data.sourceText ? (
+        {data.showLargeQuotes ? (
+          <Text
+            modifiers={[
+              font({
+                size: WIDGET_LAYOUT.largeQuoteFontSize,
+                weight: 'bold',
+                family: data.fontFamily,
+              }),
+              foregroundStyle(toArgbHex(largeQuoteColor)),
+            ]}
+          >
+            “
+          </Text>
+        ) : null}
+
+        <VStack
+          spacing={WIDGET_LAYOUT.quoteSourceGap}
+          alignment='leading'
+          modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}
+        >
           <Text
             modifiers={[
               font({
                 size: data.fontSize,
-                weight: 'regular',
+                weight: 'semibold',
                 family: data.fontFamily,
               }),
-              foregroundStyle(toArgbHex(data.metaColor)),
+              foregroundStyle(
+                toArgbHex(
+                  data.isRefreshing ? data.attributionColor : data.quoteColor,
+                ),
+              ),
               frame({ maxWidth: Infinity, alignment: 'leading' }),
             ]}
           >
-            {data.sourceText}
+            {data.isRefreshing
+              ? data.loadingMessage || data.emptyMessage
+              : data.quoteText || data.emptyMessage}
           </Text>
-        ) : null}
-      </VStack>
 
-      <Spacer />
-
-      <VStack
-        spacing={WIDGET_LAYOUT.metaBlockGap}
-        alignment='leading'
-        modifiers={[
-          padding({ top: WIDGET_LAYOUT.sectionGap }),
-          frame({ maxWidth: Infinity, alignment: 'leading' }),
-        ]}
-      >
-        {data.showActions ? (
-          <HStack
-            spacing={WIDGET_LAYOUT.actionGap}
-            alignment='center'
-            modifiers={[frame({ maxWidth: Infinity, alignment: 'trailing' })]}
-          >
-            <Spacer />
-            <ActionChip
-              label='↻'
-              iconColor={data.actionIconColor}
-              actionBg={data.actionBg}
-            />
-            <ActionChip
-              label={data.isSaved ? '✕' : '☆'}
-              iconColor={data.actionIconColor}
-              actionBg={data.actionBg}
-            />
-            <ActionChip
-              label='↗'
-              iconColor={data.actionIconColor}
-              actionBg={data.actionBg}
-            />
-          </HStack>
-        ) : null}
-
-        {data.attributionName ? (
-          <HStack spacing={0} alignment='lastTextBaseline'>
-            {/* Home-screen widgets cannot open arbitrary URLs here; show name only (no URL). */}
-            {data.attributionBefore ? (
-              <Text
-                modifiers={[
-                  font({
-                    size: WIDGET_LAYOUT.attributionFontSize,
-                    weight: 'regular',
-                    family: data.fontFamily,
-                  }),
-                  foregroundStyle(toArgbHex(data.attributionColor)),
-                ]}
-              >
-                {data.attributionBefore}
-              </Text>
-            ) : null}
+          {!data.isRefreshing && data.sourceText ? (
             <Text
               modifiers={[
                 font({
-                  size: WIDGET_LAYOUT.attributionFontSize,
-                  weight: 'semibold',
+                  size: data.fontSize,
+                  weight: 'regular',
                   family: data.fontFamily,
                 }),
-                foregroundStyle(toArgbHex(data.attributionColor)),
+                foregroundStyle(toArgbHex(data.metaColor)),
+                frame({ maxWidth: Infinity, alignment: 'leading' }),
               ]}
             >
-              {data.attributionName}
+              {data.sourceText}
             </Text>
-            {data.attributionAfter ? (
-              <Text
-                modifiers={[
-                  font({
-                    size: WIDGET_LAYOUT.attributionFontSize,
-                    weight: 'regular',
-                    family: data.fontFamily,
-                  }),
-                  foregroundStyle(toArgbHex(data.attributionColor)),
-                ]}
-              >
-                {data.attributionAfter}
-              </Text>
-            ) : null}
-          </HStack>
-        ) : null}
+          ) : null}
+        </VStack>
+
+        <Spacer />
+
+        <VStack
+          spacing={WIDGET_LAYOUT.metaBlockGap}
+          alignment='leading'
+          modifiers={[
+            padding({ top: WIDGET_LAYOUT.sectionGap }),
+            frame({ maxWidth: Infinity, alignment: 'leading' }),
+          ]}
+        >
+          {data.showActions ? (
+            <HStack
+              spacing={WIDGET_LAYOUT.actionGap}
+              alignment='center'
+              modifiers={[frame({ maxWidth: Infinity, alignment: 'trailing' })]}
+            >
+              <Spacer />
+              <ActionChip
+                label='↻'
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+                destination={buildWidgetActionUri('refresh')}
+              />
+              <ActionChip
+                label={data.isSaved ? '✕' : '☆'}
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+                destination={
+                  data.citationId ? buildWidgetActionUri('toggle-save') : undefined
+                }
+              />
+              <ActionChip
+                label='↗'
+                iconColor={data.actionIconColor}
+                actionBg={data.actionBg}
+                destination={
+                  buildShareText(data.citationText, data.citationSource)
+                    ? buildWidgetActionUri('share')
+                    : undefined
+                }
+              />
+            </HStack>
+          ) : null}
+
+          {data.attributionName ? (
+            <HStack spacing={0} alignment='lastTextBaseline'>
+              {data.attributionBefore ? (
+                <Text
+                  modifiers={[
+                    font({
+                      size: WIDGET_LAYOUT.attributionFontSize,
+                      weight: 'regular',
+                      family: data.fontFamily,
+                    }),
+                    foregroundStyle(toArgbHex(data.attributionColor)),
+                  ]}
+                >
+                  {data.attributionBefore}
+                </Text>
+              ) : null}
+              {data.attributionUrl ? (
+                <Link destination={data.attributionUrl}>
+                  <Text
+                    modifiers={[
+                      font({
+                        size: WIDGET_LAYOUT.attributionFontSize,
+                        weight: 'semibold',
+                        family: data.fontFamily,
+                      }),
+                      foregroundStyle(toArgbHex(data.attributionColor)),
+                      underline({ isActive: true, pattern: 'solid' }),
+                    ]}
+                  >
+                    {data.attributionName}
+                  </Text>
+                </Link>
+              ) : (
+                <Text
+                  modifiers={[
+                    font({
+                      size: WIDGET_LAYOUT.attributionFontSize,
+                      weight: 'semibold',
+                      family: data.fontFamily,
+                    }),
+                    foregroundStyle(toArgbHex(data.attributionColor)),
+                  ]}
+                >
+                  {data.attributionName}
+                </Text>
+              )}
+              {data.attributionAfter ? (
+                <Text
+                  modifiers={[
+                    font({
+                      size: WIDGET_LAYOUT.attributionFontSize,
+                      weight: 'regular',
+                      family: data.fontFamily,
+                    }),
+                    foregroundStyle(toArgbHex(data.attributionColor)),
+                  ]}
+                >
+                  {data.attributionAfter}
+                </Text>
+              ) : null}
+            </HStack>
+          ) : null}
+        </VStack>
       </VStack>
-    </VStack>
+    </ZStack>
   )
 }
 

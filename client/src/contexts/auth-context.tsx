@@ -19,7 +19,11 @@ import {
 } from "@/services/auth-api";
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from "@/services/auth-storage";
 import { useGoogleSignIn } from "@/services/google-auth";
-import { migrateGuestDataToAccount } from "@/services/guest-migration";
+import {
+  applyGuestMigration,
+  checkGuestMigration,
+  type GuestMigrationStrategy,
+} from "@/services/guest-migration";
 import { isGuestMode, setGuestMode } from "@/services/local-storage";
 import type { UserPublic } from "@/types/auth";
 
@@ -40,6 +44,9 @@ type AuthContextValue = {
   setUser: (user: UserPublic | null) => void;
   continueAsGuest: () => Promise<void>;
   completeGuestSignIn: () => Promise<void>;
+  /** True while the "keep this device's data or the account's?" prompt should be shown. */
+  guestConflict: boolean;
+  resolveGuestConflict: (strategy: GuestMigrationStrategy) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -57,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAuthRoute, setPendingAuthRoute] = useState<Href | null>(null);
+  const [guestConflict, setGuestConflict] = useState(false);
+  const guestConflictResolveRef = useRef<((strategy: GuestMigrationStrategy) => void) | null>(null);
 
   // Keep Google AuthSession mounted at the root so `/oauthredirect` doesn't
   // tear down the request (and PKCE verifier) while the browser returns.
@@ -110,7 +119,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const completeGuestSignIn = useCallback(async () => {
     // Login + oauthredirect can both call this after Google auth; coalesce.
     if (!guestSignInPromise.current) {
-      guestSignInPromise.current = migrateGuestDataToAccount()
+      guestSignInPromise.current = (async () => {
+        const check = await checkGuestMigration();
+        if (check.status === "none") return;
+
+        if (check.status === "auto") {
+          await applyGuestMigration("keep-local");
+          return;
+        }
+
+        // "conflict" — ask the user which side wins; GuestConflictModal renders
+        // while `guestConflict` is true and calls `resolveGuestConflict` below.
+        const strategy = await new Promise<GuestMigrationStrategy>((resolve) => {
+          guestConflictResolveRef.current = resolve;
+          setGuestConflict(true);
+        });
+        setGuestConflict(false);
+        await applyGuestMigration(strategy);
+      })()
         .catch(() => undefined)
         .finally(() => {
           guestSignInPromise.current = null;
@@ -118,6 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await guestSignInPromise.current;
     setIsGuest(false);
+  }, []);
+
+  const resolveGuestConflict = useCallback((strategy: GuestMigrationStrategy) => {
+    guestConflictResolveRef.current?.(strategy);
+    guestConflictResolveRef.current = null;
   }, []);
 
   const continueAsGuest = useCallback(async () => {
@@ -183,6 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser,
       continueAsGuest,
       completeGuestSignIn,
+      guestConflict,
+      resolveGuestConflict,
     }),
     [
       user,
@@ -199,6 +232,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshSession,
       continueAsGuest,
       completeGuestSignIn,
+      guestConflict,
+      resolveGuestConflict,
     ],
   );
 

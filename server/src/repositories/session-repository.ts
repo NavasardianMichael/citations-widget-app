@@ -20,4 +20,10 @@ export const sessionRepository = {
       // ignore
     }
   },
+
+  /** All session ids for a user, across every device — used to purge Redis before the row cascade. */
+  async findIdsByUserId(userId: string): Promise<string[]> {
+    const rows = await prisma.session.findMany({ where: { userId }, select: { id: true } });
+    return rows.map((row) => row.id);
+  },
 };

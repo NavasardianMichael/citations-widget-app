@@ -23,6 +23,12 @@ export type HomeWidgetSnapshot = {
   designId: WidgetDesignId;
   /** Sanctuary random-pool index; ignored for fixed/solid designs. */
   backgroundImageIndex: number;
+  /**
+   * iOS only — `file://` URI inside the shared App Group container
+   * (`expo-widgets`' `widgetsDirectory`), resolved by `resolveIosBackgroundImageUri`.
+   * Android resolves its own background bitmap locally from `backgroundImageIndex`.
+   */
+  backgroundImageUri: string | null;
   fontFamily: string;
   /** Android assets/fonts basename without extension. */
   androidFontFile: string;
