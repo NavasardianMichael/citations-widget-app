@@ -251,7 +251,7 @@ export default function ProfileScreen() {
         showBrandIcon
         rightAction={tutorialAction}
       />
-      <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
+      <ScrollView className='flex-1' contentContainerClassName='pb-8'>
         <View className='mx-auto w-full max-w-xl px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           <View
             className='relative overflow-hidden rounded-lg bg-surface-bright p-8 gap-8'

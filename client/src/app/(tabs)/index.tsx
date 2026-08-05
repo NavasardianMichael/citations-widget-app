@@ -1,5 +1,5 @@
 ﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { ErrorState } from '@/components/ui/error-state'
 import { FilterPill } from '@/components/ui/filter-pill'
 import { TopAppBar } from '@/components/ui/top-app-bar'
@@ -37,6 +38,7 @@ import {
   getGuestWidgetSettings,
   removeGuestSavedCitation,
 } from '@/services/local-storage'
+import { hasPlacedHomeWidget } from '@/services/home-widget-presence'
 import type { Citation, FontStyle, OwnedCitation } from '@/types/citation'
 
 type LibraryFilter = 'all' | 'saved' | 'pending' | 'approved' | 'private'
@@ -166,6 +168,7 @@ function libraryTypeLabelKey(item: LibraryItem): LibraryTypeLabelKey | null {
 export default function CitationsScreen() {
   const { user, isGuest } = useAuth()
   const { openTutorial } = useOnboarding()
+  const router = useRouter()
   const [items, setItems] = useState<LibraryItem[]>([])
   const [filter, setFilter] = useState<LibraryFilter>('all')
   const [fontStyle, setFontStyle] = useState<FontStyle>(DEFAULT_WIDGET_FONT)
@@ -175,34 +178,40 @@ export default function CitationsScreen() {
   )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [widgetPlaced, setWidgetPlaced] = useState(false)
 
   const isSignedIn = Boolean(user) && !isGuest
+  const showTutorialCta = !isSignedIn && !widgetPlaced
 
   const loadLibrary = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       if (isGuest || !user) {
-        const [saved, settings] = await Promise.all([
+        const [saved, settings, placed] = await Promise.all([
           getGuestSavedCitations(),
           getGuestWidgetSettings(),
+          hasPlacedHomeWidget(),
         ])
         setItems(mergeLibrary(saved, []))
         setFontStyle(settings.fontStyle)
         setFontSize(settings.fontSize)
         setWidgetDesign(settings.widgetDesign)
+        setWidgetPlaced(placed)
         return
       }
 
-      const [saved, mine, settings] = await Promise.all([
+      const [saved, mine, settings, placed] = await Promise.all([
         fetchSavedCitations(),
         fetchMyCitations('all'),
         getWidgetSettings(),
+        hasPlacedHomeWidget(),
       ])
       setItems(mergeLibrary(saved, mine))
       setFontStyle(settings.fontStyle)
       setFontSize(settings.fontSize)
       setWidgetDesign(settings.widgetDesign)
+      setWidgetPlaced(placed)
     } catch (e) {
       setError(getUserFacingError(e, 'citations.loadFailed'))
     } finally {
@@ -331,10 +340,30 @@ export default function CitationsScreen() {
           ) : error ? (
             <ErrorState message={error} onRetry={() => void loadLibrary()} />
           ) : filteredItems.length === 0 ? (
-            <View className='items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12'>
-              <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
-                {t('citations.emptyBody')}
-              </Text>
+            <View className='gap-8'>
+              <View className='items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12'>
+                <Text className='text-center font-body-md text-body-md text-on-surface-variant'>
+                  {t('citations.emptyBody')}
+                </Text>
+              </View>
+              <View className='w-full max-w-md gap-3 self-center'>
+                {!isSignedIn ? (
+                  <Button
+                    label={t('guest.signIn')}
+                    onPress={() => router.push('/auth/login')}
+                    className='w-full'
+                  />
+                ) : null}
+                {showTutorialCta ? (
+                  <Button
+                    label={t('citations.openTutorial')}
+                    variant='secondary'
+                    onPress={openTutorial}
+                    className='w-full'
+                    labelClassName='text-center'
+                  />
+                ) : null}
+              </View>
             </View>
           ) : (
             <View className='flex-row flex-wrap gap-gutter'>

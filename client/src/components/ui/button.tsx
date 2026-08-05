@@ -16,6 +16,8 @@ type ButtonProps = {
   primaryTone?: PrimaryTone
   disabled?: boolean
   className?: string
+  /** Extra classes for the label `Text` (e.g. `text-center` for multiline). */
+  labelClassName?: string
   icon?: keyof typeof MaterialIcons.glyphMap
   /** Custom leading content; takes precedence over `icon`. */
   leading?: ReactNode
@@ -65,12 +67,13 @@ export function Button({
   primaryTone = 'secondary-container',
   disabled = false,
   className = '',
+  labelClassName = '',
   icon,
   leading,
 }: ButtonProps) {
   const borderClass =
     variant === 'secondary' ? secondaryBorderClasses[secondaryBorder] : ''
-  const labelClass =
+  const labelToneClass =
     variant === 'primary'
       ? primaryTextClasses[primaryTone]
       : textClasses[variant]
@@ -97,7 +100,7 @@ export function Button({
           <MaterialIcons name={icon} size={18} color={iconColor} />
         </View>
       ) : null}
-      <Text className={` ${labelClass}`}>{label}</Text>
+      <Text className={`${labelToneClass} ${labelClassName}`}>{label}</Text>
     </Pressable>
   )
 }

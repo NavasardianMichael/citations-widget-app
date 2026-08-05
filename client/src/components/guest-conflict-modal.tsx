@@ -31,36 +31,28 @@ export function GuestConflictModal() {
           style={{ boxShadow: '0 12px 32px rgba(2, 26, 53, 0.25)' }}
         >
           <View className='gap-2'>
-            <Text className='font-headline-md text-headline-md text-primary'>
+            <Text className='font-headline-md text-headline-md text-primary text-center'>
               {t('guestConflict.title')}
             </Text>
-            <Text className='font-body-md text-body-md text-on-surface-variant'>
+            <Text className='font-body-sm text-body-sm text-on-surface-variant text-center'>
               {t('guestConflict.body')}
             </Text>
           </View>
 
-          <View className='gap-2'>
-            <Button
-              label={t('guestConflict.keepLocal')}
-              onPress={() => resolveGuestConflict('keep-local')}
-              className='w-full'
-            />
-            <Text className='px-1 font-body-sm text-body-sm text-on-surface-variant'>
-              {t('guestConflict.keepLocalHint')}
-            </Text>
-          </View>
+          <Button
+            label={`${t('guestConflict.keepLocal')}:\n(${t('guestConflict.keepLocalHint')})`}
+            onPress={() => resolveGuestConflict('keep-local')}
+            className='w-full'
+            labelClassName='text-center'
+          />
 
-          <View className='gap-2'>
-            <Button
-              label={t('guestConflict.useRemote')}
-              variant='secondary'
-              onPress={() => resolveGuestConflict('use-remote')}
-              className='w-full'
-            />
-            <Text className='px-1 font-body-sm text-body-sm text-on-surface-variant'>
-              {t('guestConflict.useRemoteHint')}
-            </Text>
-          </View>
+          <Button
+            label={`${t('guestConflict.useRemote')}:\n(${t('guestConflict.useRemoteHint')})`}
+            variant='secondary'
+            onPress={() => resolveGuestConflict('use-remote')}
+            className='w-full'
+            labelClassName='text-center'
+          />
         </View>
       </View>
     </Modal>
