@@ -251,7 +251,7 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     // White text is invisible on the app's own white pages — give the Settings
     // preview / Citations rows a translucent gray backdrop. The real widget
     // still gets transparent `panelBg` above.
-    inAppPreviewBg: 'rgba(60, 60, 60, 0.55)',
+    inAppPreviewBg: 'rgba(0, 0, 0, 0.55)',
   },
   sanctuary: {
     id: 'sanctuary',
