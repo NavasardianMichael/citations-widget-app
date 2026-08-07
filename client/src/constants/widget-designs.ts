@@ -329,7 +329,9 @@ export function normalizeBackgroundImageIndex(index: number): number {
   return ((index % count) + count) % count
 }
 
-export function getRandomPoolBackgroundImage(index: number): ImageSourcePropType {
+export function getRandomPoolBackgroundImage(
+  index: number,
+): ImageSourcePropType {
   return WIDGET_BACKGROUND_IMAGES[normalizeBackgroundImageIndex(index)]
 }
 
