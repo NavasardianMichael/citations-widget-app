@@ -14,6 +14,8 @@ export const WIDGET_DESIGN_IDS = [
   'midnight',
   'noir',
   'frost',
+  'transparentDark',
+  'transparentLight',
   'sanctuary',
 ] as const
 

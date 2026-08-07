@@ -7,13 +7,14 @@ import {
   font,
   foregroundStyle,
   frame,
+  lineLimit,
   opacity,
   padding,
   resizable,
   shapes,
   underline,
 } from '@expo/ui/swift-ui/modifiers'
-import { createWidget, type WidgetEnvironment } from 'expo-widgets'
+import { createWidget, type WidgetEnvironment, type WidgetFamily } from 'expo-widgets'
 
 import {
   DEFAULT_WIDGET_DESIGN,
@@ -120,12 +121,77 @@ function ActionChip({
   return destination ? <Link destination={destination}>{chip}</Link> : chip
 }
 
+const ACCESSORY_FAMILIES: readonly WidgetFamily[] = [
+  'accessoryRectangular',
+  'accessoryInline',
+]
+
+/**
+ * Lock Screen accessory widgets render through WidgetKit's vibrancy engine
+ * ("vibrant" mode): custom colors, background images, and multi-element chrome
+ * are stripped or ignored, so this intentionally skips the panel design,
+ * ornament, actions, and attribution used on the home screen. `hierarchical`
+ * foreground styles are the supported way to stay legible across the system's
+ * light/dark/tinted lock screen appearances.
+ */
+function AccessoryWidgetView(data: HomeWidgetSnapshot, family: WidgetFamily) {
+  const quote = data.isRefreshing
+    ? data.loadingMessage || data.emptyMessage
+    : data.quoteText || data.emptyMessage
+
+  if (family === 'accessoryInline') {
+    const inlineText =
+      !data.isRefreshing && data.sourceText ? `${quote} — ${data.sourceText}` : quote
+    return (
+      <Text modifiers={[lineLimit(1)]}>{inlineText}</Text>
+    )
+  }
+
+  return (
+    <VStack
+      alignment='leading'
+      spacing={2}
+      modifiers={[
+        containerBackground(toArgbHex('rgba(0,0,0,0)'), 'widget'),
+        frame({ maxWidth: Infinity, maxHeight: Infinity, alignment: 'topLeading' }),
+      ]}
+    >
+      <Text
+        modifiers={[
+          font({ size: 14, weight: 'semibold' }),
+          foregroundStyle({ type: 'hierarchical', style: 'primary' }),
+          lineLimit(3),
+        ]}
+      >
+        {quote}
+      </Text>
+
+      {!data.isRefreshing && data.sourceText ? (
+        <Text
+          modifiers={[
+            font({ size: 12, weight: 'regular' }),
+            foregroundStyle({ type: 'hierarchical', style: 'secondary' }),
+            lineLimit(1),
+          ]}
+        >
+          {data.sourceText}
+        </Text>
+      ) : null}
+    </VStack>
+  )
+}
+
 function CitationWidgetView(
   props: HomeWidgetSnapshot,
-  _environment: WidgetEnvironment,
+  environment: WidgetEnvironment,
 ) {
   'widget'
   const data = { ...EMPTY_SNAPSHOT, ...props }
+
+  if (ACCESSORY_FAMILIES.includes(environment.widgetFamily)) {
+    return AccessoryWidgetView(data, environment.widgetFamily)
+  }
+
   const largeQuoteColor = colorWithOpacity(
     data.ornamentColor,
     Math.min(1, data.ornamentOpacity + 0.15),

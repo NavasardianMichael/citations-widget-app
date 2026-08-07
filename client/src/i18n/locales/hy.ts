@@ -274,6 +274,8 @@ export const hy = {
   'settings.designMidnight': 'Կեսգիշեր',
   'settings.designNoir': 'Մութ',
   'settings.designFrost': 'Ցրտաշունչ',
+  'settings.designTransparentDark': 'Թափանցիկ (մուգ)',
+  'settings.designTransparentLight': 'Թափանցիկ (լուսավոր)',
   'settings.designSanctuary': 'Սրբավայր',
   'settings.addedBy': 'Ավելացվել է {name}-ի կողմից',
   'settings.actionRefresh': 'Թարմացնել',

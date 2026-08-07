@@ -48,6 +48,15 @@ function escapeHtmlAttr(value: string): string {
   return escapeHtml(value)
 }
 
+/** Plain-text footer pointing users to the in-app Contact Us button (Profile tab). */
+const CONTACT_FOOTER_TEXT =
+  'Ծրագրի հետ կապված խնդիրների, հարցերի կամ առաջարկների համար խնդրում ենք կապվեք մեզ հետ հավելվածից՝ «Պրոֆիլ» բաժնում գտնվող «Կապվեք մեզ հետ» կոճակի միջոցով։'
+
+/** HTML counterpart of `CONTACT_FOOTER_TEXT`. */
+function contactFooterHtml(): string {
+  return `<p style="color:${COLORS.textMuted};font-size:13px;margin:16px 0 0;">${CONTACT_FOOTER_TEXT}</p>`
+}
+
 function emailButton(text: string, url: string): string {
   const safeUrl = escapeHtmlAttr(url)
   return `<p style="margin:16px 0;"><a href="${safeUrl}" style="display:inline-block;padding:10px 32px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;border-radius:6px;background:${COLORS.primary};">${text}</a></p>`
@@ -192,9 +201,9 @@ export const emailTemplates = {
     const subject = `Ձեր մեջբերումը հաստատված է — «${APP_NAME}»`
     const category = categoryLabelHy(details.category)
     const snippet = `«${details.text}» — ${details.source} · ${category}`
-    const text = `Ողջույն, ${name},\n\nՁեր մեջբերումը հաստատվել է և հասանելի է հավելվածում։\n\n${snippet}`
+    const text = `Ողջույն, ${name},\n\nՁեր մեջբերումը հաստատվել է և հասանելի է հավելվածում։\n\n${snippet}\n\n${CONTACT_FOOTER_TEXT}`
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Մեջբերումը հաստատված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր ներկայացրած մեջբերումը հաստատվել է և այժմ հասանելի է հավելվածում։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p>`,
+      `<h2 style="color:${COLORS.textDark};">Մեջբերումը հաստատված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր ներկայացրած մեջբերումը հաստատվել է և այժմ հասանելի է հավելվածում։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p>${contactFooterHtml()}`,
       'Մեջբերումը հաստատված է',
     )
     return { subject, text, html }
@@ -205,9 +214,9 @@ export const emailTemplates = {
     const category = categoryLabelHy(details.category)
     const snippet = `«${details.text}» — ${details.source} · ${category}`
     const reasonNote = 'Մերժման պատճառը շուտով կստանաք այլ նամակով։'
-    const text = `Ողջույն, ${name},\n\nՑավոք, Ձեր մեջբերման հայտը մերժվել է։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։\n\n${snippet}\n\n${reasonNote}`
+    const text = `Ողջույն, ${name},\n\nՑավոք, Ձեր մեջբերման հայտը մերժվել է։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։\n\n${snippet}\n\n${reasonNote}\n\n${CONTACT_FOOTER_TEXT}`
     const html = emailLayout(
-      `<h2 style="color:${COLORS.textDark};">Մեջբերման հայտը մերժված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ցավոք, Ձեր ներկայացրած մեջբերումը չի հաստատվել։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p><p style="color:${COLORS.textLight};margin:16px 0 0;">${reasonNote}</p>`,
+      `<h2 style="color:${COLORS.textDark};">Մեջբերման հայտը մերժված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ցավոք, Ձեր ներկայացրած մեջբերումը չի հաստատվել։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p><p style="color:${COLORS.textLight};margin:16px 0 0;">${reasonNote}</p>${contactFooterHtml()}`,
       'Մեջբերման հայտը մերժված է',
     )
     return { subject, text, html }

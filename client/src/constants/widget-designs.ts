@@ -32,6 +32,8 @@ export type WidgetDesignLabelKey =
   | 'settings.designSanctuary'
   | 'settings.designNoir'
   | 'settings.designFrost'
+  | 'settings.designTransparentDark'
+  | 'settings.designTransparentLight'
 
 export type WidgetDesignTokens = {
   id: WidgetDesignId
@@ -57,6 +59,14 @@ export type WidgetDesignTokens = {
    * (see RANDOM_BACKGROUND_DESIGN / sanctuary).
    */
   randomBackground?: boolean
+  /**
+   * In-app-only stand-in for `panelBg`, used solely by `WidgetPreview` (Settings
+   * live preview + Citations library rows). The real home-screen widget always
+   * renders `panelBg` (transparent, for these designs) — but the app's own pages
+   * are white, so a transparent + white-text design needs a translucent backdrop
+   * there or the text disappears. Falls back to `panelBg` when unset.
+   */
+  inAppPreviewBg?: string
 }
 
 /** Pool used only by the sanctuary (random) design. */
@@ -200,6 +210,48 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     showOrnament: true,
     showLargeQuotes: false,
     shadow: '0 8px 24px rgba(47, 95, 143, 0.16)',
+  },
+  transparentDark: {
+    id: 'transparentDark',
+    labelKey: 'settings.designTransparentDark',
+    // No panel on the real widget — text sits directly on the home/lock screen.
+    panelBg: 'rgba(0, 0, 0, 0)',
+    panelBorderColor: 'rgba(0, 0, 0, 0)',
+    accentBorderColor: 'rgba(0, 0, 0, 0)',
+    accentBorderWidth: 0,
+    quoteColor: '#1b1c1c',
+    metaColor: '#3a3a3a',
+    attributionColor: 'rgba(27, 28, 28, 0.72)',
+    actionBg: 'rgba(255, 255, 255, 0.55)',
+    actionIconColor: '#1b1c1c',
+    ornamentColor: '#1b1c1c',
+    ornamentOpacity: 0.18,
+    showOrnament: true,
+    showLargeQuotes: false,
+    shadow: 'none',
+  },
+  transparentLight: {
+    id: 'transparentLight',
+    labelKey: 'settings.designTransparentLight',
+    // No panel on the real widget — text sits directly on the home/lock screen.
+    panelBg: 'rgba(0, 0, 0, 0)',
+    panelBorderColor: 'rgba(0, 0, 0, 0)',
+    accentBorderColor: 'rgba(0, 0, 0, 0)',
+    accentBorderWidth: 0,
+    quoteColor: '#fbf9f8',
+    metaColor: 'rgba(251, 249, 248, 0.75)',
+    attributionColor: 'rgba(251, 249, 248, 0.7)',
+    actionBg: 'rgba(0, 0, 0, 0.45)',
+    actionIconColor: '#fbf9f8',
+    ornamentColor: '#fbf9f8',
+    ornamentOpacity: 0.3,
+    showOrnament: true,
+    showLargeQuotes: false,
+    shadow: 'none',
+    // White text is invisible on the app's own white pages — give the Settings
+    // preview / Citations rows a translucent gray backdrop. The real widget
+    // still gets transparent `panelBg` above.
+    inAppPreviewBg: 'rgba(60, 60, 60, 0.55)',
   },
   sanctuary: {
     id: 'sanctuary',

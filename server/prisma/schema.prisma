@@ -202,6 +202,8 @@ enum WidgetDesign {
   copper
   noir
   frost
+  transparentDark
+  transparentLight
   sanctuary
 }
 

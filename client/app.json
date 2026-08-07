@@ -81,7 +81,9 @@
                 "systemSmall",
                 "systemMedium",
                 "systemLarge",
-                "systemExtraLarge"
+                "systemExtraLarge",
+                "accessoryRectangular",
+                "accessoryInline"
               ]
             }
           ]

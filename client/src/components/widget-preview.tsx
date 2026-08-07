@@ -435,7 +435,7 @@ export function WidgetPreview({
           style={{
             ...frameStyle,
             ...contentPad,
-            backgroundColor: tokens.panelBg,
+            backgroundColor: tokens.inAppPreviewBg ?? tokens.panelBg,
           }}
         >
           {inner}
