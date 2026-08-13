@@ -98,3 +98,4 @@ Complete any App Store Connect prompts (app record, encryption export = already 
 | Credentials / non-interactive failure | Run `eas build` **without** `--non-interactive` so Apple login/2FA works. |
 | Google Sign-In fails on device | Confirm iOS OAuth Bundle ID matches; wait a few minutes after creating the client; rebuild so env vars are baked in. |
 | API calls fail | `EXPO_PUBLIC_API_URL` on EAS must be a URL the phone can reach (HTTPS public API, not `localhost`). |
+| App name contains invalid characters | App Store Connect rejects Armenian for the **store listing** name. `eas.json` `submit.production.ios.appName` is the Latin name (`Bible Citations`). The home-screen name stays `expo.name`. If submit still fails, rename the app in [App Store Connect](https://appstoreconnect.apple.com) to that Latin name, then retry. |

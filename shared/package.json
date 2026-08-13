@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "node ./node_modules/typescript/bin/tsc",
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit"
   },

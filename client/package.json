@@ -49,6 +49,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "eas-build-pre-install": "npm ci --prefix ../shared",
     "postinstall": "patch-package",
     "start": "powershell -ExecutionPolicy Bypass -File ./run-start.ps1",
     "reset-project": "node ./scripts/reset-project.js",

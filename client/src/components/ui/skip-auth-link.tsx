@@ -17,7 +17,7 @@ export function SkipAuthLink({ className = '' }: { className?: string }) {
     <Button
       label={t('auth.skip')}
       icon='navigate-next'
-      variant='secondary'
+      variant='primary'
       onPress={handleSkip}
       className={className}
     />
