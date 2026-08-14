@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native'
 
+import { TutorialVideoLinks } from '@/components/tutorial-video-links'
 import { Button } from '@/components/ui/button'
 import { ErrorState } from '@/components/ui/error-state'
 import { FilterPill } from '@/components/ui/filter-pill'
@@ -355,13 +356,16 @@ export default function CitationsScreen() {
                   />
                 ) : null}
                 {showTutorialCta ? (
-                  <Button
-                    label={t('citations.openTutorial')}
-                    variant='secondary'
-                    onPress={openTutorial}
-                    className='w-full'
-                    labelClassName='text-center'
-                  />
+                  <>
+                    <Button
+                      label={t('citations.openTutorial')}
+                      variant='secondary'
+                      onPress={openTutorial}
+                      className='w-full'
+                      labelClassName='text-center'
+                    />
+                    <TutorialVideoLinks />
+                  </>
                 ) : null}
               </View>
             </View>

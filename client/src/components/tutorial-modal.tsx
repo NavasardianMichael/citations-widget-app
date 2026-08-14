@@ -23,6 +23,7 @@ import {
   LongPressIllustration,
   WelcomeIllustration,
 } from '@/components/tutorial-illustrations'
+import { TutorialVideoLinks } from '@/components/tutorial-video-links'
 import { WidgetPreview } from '@/components/widget-preview'
 import { pressableNoRipple } from '@/constants/pressable'
 import { DEFAULT_WIDGET_DESIGN } from '@/constants/widget-designs'
@@ -218,6 +219,7 @@ export function TutorialModal() {
                 <Text className='text-center font-headline-md text-headline-md text-primary'>
                   {t(step.titleKey)}
                 </Text>
+                <TutorialVideoLinks className='pt-1' />
               </View>
 
               <View className='items-center gap-2'>

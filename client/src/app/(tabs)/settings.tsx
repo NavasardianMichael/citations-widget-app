@@ -19,6 +19,7 @@ import { SelectField } from '@/components/ui/select-field'
 import { SettingsSection } from '@/components/ui/settings-section'
 import { ToggleRow } from '@/components/ui/toggle-row'
 import { TopAppBar } from '@/components/ui/top-app-bar'
+import { TutorialVideoLinks } from '@/components/tutorial-video-links'
 import { WidgetPreview } from '@/components/widget-preview'
 import { pressableNoRipple } from '@/constants/pressable'
 import {
@@ -48,6 +49,7 @@ import {
   updateProfile,
 } from '@/services/api'
 import { pickGuestWidgetCitation } from '@/services/guest-citation-picker'
+import { hasPlacedHomeWidget } from '@/services/home-widget-presence'
 import {
   getCachedWidgetCitation,
   getGuestWidgetSettings,
@@ -107,9 +109,10 @@ const DEFAULT_DRAFT: WidgetSettingsDraft = {
 }
 
 export default function SettingsScreen() {
-  const { isGuest } = useAuth()
+  const { user, isGuest } = useAuth()
   const { openTutorial } = useOnboarding()
   const { isLg } = useBreakpoint()
+  const [widgetPlaced, setWidgetPlaced] = useState(false)
   const [saved, setSaved] = useState<WidgetSettingsDraft | null>(null)
   const [draft, setDraft] = useState<WidgetSettingsDraft>(DEFAULT_DRAFT)
   const [preview, setPreview] = useState<WidgetCitation | null>(null)
@@ -193,6 +196,7 @@ export default function SettingsScreen() {
   )
 
   const loadSettings = useCallback(async () => {
+    setWidgetPlaced(await hasPlacedHomeWidget())
     const settings = isGuest
       ? await getGuestWidgetSettings()
       : await getWidgetSettings()
@@ -310,6 +314,11 @@ export default function SettingsScreen() {
       shareProfile !== savedShareProfile
     )
   }, [draft, saved, shareProfile, savedShareProfile])
+
+  // Mirrors the citations screen's tutorial CTA gate — the video guides only help
+  // someone who has not placed the widget yet.
+  const isSignedIn = Boolean(user) && !isGuest
+  const showTutorialVideoLinks = !isSignedIn && !widgetPlaced
 
   function updateDraft<K extends keyof WidgetSettingsDraft>(
     key: K,
@@ -550,6 +559,8 @@ export default function SettingsScreen() {
           disabled={saving || !hasChanges}
         />
       </View>
+
+      {showTutorialVideoLinks ? <TutorialVideoLinks /> : null}
     </View>
   )
 

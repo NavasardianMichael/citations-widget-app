@@ -241,7 +241,7 @@ export const hy = {
 
   'settings.title': 'Վիջեթի կարգավորումներ',
   'settings.sourcePool': 'Աղբյուրների ընտրություն',
-  'settings.refreshRate': 'Թարմացման հաճախականություն',
+  'settings.refreshRate': 'Մեջբերման թարմացման հաճախականություն',
   'settings.typography': 'Տառատեսակ',
   'settings.fontSize': 'Տառաչափ',
   'settings.displayOptions': 'Ցուցադրման կարգավորումներ',
@@ -261,7 +261,7 @@ export const hy = {
   'settings.refresh24': 'Ամեն օր',
   'settings.poolBible': 'Աստվածաշունչ',
   'settings.poolFiction': 'Գրականություն',
-  'settings.poolMixed': 'Խառը',
+  'settings.poolMixed': 'Միքս',
   'settings.poolSaved': 'Պահված',
   'settings.preview': 'Նախադիտում',
   'settings.livePreview': 'Նախադիտում',
@@ -299,8 +299,11 @@ export const hy = {
   'tutorial.osAndroid': 'Android',
   'tutorial.welcome.title': 'Բարի գալուստ',
   'tutorial.welcome.body':
-    'Հավելվածի միջոցով կարող եք Ձեր հեռախոսի հիմնական էկրանին տեղադրվել վիջեթ, որոնց վրա կցուցադրվեն մեջբերումներ Աստավածաշնչից և տարբեր գրական ստեղծագործություններից։ Հետևեք հետևյալ քայլերին՝ վիջեթն էկրանի վրա տեղադրելու համար։',
+    'Հավելվածի միջոցով կարող եք Ձեր հեռախոսի հիմնական էկրանին տեղադրել վիջեթ, որոնց վրա կցուցադրվեն մեջբերումներ Աստավածաշնչից և տարբեր գրական ստեղծագործություններից։ Հետևեք հետևյալ քայլերին՝ վիջեթն էկրանի վրա տեղադրելու համար։',
   'tutorial.longPress.title': 'Ինչպես տեղադրել վիջեթը էկրանին',
+  'tutorial.videoGuides': 'Վիդեո ուղեցույցներ',
+  'tutorial.videoGuideAndroid': 'Android համակարգի համար',
+  'tutorial.videoGuideIos': 'iOS համակարգի համար',
   'tutorial.longPress.appIcon.title': 'Երկար սեղմեք հավելվածի նշանի վրա',
   'tutorial.longPress.appIcon.body':
     'Մատը երկար սեղմած պահեք հավելվածի նշանի վրա:',
@@ -373,6 +376,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const
+} as const;
 
-export type HyMessages = typeof hy
+export type HyMessages = typeof hy;
