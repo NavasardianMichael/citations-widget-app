@@ -1,5 +1,6 @@
 import {
   DEFAULT_WIDGET_DESIGN,
+  designShowsOrnament,
   getWidgetDesign,
 } from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
@@ -108,7 +109,7 @@ export function buildHomeWidgetSnapshot(
     actionIconColor: design.actionIconColor,
     ornamentColor: design.ornamentColor,
     ornamentOpacity: design.ornamentOpacity,
-    showOrnament: design.showOrnament,
+    showOrnament: designShowsOrnament(design.id),
     showLargeQuotes: design.showLargeQuotes,
     overlayColor: design.overlayColor ?? null,
     hasBackgroundImage: Boolean(design.randomBackground),

@@ -18,6 +18,7 @@ import { createWidget, type WidgetEnvironment, type WidgetFamily } from 'expo-wi
 
 import {
   DEFAULT_WIDGET_DESIGN,
+  designShowsOrnament,
   getWidgetDesign,
 } from '@/constants/widget-designs'
 import {
@@ -64,7 +65,7 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   actionIconColor: emptyDesign.actionIconColor,
   ornamentColor: emptyDesign.ornamentColor,
   ornamentOpacity: emptyDesign.ornamentOpacity,
-  showOrnament: emptyDesign.showOrnament,
+  showOrnament: false,
   showLargeQuotes: emptyDesign.showLargeQuotes,
   overlayColor: emptyDesign.overlayColor ?? null,
   hasBackgroundImage: Boolean(emptyDesign.randomBackground),
@@ -236,7 +237,7 @@ function CitationWidgetView(
           }),
         ]}
       >
-        {data.showOrnament ? (
+        {designShowsOrnament(data.designId) ? (
           <HStack modifiers={[frame({ maxWidth: Infinity })]}>
             <Spacer />
             <Text

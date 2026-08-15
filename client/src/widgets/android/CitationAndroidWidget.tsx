@@ -8,7 +8,10 @@ import {
 } from "react-native-android-widget";
 import type { ColorProp } from "react-native-android-widget";
 
-import { resolveWidgetBackgroundImage } from "@/constants/widget-designs";
+import {
+  designShowsOrnament,
+  resolveWidgetBackgroundImage,
+} from "@/constants/widget-designs";
 import {
   colorWithOpacity,
   getQuoteLineHeight,
@@ -222,7 +225,7 @@ function WidgetBody({
     widgetWidth: width,
     widgetHeight: height,
     fontSize: snapshot.fontSize,
-    showOrnament: snapshot.showOrnament,
+    showOrnament: designShowsOrnament(snapshot.designId),
     showLargeQuotes: snapshot.showLargeQuotes,
     hasSource,
     showActions: actions.length > 0,
@@ -261,7 +264,7 @@ function WidgetBody({
           flexDirection: "column",
         }}
       >
-        {snapshot.showOrnament ? (
+        {designShowsOrnament(snapshot.designId) ? (
           <FlexWidget
             style={{
               width: "match_parent",

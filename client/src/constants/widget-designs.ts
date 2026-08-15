@@ -214,36 +214,17 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
   transparentDark: {
     id: 'transparentDark',
     labelKey: 'settings.designTransparentDark',
-    // No panel on the real widget — text sits directly on the home/lock screen.
-    panelBg: 'rgba(0, 0, 0, 0)',
-    panelBorderColor: 'rgba(0, 0, 0, 0)',
-    accentBorderColor: 'rgba(0, 0, 0, 0)',
-    accentBorderWidth: 0,
-    quoteColor: '#000000',
-    metaColor: '#000000',
-    attributionColor: 'rgba(27, 28, 28, 0.72)',
-    actionBg: 'rgba(255, 255, 255, 0.55)',
-    actionIconColor: '#1b1c1c',
-    ornamentColor: '#1b1c1c',
-    ornamentOpacity: 0.18,
-    showOrnament: false,
-    showLargeQuotes: false,
-    shadow: 'none',
-  },
-  transparentLight: {
-    id: 'transparentLight',
-    labelKey: 'settings.designTransparentLight',
-    // No panel on the real widget — text sits directly on the home/lock screen.
+    // No panel on the real widget — white text sits directly on a dark wallpaper.
     panelBg: 'rgba(0, 0, 0, 0)',
     panelBorderColor: 'rgba(0, 0, 0, 0)',
     accentBorderColor: 'rgba(0, 0, 0, 0)',
     accentBorderWidth: 0,
     quoteColor: '#ffffff',
     metaColor: '#ffffff',
-    attributionColor: 'rgba(251, 249, 248, 0.7)',
+    attributionColor: '#ffffff',
     actionBg: 'rgba(0, 0, 0, 0.45)',
-    actionIconColor: '#fbf9f8',
-    ornamentColor: '#fbf9f8',
+    actionIconColor: '#ffffff',
+    ornamentColor: '#ffffff',
     ornamentOpacity: 0.3,
     showOrnament: false,
     showLargeQuotes: false,
@@ -252,6 +233,25 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     // preview / Citations rows a solid gray backdrop. The real widget
     // still gets transparent `panelBg` above.
     inAppPreviewBg: '#333333',
+  },
+  transparentLight: {
+    id: 'transparentLight',
+    labelKey: 'settings.designTransparentLight',
+    // No panel on the real widget — black text sits directly on a light wallpaper.
+    panelBg: 'rgba(0, 0, 0, 0)',
+    panelBorderColor: 'rgba(0, 0, 0, 0)',
+    accentBorderColor: 'rgba(0, 0, 0, 0)',
+    accentBorderWidth: 0,
+    quoteColor: '#000000',
+    metaColor: '#000000',
+    attributionColor: '#000000',
+    actionBg: 'rgba(255, 255, 255, 0.55)',
+    actionIconColor: '#000000',
+    ornamentColor: '#000000',
+    ornamentOpacity: 0.18,
+    showOrnament: false,
+    showLargeQuotes: false,
+    shadow: 'none',
   },
   sanctuary: {
     id: 'sanctuary',
@@ -292,6 +292,17 @@ export function normalizeWidgetDesignId(value: unknown): WidgetDesignId {
 
 export function getWidgetDesign(id: WidgetDesignId): WidgetDesignTokens {
   return WIDGET_DESIGNS[normalizeWidgetDesignId(id)]
+}
+
+export function isTransparentWidgetDesign(id: WidgetDesignId): boolean {
+  const normalized = normalizeWidgetDesignId(id)
+  return normalized === 'transparentDark' || normalized === 'transparentLight'
+}
+
+/** Transparent designs never show the top-right flare, even if a snapshot still has it on. */
+export function designShowsOrnament(id: WidgetDesignId): boolean {
+  if (isTransparentWidgetDesign(id)) return false
+  return getWidgetDesign(id).showOrnament
 }
 
 export function isWidgetDesignId(value: unknown): value is WidgetDesignId {

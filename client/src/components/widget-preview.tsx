@@ -12,6 +12,7 @@ import { pressableNoRipple } from '@/constants/pressable'
 import { resolveAttributionParts, splitAddedByLabel } from '@/lib/attribution'
 import {
   DEFAULT_WIDGET_DESIGN,
+  designShowsOrnament,
   getWidgetDesign,
   resolveWidgetBackgroundImage,
   type WidgetDesignId,
@@ -352,7 +353,7 @@ export function WidgetPreview({
 
   const ornaments = (
     <>
-      {tokens.showOrnament ? (
+      {designShowsOrnament(design) ? (
         <View
           className='absolute'
           style={{
