@@ -31,7 +31,11 @@ import {
   shiftWidgetDesign,
   WIDGET_DESIGN_IDS,
 } from '@/constants/widget-designs'
-import { DEFAULT_QUOTE_FONT_SIZE, FONT_SIZE_MAX, FONT_SIZE_MIN } from '@/constants/widget-layout'
+import {
+  DEFAULT_QUOTE_FONT_SIZE,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+} from '@/constants/widget-layout'
 import { useAuth } from '@/contexts/auth-context'
 import { useOnboarding } from '@/contexts/onboarding-context'
 import {
@@ -338,9 +342,11 @@ export default function SettingsScreen() {
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gesture) =>
-          Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+          Math.abs(gesture.dx) > 12 &&
+          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
         onMoveShouldSetPanResponderCapture: (_, gesture) =>
-          Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+          Math.abs(gesture.dx) > 12 &&
+          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
         onPanResponderTerminationRequest: () => false,
         onPanResponderRelease: (_, gesture) => {
           if (gesture.dx <= -40) shiftDesign(1)
@@ -375,9 +381,15 @@ export default function SettingsScreen() {
       setDraft(next)
       // Re-anchor on a real, committed citation for the saved pool — while editing, the
       // preview may have only shown an ephemeral, non-committing pool preview pick.
-      await loadWidgetCitation(next.sourceSelection, next.refreshRateHours, poolChanged)
+      await loadWidgetCitation(
+        next.sourceSelection,
+        next.refreshRateHours,
+        poolChanged,
+      )
       const cached = await getCachedWidgetCitation()
-      await syncHomeWidget(next, cached?.citation ?? null).catch(() => undefined)
+      await syncHomeWidget(next, cached?.citation ?? null).catch(
+        () => undefined,
+      )
       Alert.alert(t('common.save'), t('settings.saved'))
     } catch (e) {
       Alert.alert(
@@ -394,7 +406,9 @@ export default function SettingsScreen() {
     suppressNextSourceEffect.current = true
     setDraft(saved)
     setShareProfile(savedShareProfile)
-    loadWidgetCitation(saved.sourceSelection, saved.refreshRateHours).catch(() => undefined)
+    loadWidgetCitation(saved.sourceSelection, saved.refreshRateHours).catch(
+      () => undefined,
+    )
   }
 
   const settingsColumn = (
@@ -533,7 +547,9 @@ export default function SettingsScreen() {
                   accessibilityLabel={t(getWidgetDesign(id).labelKey)}
                   accessibilityState={{ selected: index === designIndex }}
                   className={`h-2 rounded-full ${
-                    index === designIndex ? 'w-5 bg-primary' : 'w-2 bg-outline-variant'
+                    index === designIndex
+                      ? 'w-5 bg-primary'
+                      : 'w-2 bg-outline-variant'
                   }`}
                 />
               ))}
@@ -582,7 +598,7 @@ export default function SettingsScreen() {
           </Pressable>
         }
       />
-      <ScrollView className='flex-1' contentContainerClassName='pb-28 md:pb-12'>
+      <ScrollView className='flex-1' contentContainerClassName='pb-8'>
         <View className='mx-auto w-full max-w-[1200px] px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           {isLg ? (
             <View className='flex-row items-start gap-gutter'>

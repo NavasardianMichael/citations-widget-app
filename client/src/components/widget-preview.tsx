@@ -20,6 +20,7 @@ import {
 import {
   colorWithOpacity,
   getQuoteLineHeight,
+  getWidgetContentPaddingTop,
   WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
   WIDGET_LAYOUT,
   widgetPreviewQuoteWeightStyle,
@@ -204,8 +205,11 @@ export function WidgetPreview({
     overflow: 'hidden' as const,
   }
 
+  const hasTopChrome =
+    designShowsOrnament(design) || tokens.showLargeQuotes
   const contentPad = {
     padding: WIDGET_LAYOUT.padding,
+    paddingTop: getWidgetContentPaddingTop(hasTopChrome),
     // Quote + source stay together at the top; actions/attribution pin to the bottom.
     ...(fillWidgetHeight
       ? { flex: 1, justifyContent: 'space-between' as const }
@@ -351,9 +355,11 @@ export function WidgetPreview({
       </View>
     ) : null
 
-  const ornaments = (
+  const showOrnament = designShowsOrnament(design)
+
+  const inner = (
     <>
-      {designShowsOrnament(design) ? (
+      {showOrnament ? (
         <View
           className='absolute'
           style={{
@@ -388,12 +394,6 @@ export function WidgetPreview({
           “
         </Text>
       ) : null}
-    </>
-  )
-
-  const inner = (
-    <>
-      {ornaments}
       {topContent}
       {metaContent}
     </>

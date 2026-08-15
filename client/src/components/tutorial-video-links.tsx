@@ -19,10 +19,10 @@ function openVideo(url: string) {
 export function TutorialVideoLinks({ className = '' }: { className?: string }) {
   return (
     <View className={`gap-1 ${className}`}>
-      <Text className='text-center font-label-sm text-label-sm text-on-surface-variant'>
+      <Text className='text-center font-semibold text-on-surface-variant'>
         {t('tutorial.videoGuides')}
       </Text>
-      <View className='flex-row flex-wrap items-center justify-center gap-4'>
+      <View className='flex-row flex-wrap items-center justify-center'>
         {LINKS.map((link) => (
           <Pressable
             {...pressableNoRipple}

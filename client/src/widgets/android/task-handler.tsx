@@ -2,7 +2,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
 import { DEFAULT_SOURCE_SELECTION } from "@citations/shared";
 
-import { DEFAULT_WIDGET_DESIGN } from "@/constants/widget-designs";
+import {
+  DEFAULT_WIDGET_DESIGN,
+  designShowsOrnament,
+} from "@/constants/widget-designs";
 import {
   DEFAULT_QUOTE_FONT_SIZE,
   WIDGET_LAYOUT,
@@ -191,7 +194,7 @@ async function shiftQuotePage(
     widgetWidth,
     widgetHeight,
     fontSize: snapshot.fontSize,
-    showOrnament: snapshot.showOrnament,
+    showOrnament: designShowsOrnament(snapshot.designId),
     showLargeQuotes: snapshot.showLargeQuotes,
     hasSource: Boolean(snapshot.sourceText),
     showActions: snapshot.showActions,

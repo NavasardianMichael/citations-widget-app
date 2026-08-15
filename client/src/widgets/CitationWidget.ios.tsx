@@ -24,6 +24,7 @@ import {
 import {
   colorWithOpacity,
   DEFAULT_QUOTE_FONT_SIZE,
+  getWidgetContentPaddingTop,
   WIDGET_LAYOUT,
 } from '@/constants/widget-layout'
 import { buildShareText } from '@/services/build-share-text'
@@ -229,7 +230,14 @@ function CitationWidgetView(
           ...(data.backgroundImageUri && data.overlayColor
             ? [background(toArgbHex(data.overlayColor))]
             : []),
-          padding({ all: WIDGET_LAYOUT.padding }),
+          padding({
+            top: getWidgetContentPaddingTop(
+              designShowsOrnament(data.designId) || data.showLargeQuotes,
+            ),
+            leading: WIDGET_LAYOUT.padding,
+            bottom: WIDGET_LAYOUT.padding,
+            trailing: WIDGET_LAYOUT.padding,
+          }),
           frame({
             maxWidth: Infinity,
             maxHeight: Infinity,
@@ -237,21 +245,6 @@ function CitationWidgetView(
           }),
         ]}
       >
-        {designShowsOrnament(data.designId) ? (
-          <HStack modifiers={[frame({ maxWidth: Infinity })]}>
-            <Spacer />
-            <Text
-              modifiers={[
-                font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: 'regular' }),
-                foregroundStyle(toArgbHex(data.ornamentColor)),
-                opacity(data.ornamentOpacity),
-              ]}
-            >
-              ✦
-            </Text>
-          </HStack>
-        ) : null}
-
         {data.showLargeQuotes ? (
           <Text
             modifiers={[
@@ -417,6 +410,26 @@ function CitationWidgetView(
           ) : null}
         </VStack>
       </VStack>
+
+      {designShowsOrnament(data.designId) ? (
+        <HStack
+          modifiers={[
+            padding({ all: WIDGET_LAYOUT.ornamentInset }),
+            frame({ maxWidth: Infinity, alignment: 'topTrailing' }),
+          ]}
+        >
+          <Spacer />
+          <Text
+            modifiers={[
+              font({ size: WIDGET_LAYOUT.ornamentIconSize, weight: 'regular' }),
+              foregroundStyle(toArgbHex(data.ornamentColor)),
+              opacity(data.ornamentOpacity),
+            ]}
+          >
+            ✦
+          </Text>
+        </HStack>
+      ) : null}
     </ZStack>
   )
 }

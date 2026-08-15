@@ -53,6 +53,14 @@ export function getQuoteLineHeight(fontSize: number): number {
   return Math.round(fontSize * 1.55);
 }
 
+/**
+ * Top padding when the flare / large-quote chrome is absent (transparent designs).
+ * Keeps the usual 24dp top inset only when that chrome actually occupies the corner.
+ */
+export function getWidgetContentPaddingTop(hasTopChrome: boolean): number {
+  return hasTopChrome ? WIDGET_LAYOUT.padding : WIDGET_LAYOUT.ornamentInset
+}
+
 /** Citation quote vs source weights — keep preview, saved cards, and widgets in sync. */
 export const WIDGET_QUOTE_FONT_WEIGHT = '600' as const;
 export const WIDGET_SOURCE_FONT_WEIGHT = 'normal' as const;

@@ -15,6 +15,7 @@ import {
 import {
   colorWithOpacity,
   getQuoteLineHeight,
+  getWidgetContentPaddingTop,
   WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
   WIDGET_ICON_FONT_FAMILY,
   WIDGET_ICON_GLYPH,
@@ -177,10 +178,6 @@ function WidgetBody({
   const quoteColor = isRefreshing
     ? snapshot.attributionColor
     : snapshot.quoteColor;
-  const ornamentColor = colorWithOpacity(
-    snapshot.ornamentColor,
-    snapshot.ornamentOpacity,
-  );
   const largeQuoteColor = colorWithOpacity(
     snapshot.ornamentColor,
     Math.min(1, snapshot.ornamentOpacity + 0.15),
@@ -225,6 +222,7 @@ function WidgetBody({
     widgetWidth: width,
     widgetHeight: height,
     fontSize: snapshot.fontSize,
+    // Flare is overlaid; this flag only picks compact vs full top padding.
     showOrnament: designShowsOrnament(snapshot.designId),
     showLargeQuotes: snapshot.showLargeQuotes,
     hasSource,
@@ -256,6 +254,9 @@ function WidgetBody({
         // RemoteViews' weight translation, so use space-between instead.
         justifyContent: "space-between",
         padding: WIDGET_LAYOUT.padding,
+        paddingTop: getWidgetContentPaddingTop(
+          designShowsOrnament(snapshot.designId) || snapshot.showLargeQuotes,
+        ),
       }}
     >
       <FlexWidget
@@ -264,24 +265,6 @@ function WidgetBody({
           flexDirection: "column",
         }}
       >
-        {designShowsOrnament(snapshot.designId) ? (
-          <FlexWidget
-            style={{
-              width: "match_parent",
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              marginBottom: 4,
-            }}
-          >
-            <IconWidget
-              icon={WIDGET_ICON_GLYPH.flare}
-              size={WIDGET_LAYOUT.ornamentIconSize}
-              font={WIDGET_ICON_FONT_FAMILY}
-              style={{ color: asColor(ornamentColor) }}
-            />
-          </FlexWidget>
-        ) : null}
-
         {snapshot.showLargeQuotes ? (
           <TextWidget
             text="“"
@@ -513,6 +496,26 @@ function WidgetBody({
   );
 }
 
+function OrnamentOverlay({ color }: { color: string }) {
+  return (
+    <FlexWidget
+      style={{
+        width: "match_parent",
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        padding: WIDGET_LAYOUT.ornamentInset,
+      }}
+    >
+      <IconWidget
+        icon={WIDGET_ICON_GLYPH.flare}
+        size={WIDGET_LAYOUT.ornamentIconSize}
+        font={WIDGET_ICON_FONT_FAMILY}
+        style={{ color: asColor(color) }}
+      />
+    </FlexWidget>
+  );
+}
+
 /** Home-screen widget — layout/typography mirrors settings `WidgetPreview`. */
 export function CitationAndroidWidget({ snapshot, width, height }: Props) {
   const bgImage = snapshot.hasBackgroundImage
@@ -520,6 +523,13 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
     : undefined;
   const imgW = Math.max(1, Math.round(width));
   const imgH = Math.max(1, Math.round(height));
+  const showOrnament = designShowsOrnament(snapshot.designId);
+  const ornament = showOrnament ? (
+    <OrnamentOverlay
+      color={colorWithOpacity(snapshot.ornamentColor, snapshot.ornamentOpacity)}
+    />
+  ) : null;
+  const body = <WidgetBody snapshot={snapshot} width={width} height={height} />;
 
   if (typeof bgImage === "number") {
     return (
@@ -555,8 +565,31 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
             backgroundColor: asColor(snapshot.overlayColor ?? "transparent"),
           }}
         >
-          <WidgetBody snapshot={snapshot} width={width} height={height} />
+          {body}
         </FlexWidget>
+        {ornament}
+      </OverlapWidget>
+    );
+  }
+
+  if (ornament) {
+    return (
+      <OverlapWidget
+        clickAction="OPEN_APP"
+        style={{
+          height: "match_parent",
+          width: "match_parent",
+          backgroundColor: asColor(snapshot.panelBg),
+          borderColor: asColor(snapshot.panelBorderColor),
+          borderWidth: 1,
+          borderLeftWidth: Math.max(snapshot.accentBorderWidth, 1),
+          borderLeftColor: asColor(snapshot.accentBorderColor),
+          borderRadius: WIDGET_LAYOUT.borderRadius,
+          overflow: "hidden",
+        }}
+      >
+        {body}
+        {ornament}
       </OverlapWidget>
     );
   }
@@ -577,7 +610,7 @@ export function CitationAndroidWidget({ snapshot, width, height }: Props) {
         borderRadius: WIDGET_LAYOUT.borderRadius,
       }}
     >
-      <WidgetBody snapshot={snapshot} width={width} height={height} />
+      {body}
     </FlexWidget>
   );
 }

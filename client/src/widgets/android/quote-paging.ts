@@ -1,4 +1,8 @@
-import { getQuoteLineHeight, WIDGET_LAYOUT } from "@/constants/widget-layout";
+import {
+  getQuoteLineHeight,
+  getWidgetContentPaddingTop,
+  WIDGET_LAYOUT,
+} from "@/constants/widget-layout";
 
 /** Compact page-control column beside the quote. */
 export const QUOTE_PAGE_ARROW_SIZE = 32;
@@ -86,11 +90,9 @@ function estimateChromeHeight(
   // Padding only — do not add sectionGap: justifyContent space-between already
   // separates the top quote block from bottom actions, and counting it here
   // made linesPerPage collapse to 1 on typical 4×4 sizes.
-  let used = WIDGET_LAYOUT.padding * 2;
-
-  if (input.showOrnament) {
-    used += WIDGET_LAYOUT.ornamentIconSize + 4;
-  }
+  let used =
+    getWidgetContentPaddingTop(input.showOrnament || input.showLargeQuotes) +
+    WIDGET_LAYOUT.padding;
   if (input.showLargeQuotes) {
     used += Math.max(0, WIDGET_LAYOUT.largeQuoteFontSize - 8);
   }
