@@ -223,7 +223,20 @@ router.post("/google/mobile", authLimiter, validate(googleMobileSchema), async (
       },
     });
   } catch (error) {
-    next(error);
+    if (error instanceof AppError) {
+      next(error);
+      return;
+    }
+    // Audience mismatch (missing GOOGLE_IOS_CLIENT_ID) and bad tokens throw
+    // from google-auth-library — do not leak that as a generic 500.
+    logger.error({ err: error }, "Google mobile token verification failed");
+    next(
+      new AppError(
+        HttpStatus.UNAUTHORIZED,
+        ErrorCode.INVALID_CREDENTIALS,
+        "Invalid Google token",
+      ),
+    );
   }
 });
 

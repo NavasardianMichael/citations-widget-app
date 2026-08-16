@@ -4,7 +4,6 @@ import { Text } from "react-native";
 
 import { AuthStatusScreen } from "@/components/ui/auth-status-screen";
 import { Button } from "@/components/ui/button";
-import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { TextLink } from "@/components/ui/text-link";
 import { t } from "@/i18n";
 import { resendVerificationRequest } from "@/services/auth-api";
@@ -51,7 +50,6 @@ export default function CheckEmailScreen() {
       <TextLink href="/auth/register" replace variant="underline" align="center">
         {t("auth.checkEmail.back")}
       </TextLink>
-      <SkipAuthLink />
     </AuthStatusScreen>
   );
 }

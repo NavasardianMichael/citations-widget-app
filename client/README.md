@@ -17,7 +17,7 @@ Optional `client/.env` (copy from `.env.example`):
 EXPO_PUBLIC_API_URL=http://localhost:9003
 EXPO_PUBLIC_GOOGLE_CLIENT_ID=          # Web client ID (enables Google button)
 EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=  # Android OAuth client ID (required on Android)
-EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=      # iOS OAuth client ID (optional until iOS builds)
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=      # iOS OAuth client ID (required for iOS Google sign-in)
 ```
 
 Google Android client in Cloud Console must use package `com.anonymous.citationswidgetapp` and the **SHA-1** of the keystore that signs the APK.

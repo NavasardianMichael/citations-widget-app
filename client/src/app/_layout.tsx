@@ -10,7 +10,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import '../global.css'
@@ -22,6 +22,7 @@ import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { OnboardingProvider } from '@/contexts/onboarding-context'
 import { APP_FONT_SOURCES } from '@/fonts/registry'
 import { initSentry, Sentry } from '@/lib/sentry'
+import { syncHomeWidgetFromStoredState } from '@/services/home-widget-sync'
 
 initSentry()
 
@@ -67,6 +68,17 @@ function useProtectedRoute() {
   ])
 }
 
+function HomeWidgetBootstrap() {
+  const { isLoading, isGuest, user } = useAuth()
+
+  useEffect(() => {
+    if (isLoading || Platform.OS === 'web') return
+    syncHomeWidgetFromStoredState().catch(() => undefined)
+  }, [isLoading, isGuest, user?.id])
+
+  return null
+}
+
 function RootNavigator() {
   const { isLoading } = useAuth()
   useProtectedRoute()
@@ -110,6 +122,7 @@ function RootLayout() {
               <StatusBar style="dark" />
               <RootNavigator />
             </View>
+            <HomeWidgetBootstrap />
             <TutorialModal />
             <GuestConflictModal />
           </OnboardingProvider>

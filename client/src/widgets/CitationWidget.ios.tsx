@@ -16,6 +16,9 @@ import {
 } from '@expo/ui/swift-ui/modifiers'
 import { createWidget, type WidgetEnvironment, type WidgetFamily } from 'expo-widgets'
 
+// Do not pass `font({ family })` here. Custom faces live in the app target, not
+// the widget extension — a missing family fails the SwiftUI timeline (blank widget).
+
 import {
   DEFAULT_WIDGET_DESIGN,
   designShowsOrnament,
@@ -70,8 +73,8 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   showLargeQuotes: emptyDesign.showLargeQuotes,
   overlayColor: emptyDesign.overlayColor ?? null,
   hasBackgroundImage: Boolean(emptyDesign.randomBackground),
-  emptyMessage: '',
-  loadingMessage: '',
+  emptyMessage: 'Մեջբերում չկա',
+  loadingMessage: 'Մեջբերումը բեռնվում է…',
   isRefreshing: false,
   isSaving: false,
   quotePageIndex: 0,
@@ -251,7 +254,6 @@ function CitationWidgetView(
               font({
                 size: WIDGET_LAYOUT.largeQuoteFontSize,
                 weight: 'bold',
-                family: data.fontFamily,
               }),
               foregroundStyle(toArgbHex(largeQuoteColor)),
             ]}
@@ -270,7 +272,6 @@ function CitationWidgetView(
               font({
                 size: data.fontSize,
                 weight: 'semibold',
-                family: data.fontFamily,
               }),
               foregroundStyle(
                 toArgbHex(
@@ -291,7 +292,6 @@ function CitationWidgetView(
                 font({
                   size: data.fontSize,
                   weight: 'regular',
-                  family: data.fontFamily,
                 }),
                 foregroundStyle(toArgbHex(data.metaColor)),
                 frame({ maxWidth: Infinity, alignment: 'leading' }),
@@ -354,7 +354,6 @@ function CitationWidgetView(
                     font({
                       size: WIDGET_LAYOUT.attributionFontSize,
                       weight: 'regular',
-                      family: data.fontFamily,
                     }),
                     foregroundStyle(toArgbHex(data.attributionColor)),
                   ]}
@@ -369,7 +368,6 @@ function CitationWidgetView(
                       font({
                         size: WIDGET_LAYOUT.attributionFontSize,
                         weight: 'semibold',
-                        family: data.fontFamily,
                       }),
                       foregroundStyle(toArgbHex(data.attributionColor)),
                       underline({ isActive: true, pattern: 'solid' }),
@@ -384,7 +382,6 @@ function CitationWidgetView(
                     font({
                       size: WIDGET_LAYOUT.attributionFontSize,
                       weight: 'semibold',
-                      family: data.fontFamily,
                     }),
                     foregroundStyle(toArgbHex(data.attributionColor)),
                   ]}
@@ -398,7 +395,6 @@ function CitationWidgetView(
                     font({
                       size: WIDGET_LAYOUT.attributionFontSize,
                       weight: 'regular',
-                      family: data.fontFamily,
                     }),
                     foregroundStyle(toArgbHex(data.attributionColor)),
                   ]}

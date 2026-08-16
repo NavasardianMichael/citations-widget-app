@@ -103,6 +103,11 @@ export function useGoogleSignIn() {
         "Google sign-in is not configured for Android. Set EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID.",
       );
     }
+    if (Platform.OS === "ios" && !iosClientId) {
+      throw new Error(
+        "Google sign-in is not configured for iOS. Set EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID.",
+      );
+    }
 
     googleSignInPending = true;
     try {
@@ -129,6 +134,11 @@ export function useGoogleSignIn() {
     request,
     response,
     signInWithGoogle,
-    isConfigured: Boolean(clientId && (Platform.OS !== "android" || androidClientId)),
+    isConfigured: Boolean(
+      clientId &&
+        (Platform.OS === "web" ||
+          (Platform.OS === "android" && androidClientId) ||
+          (Platform.OS === "ios" && iosClientId)),
+    ),
   };
 }

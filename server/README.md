@@ -72,7 +72,7 @@ Copy `.env.example`. Required:
 
 Optional: `MAIL_API_URL` + `MAIL_API_KEY` for [api-mail-engine](https://github.com/NavasardianMichael/api-mail-engine) — user emails via `POST /mail/external/send`, citation review/withdrawn alerts via `POST /mail/internal/send` (admin inbox from mail-engine `RECIPIENT_EMAIL`). `GOOGLE_*` for OAuth.
 
-For mobile Google sign-in, set `GOOGLE_ANDROID_CLIENT_ID` (and `GOOGLE_IOS_CLIENT_ID` when needed) to the same OAuth client IDs as the Expo app so `/api/auth/google/mobile` accepts those id_token audiences.
+For mobile Google sign-in, set `GOOGLE_ANDROID_CLIENT_ID` and `GOOGLE_IOS_CLIENT_ID` to the same OAuth client IDs as the Expo app (`EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`). `/api/auth/google/mobile` verifies the id_token `aud` against those values; iOS sign-in fails if `GOOGLE_IOS_CLIENT_ID` is missing.
 
 Email verify/reset buttons link to `GET /api/auth/app-link?path=…&token=…`, which opens the app via `CLIENT_URL`.
 

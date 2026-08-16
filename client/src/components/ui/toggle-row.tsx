@@ -1,4 +1,4 @@
-import { Switch, Text, View } from "react-native";
+import { Platform, Switch, Text, View } from "react-native";
 
 type ToggleRowProps = {
   title: string;
@@ -22,7 +22,11 @@ export function ToggleRow({ title, description, value, onValueChange, disabled =
         trackColor={{ false: "#e4e2e2", true: "#021a35" }}
         thumbColor="#ffffff"
         accessibilityLabel={title}
-        style={{ transform: [{ scaleX: 1.25 }, { scaleY: 1.15 }] }}
+        style={
+          Platform.OS === "android"
+            ? { transform: [{ scaleX: 1.25 }, { scaleY: 1.15 }] }
+            : undefined
+        }
       />
     </View>
   );

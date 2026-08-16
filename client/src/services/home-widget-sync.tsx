@@ -1,6 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
+import { getWidgetSettings } from "@/services/api";
+import {
+  getCachedWidgetCitation,
+  getGuestWidgetSettings,
+  isGuestMode,
+} from "@/services/local-storage";
 import type { WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
 import { buildHomeWidgetSnapshotAsync } from "@/widgets/build-snapshot";
@@ -9,6 +15,17 @@ import {
   HOME_WIDGET_SNAPSHOT_KEY,
   type HomeWidgetSnapshot,
 } from "@/widgets/types";
+
+/** Push the last saved settings + cached citation to the home-screen widget. */
+export async function syncHomeWidgetFromStoredState(): Promise<void> {
+  if (Platform.OS === "web") return;
+  const local = await isGuestMode();
+  const settings = local
+    ? await getGuestWidgetSettings()
+    : await getWidgetSettings().catch(() => getGuestWidgetSettings());
+  const cached = await getCachedWidgetCitation();
+  await syncHomeWidget(settings, cached?.citation ?? null);
+}
 
 export async function syncHomeWidget(
   settings: WidgetSettingsDraft,

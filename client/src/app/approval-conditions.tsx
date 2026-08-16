@@ -32,7 +32,7 @@ export default function ApprovalConditionsScreen() {
           </Pressable>
         }
       />
-      <ScrollView className='flex-1' contentContainerClassName='pb-8'>
+      <ScrollView className='flex-1' contentContainerClassName='pb-20 md:pb-12'>
         <View className='mx-auto w-full max-w-2xl gap-10 px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           <Text className='font-body-md text-body-md text-on-surface-variant'>
             {t('approvalConditions.intro')}

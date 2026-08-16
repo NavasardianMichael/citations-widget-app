@@ -598,7 +598,7 @@ export default function SettingsScreen() {
           </Pressable>
         }
       />
-      <ScrollView className='flex-1' contentContainerClassName='pb-8'>
+      <ScrollView className='flex-1' contentContainerClassName='pb-24 md:pb-12'>
         <View className='mx-auto w-full max-w-[1200px] px-margin-mobile py-8 md:px-margin-desktop md:py-12'>
           {isLg ? (
             <View className='flex-row items-start gap-gutter'>

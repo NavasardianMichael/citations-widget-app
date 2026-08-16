@@ -19,6 +19,8 @@ import { TextLink } from '@/components/ui/text-link'
 import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
+import { AuthApiError } from '@/services/auth-api'
 import { hasErrors, validateLogin, type FieldErrors } from '@/lib/validation'
 
 export default function LoginScreen() {
@@ -48,7 +50,7 @@ export default function LoginScreen() {
       await signIn(email.trim(), password)
       router.replace('/(tabs)')
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('auth.login.failed'))
+      setError(getUserFacingError(e, 'auth.login.failed'))
     } finally {
       setLoading(false)
     }
@@ -63,7 +65,11 @@ export default function LoginScreen() {
       if (!signedIn) return
       router.replace('/(tabs)')
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('auth.login.googleFailed'))
+      setError(
+        e instanceof AuthApiError && e.code === 'INVALID_CREDENTIALS'
+          ? t('auth.login.googleFailed')
+          : getUserFacingError(e, 'auth.login.googleFailed'),
+      )
     } finally {
       setLoading(false)
     }
