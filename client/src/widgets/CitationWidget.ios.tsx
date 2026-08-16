@@ -16,27 +16,20 @@ import {
 } from '@expo/ui/swift-ui/modifiers'
 import { createWidget, type WidgetEnvironment, type WidgetFamily } from 'expo-widgets'
 
-// Do not pass `font({ family })` here. Custom faces live in the app target, not
-// the widget extension — a missing family fails the SwiftUI timeline (blank widget).
+// Widget-extension JS cannot load `@/constants/widget-designs` (it `require()`s
+// every sanctuary JPEG) or `font({ family })` (faces live in the app target).
+// Either one fails the timeline and the gallery shows three blank sizes.
 
-import {
-  DEFAULT_WIDGET_DESIGN,
-  designShowsOrnament,
-  getWidgetDesign,
-} from '@/constants/widget-designs'
 import {
   colorWithOpacity,
   DEFAULT_QUOTE_FONT_SIZE,
   getWidgetContentPaddingTop,
   WIDGET_LAYOUT,
 } from '@/constants/widget-layout'
-import { buildShareText } from '@/services/build-share-text'
 import { buildWidgetActionUri } from '@/widgets/widget-action-uri'
 import { toArgbHex } from '@/widgets/color'
 import type { HomeWidgetSnapshot } from '@/widgets/types'
 import { IOS_WIDGET_NAME } from '@/widgets/types'
-
-const emptyDesign = getWidgetDesign(DEFAULT_WIDGET_DESIGN)
 
 const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   quoteText: '',
@@ -52,27 +45,27 @@ const EMPTY_SNAPSHOT: HomeWidgetSnapshot = {
   citationSource: '',
   citationCategory: null,
   isSaved: false,
-  designId: emptyDesign.id,
+  designId: 'sanctuary',
   backgroundImageIndex: 0,
   backgroundImageUri: null,
-  fontFamily: 'DavelAghvor',
+  fontFamily: 'System',
   androidFontFile: 'davel-aghvor',
   fontSize: DEFAULT_QUOTE_FONT_SIZE,
-  panelBg: emptyDesign.panelBg,
-  panelBorderColor: emptyDesign.panelBorderColor,
-  accentBorderColor: emptyDesign.accentBorderColor,
-  accentBorderWidth: emptyDesign.accentBorderWidth,
-  quoteColor: emptyDesign.quoteColor,
-  metaColor: emptyDesign.metaColor,
-  attributionColor: emptyDesign.attributionColor,
-  actionBg: emptyDesign.actionBg,
-  actionIconColor: emptyDesign.actionIconColor,
-  ornamentColor: emptyDesign.ornamentColor,
-  ornamentOpacity: emptyDesign.ornamentOpacity,
-  showOrnament: false,
-  showLargeQuotes: emptyDesign.showLargeQuotes,
-  overlayColor: emptyDesign.overlayColor ?? null,
-  hasBackgroundImage: Boolean(emptyDesign.randomBackground),
+  panelBg: '#FF12100C',
+  panelBorderColor: '#38FFFFFF',
+  accentBorderColor: '#A6FED65B',
+  accentBorderWidth: 2,
+  quoteColor: '#fbf9f8',
+  metaColor: '#fed65b',
+  attributionColor: '#D1FBF9F8',
+  actionBg: '#8C0F1218',
+  actionIconColor: '#fbf9f8',
+  ornamentColor: '#fed65b',
+  ornamentOpacity: 0.35,
+  showOrnament: true,
+  showLargeQuotes: false,
+  overlayColor: '#B80C0A08',
+  hasBackgroundImage: true,
   emptyMessage: 'Մեջբերում չկա',
   loadingMessage: 'Մեջբերումը բեռնվում է…',
   isRefreshing: false,
@@ -214,7 +207,7 @@ function CitationWidgetView(
         frame({ maxWidth: Infinity, maxHeight: Infinity }),
       ]}
     >
-      {data.backgroundImageUri ? (
+      {data.backgroundImageUri?.startsWith('file://') ? (
         <Image
           uiImage={data.backgroundImageUri}
           modifiers={[
@@ -235,7 +228,7 @@ function CitationWidgetView(
             : []),
           padding({
             top: getWidgetContentPaddingTop(
-              designShowsOrnament(data.designId) || data.showLargeQuotes,
+              data.showOrnament || data.showLargeQuotes,
             ),
             leading: WIDGET_LAYOUT.padding,
             bottom: WIDGET_LAYOUT.padding,
@@ -338,7 +331,7 @@ function CitationWidgetView(
                 iconColor={data.actionIconColor}
                 actionBg={data.actionBg}
                 destination={
-                  buildShareText(data.citationText, data.citationSource)
+                  data.citationText.trim()
                     ? buildWidgetActionUri('share')
                     : undefined
                 }
@@ -407,7 +400,7 @@ function CitationWidgetView(
         </VStack>
       </VStack>
 
-      {designShowsOrnament(data.designId) ? (
+      {data.showOrnament ? (
         <HStack
           modifiers={[
             padding({ all: WIDGET_LAYOUT.ornamentInset }),

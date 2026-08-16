@@ -81,8 +81,8 @@
           "widgets": [
             {
               "name": "CitationWidget",
-              "displayName": "Մեջբերումներ Աստվածաշնչից",
-              "description": "Մեջբերումներ ձեր գլխավոր էկրանին",
+              "displayName": "Մեջբերումներ",
+              "description": "2×2 · 4×2 · 4×4",
               "contentMarginsDisabled": true,
               "supportedFamilies": [
                 "systemSmall",
