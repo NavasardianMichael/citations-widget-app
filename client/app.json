@@ -11,6 +11,11 @@
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.citationswidgetapp",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.anonymous.citationswidgetapp"
+        ]
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -46,6 +51,7 @@
     },
     "plugins": [
       "./plugins/withAndroidWorkManagerAlign",
+      "./plugins/withIosWidgetReleaseRedBox",
       [
         "expo-build-properties",
         {

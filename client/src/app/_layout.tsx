@@ -23,6 +23,7 @@ import { OnboardingProvider } from '@/contexts/onboarding-context'
 import { APP_FONT_SOURCES } from '@/fonts/registry'
 import { initSentry, Sentry } from '@/lib/sentry'
 import { syncHomeWidgetFromStoredState } from '@/services/home-widget-sync'
+import '@/widgets/register-ios-widget'
 
 initSentry()
 

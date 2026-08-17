@@ -52,8 +52,9 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot) {
       snapshot.backgroundImageIndex,
     );
     CitationWidget.updateSnapshot({ ...snapshot, backgroundImageUri });
-  } catch {
-    // Widget extension unavailable until a native rebuild with expo-widgets.
+  } catch (error) {
+    const { Sentry } = await import("@/lib/sentry");
+    Sentry.captureException(error);
   }
 }
 
