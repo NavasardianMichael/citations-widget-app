@@ -45,6 +45,10 @@ import { IOS_WIDGET_NAME, type HomeWidgetSnapshot } from '@/widgets/types'
  *   the panel background almost fully transparent.
  * - `Image` only honours the `resizable` modifier (`applyImageModifier`), so the
  *   action chips and the ornament are glyphs in a `Text`, not SF Symbols.
+ * - Keys whose value is null are stripped before the push (`withoutNullProps`),
+ *   because App Group `UserDefaults` rejects `NSNull`. Read every optional field
+ *   as possibly absent, and note that props can be missing entirely — WidgetKit
+ *   renders a placeholder entry before the app has ever synced.
  * - Fonts come from the App Group (`resolveIosWidgetFonts`) and are registered
  *   with Core Text by `withIosWidgetReleaseRedBox`. Both names can be missing —
  *   a widget can render before the app has ever copied the files — so every
