@@ -176,7 +176,10 @@ function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnviro
     return destination ? <Link destination={destination}>{button}</Link> : button
   }
 
-  const attributionFont = (weight: 'regular' | 'semibold') => quoteFont(14, weight)
+  // The 2×2 has no room for a chip row, but it can still carry the credit line
+  // Android shows on every size — one tight line that shrinks before truncating.
+  const attributionFont = (weight: 'regular' | 'semibold') =>
+    quoteFont(isSmall ? 11 : 14, weight)
 
   return (
     <ZStack
@@ -278,10 +281,17 @@ function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnviro
             </HStack>
           ) : null}
 
-          {props.attributionName && !isSmall ? (
+          {props.attributionName ? (
             <HStack alignment='lastTextBaseline' spacing={0}>
               {props.attributionBefore ? (
-                <Text modifiers={[attributionFont('regular'), foregroundStyle(attributionColor)]}>
+                <Text
+                  modifiers={[
+                    attributionFont('regular'),
+                    foregroundStyle(attributionColor),
+                    lineLimit(1),
+                    minimumScaleFactor(0.8),
+                  ]}
+                >
                   {props.attributionBefore}
                 </Text>
               ) : null}
@@ -293,19 +303,35 @@ function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnviro
                       attributionFont('semibold'),
                       foregroundStyle(attributionColor),
                       underline({ isActive: true, pattern: 'solid' }),
+                      lineLimit(1),
+                      minimumScaleFactor(0.8),
                     ]}
                   >
                     {props.attributionName}
                   </Text>
                 </Link>
               ) : (
-                <Text modifiers={[attributionFont('semibold'), foregroundStyle(attributionColor)]}>
+                <Text
+                  modifiers={[
+                    attributionFont('semibold'),
+                    foregroundStyle(attributionColor),
+                    lineLimit(1),
+                    minimumScaleFactor(0.8),
+                  ]}
+                >
                   {props.attributionName}
                 </Text>
               )}
 
               {props.attributionAfter ? (
-                <Text modifiers={[attributionFont('regular'), foregroundStyle(attributionColor)]}>
+                <Text
+                  modifiers={[
+                    attributionFont('regular'),
+                    foregroundStyle(attributionColor),
+                    lineLimit(1),
+                    minimumScaleFactor(0.8),
+                  ]}
+                >
                   {props.attributionAfter}
                 </Text>
               ) : null}
