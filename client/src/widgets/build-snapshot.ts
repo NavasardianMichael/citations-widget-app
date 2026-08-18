@@ -97,6 +97,9 @@ export function buildHomeWidgetSnapshot(
     backgroundImageUri: null,
     fontFamily: getWidgetFontFamily(fontId),
     androidFontFile: FONT_FILE_BY_ID[fontId] ?? FONT_FILE_BY_ID[DEFAULT_WIDGET_FONT],
+    // Also iOS-only and copy-dependent; see `resolveIosWidgetFonts`.
+    iosFontFamily: null,
+    iosGlyphFontFamily: null,
     fontSize: settings.fontSize ?? DEFAULT_QUOTE_FONT_SIZE,
     panelBg: design.panelBg,
     panelBorderColor: design.panelBorderColor,

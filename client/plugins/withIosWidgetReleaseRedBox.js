@@ -1,7 +1,16 @@
 /**
- * expo-widgets hides layout errors in Release (TestFlight) as EmptyView —
- * a blank system widget with a gray placeholder bar. Surface RedBox and
- * SwiftUI prop-decode failures so the next TestFlight build is diagnosable.
+ * Four fixes to `expo-widgets`' iOS widget host, none of which are configurable:
+ *
+ * - Release (TestFlight) builds render layout errors as `EmptyView` — a blank
+ *   widget — so RedBox and SwiftUI prop-decode failures stay diagnosable.
+ * - An empty timeline leaves WidgetKit's own placeholder (a gray "-") on screen
+ *   forever, so at least one entry is always handed back.
+ * - WidgetKit redacts the entry view into gray skeleton bars, and the app has to
+ *   run once before the layout exists in the App Group; the widget body is
+ *   unredacted and the missing-layout branch explains that in Armenian.
+ * - The extension has no access to the app's `expo-font` registrations, so the
+ *   Armenian quote faces and icon glyphs it copies into the App Group are
+ *   registered with Core Text before the layout names them.
  */
 const { withDangerousMod } = require("expo/config-plugins");
 const fs = require("fs");
@@ -119,18 +128,85 @@ const ENTRY_UNREDACTED = `  public var body: some View {
         let node = evaluateLayout(layout: layout, props: entry.props ?? [:], environment: widgetEnvironment)
         WidgetsDynamicView(name: entry.name, kind: .widget, node: node, entryIndex: entry.entryIndex, environmentString: widgetEnvironmentString)
       } else {
-        WidgetsDynamicView(name: entry.name, kind: .widget, node: createRedBox(message: "No layout found for \\(WidgetsStorage.appGroupIdentifier ?? "")::\\(entry.name)"), entryIndex: entry.entryIndex, environmentString: widgetEnvironmentString)
+        // ${MARKER}: only the running app writes the layout into the App Group,
+        // so a widget added before the first launch gets onboarding copy instead
+        // of upstream's "No layout found" red box.
+        ZStack {
+          Color(red: 0.07, green: 0.055, blue: 0.047)
+          Text("Բացեք հավելվածը՝ մեջբերումները ցուցադրելու համար")
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.center)
+            .minimumScaleFactor(0.7)
+            .padding(12)
+        }
       }
     }
     .unredacted() // ${MARKER}
   }`;
 
-function patchEntryView(contents) {
-  if (contents.includes(MARKER)) return contents;
-  if (!contents.includes(ENTRY_BODY)) {
-    throw new Error("withIosWidgetReleaseRedBox: EntryView.swift body not found");
+const FONT_SENTINEL = "registerAppGroupFonts";
+
+const ENTRY_INIT = `  public init(entry: WidgetsTimelineProvider.Entry) {
+    self.entry = entry
+  }`;
+
+/**
+ * `WidgetsStorage`'s container plus the `ExpoWidgets` subdirectory is the same
+ * path the app writes through `widgetsDirectory` (see `WidgetsModule.swift`).
+ */
+const ENTRY_INIT_WITH_FONTS = `  public init(entry: WidgetsTimelineProvider.Entry) {
+    self.entry = entry
+    Self.${FONT_SENTINEL}()
   }
-  return contents.replace(ENTRY_BODY, ENTRY_UNREDACTED);
+
+  // ${MARKER}:
+  // the app copies the chosen Armenian face and the icon-glyph subset into the
+  // shared container, but its \`expo-font\` registrations don't reach this
+  // process — Core Text loads them here so the layout can name them.
+  //
+  // Called on every init rather than once per process: WidgetKit can keep this
+  // extension warm across a font change, and re-registering an already-loaded
+  // URL just fails harmlessly. The single-URL call is synchronous, so the face
+  // is resolvable by the time \`body\` runs (the CFArray variant is not).
+  private static func ${FONT_SENTINEL}() {
+    guard let identifier = WidgetsStorage.appGroupIdentifier,
+          let container = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: identifier
+          ) else {
+      return
+    }
+    let directory = container.appendingPathComponent("ExpoWidgets", isDirectory: true)
+    let files = (try? FileManager.default.contentsOfDirectory(
+      at: directory,
+      includingPropertiesForKeys: nil
+    )) ?? []
+    for font in files where ["otf", "ttf"].contains(font.pathExtension.lowercased()) {
+      _ = CTFontManagerRegisterFontsForURL(font as CFURL, .process, nil)
+    }
+  }`;
+
+function patchEntryView(contents) {
+  let next = contents;
+
+  if (!next.includes(FONT_SENTINEL)) {
+    if (!next.includes(ENTRY_INIT)) {
+      throw new Error("withIosWidgetReleaseRedBox: EntryView.swift init not found");
+    }
+    next = next.replace(ENTRY_INIT, ENTRY_INIT_WITH_FONTS);
+    if (!/^import CoreText$/m.test(next)) {
+      next = next.replace("import SwiftUI", "import SwiftUI\nimport CoreText");
+    }
+  }
+
+  if (!next.includes(".unredacted()")) {
+    if (!next.includes(ENTRY_BODY)) {
+      throw new Error("withIosWidgetReleaseRedBox: EntryView.swift body not found");
+    }
+    next = next.replace(ENTRY_BODY, ENTRY_UNREDACTED);
+  }
+
+  return next;
 }
 
 function patchFile(projectRoot, relativePath, patchFn) {

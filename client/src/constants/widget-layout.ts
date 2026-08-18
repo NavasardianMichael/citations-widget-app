@@ -129,6 +129,14 @@ export function widgetPreviewUsesFakeQuoteBold(): boolean {
  */
 export const WIDGET_ICON_FONT_FAMILY = "WidgetGlyphs";
 
+/**
+ * The same file's PostScript name (`name` ID 6 — run `node ./scripts/print-font-names.js`).
+ * The iOS widget extension loads it through Core Text, which knows nothing about the
+ * `WidgetGlyphs` alias above; the Android collision warning doesn't apply there because
+ * the registration is scoped to the extension's own process.
+ */
+export const WIDGET_ICON_IOS_FONT_FAMILY = "MaterialIcons-Regular";
+
 /** MaterialIcons glyph codepoints for widget action / ornament icons. */
 export const WIDGET_ICON_GLYPH = {
   refresh: "",

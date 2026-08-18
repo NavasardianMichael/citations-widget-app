@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
+import { DEFAULT_WIDGET_FONT, type WidgetFontId } from "@/fonts/registry";
 import { getWidgetSettings } from "@/services/api";
 import {
   getCachedWidgetCitation,
@@ -37,21 +38,27 @@ export async function syncHomeWidget(
   await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(snapshot));
 
   if (Platform.OS === "ios") {
-    await pushIosWidget(snapshot);
+    await pushIosWidget(snapshot, (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId);
   } else if (Platform.OS === "android") {
     await pushAndroidWidget(snapshot);
   }
 }
 
-async function pushIosWidget(snapshot: HomeWidgetSnapshot) {
+async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId) {
   try {
     const CitationWidget = (await import("@/widgets/CitationWidget")).default;
     const { resolveIosBackgroundImageUri } = await import("@/widgets/ios-background");
-    const backgroundImageUri = await resolveIosBackgroundImageUri(
-      snapshot.designId,
-      snapshot.backgroundImageIndex,
-    );
-    CitationWidget.updateSnapshot({ ...snapshot, backgroundImageUri });
+    const { resolveIosWidgetFonts } = await import("@/widgets/ios-fonts");
+    const [backgroundImageUri, fonts] = await Promise.all([
+      resolveIosBackgroundImageUri(snapshot.designId, snapshot.backgroundImageIndex),
+      resolveIosWidgetFonts(fontId),
+    ]);
+    CitationWidget.updateSnapshot({
+      ...snapshot,
+      backgroundImageUri,
+      iosFontFamily: fonts.quote,
+      iosGlyphFontFamily: fonts.glyph,
+    });
   } catch (error) {
     const { Sentry } = await import("@/lib/sentry");
     Sentry.captureException(error);

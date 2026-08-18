@@ -59,6 +59,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "verify:widget": "node ./scripts/verify-ios-widget-layout.js",
     "analyze": "powershell -ExecutionPolicy Bypass -File ./run-analyze.ps1",
     "analyze:export": "powershell -ExecutionPolicy Bypass -File ./run-analyze-export.ps1"
   },

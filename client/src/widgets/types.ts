@@ -32,6 +32,16 @@ export type HomeWidgetSnapshot = {
   fontFamily: string;
   /** Android assets/fonts basename without extension. */
   androidFontFile: string;
+  /**
+   * iOS only — Core Text names of the faces copied into the App Group by
+   * `resolveIosWidgetFonts`. The widget extension can't use `expo-font`'s
+   * aliases (`fontFamily`) or Android's native font assets, so it needs the
+   * PostScript name baked into the file. Null when the copy failed, which keeps
+   * the layout on the system font instead of naming a face Core Text can't find.
+   */
+  iosFontFamily: string | null;
+  /** iOS only — Core Text name for the MaterialIcons subset (`WIDGET_ICON_GLYPH`). */
+  iosGlyphFontFamily: string | null;
   fontSize: number;
   panelBg: string;
   panelBorderColor: string;

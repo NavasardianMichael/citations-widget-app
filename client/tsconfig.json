@@ -3,6 +3,13 @@
   "compilerOptions": {
     "strict": true,
     "module": "ESNext",
+    // Metro resolves `./foo` to `foo.ios.tsx` / `foo.native.ts`; TypeScript and
+    // eslint-plugin-import need to be told about those suffixes too.
+    "moduleSuffixes": [
+      ".ios",
+      ".native",
+      ""
+    ],
     "paths": {
       "@/*": [
         "./src/*"
