@@ -259,6 +259,7 @@ export const hy = {
   'settings.refresh6': '6 ժամը մեկ',
   'settings.refresh12': '12 ժամը մեկ',
   'settings.refresh24': 'Ամեն օր',
+  'settings.refreshMidnight': 'Ամեն օր կեսգիշերին',
   'settings.poolBible': 'Աստվածաշունչ',
   'settings.poolFiction': 'Գրականություն',
   'settings.poolMixed': 'Միքս',

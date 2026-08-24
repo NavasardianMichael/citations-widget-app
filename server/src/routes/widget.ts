@@ -7,6 +7,7 @@ import {
   SOURCE_SELECTION_IDS,
   WIDGET_BACKGROUND_IMAGE_COUNT,
   WIDGET_DESIGN_IDS,
+  isWidgetRefreshDue,
 } from "@citations/shared";
 import type { FontStyle, SourceSelection, WidgetDesign } from "@prisma/client";
 import { Router } from "express";
@@ -86,6 +87,7 @@ const settingsSchema = z.object({
     z.literal(REFRESH_RATE_HOURS[0]),
     z.literal(REFRESH_RATE_HOURS[1]),
     z.literal(REFRESH_RATE_HOURS[2]),
+    z.literal(REFRESH_RATE_HOURS[3]),
   ]),
   fontStyle: z.enum(FONT_STYLE_IDS),
   fontSize: z.number().int().min(FONT_SIZE_MIN).max(FONT_SIZE_MAX),
@@ -162,7 +164,10 @@ widgetRouter.get("/widget/citation", async (req, res) => {
   const force = req.query.force === "true";
   const rotationElapsed =
     !settings.currentCitationSetAt ||
-    Date.now() - settings.currentCitationSetAt.getTime() >= settings.refreshRateHours * 60 * 60 * 1000;
+    isWidgetRefreshDue(
+      settings.currentCitationSetAt.getTime(),
+      settings.refreshRateHours,
+    );
 
   let current =
     settings.currentCitationId && !force && !rotationElapsed

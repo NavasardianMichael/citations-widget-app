@@ -67,6 +67,37 @@ export type SourceSelectionId = (typeof SOURCE_SELECTION_IDS)[number]
 
 export const DEFAULT_SOURCE_SELECTION: SourceSelectionId = 'bible'
 
-export const REFRESH_RATE_HOURS = [6, 12, 24] as const
+/** Sentinel stored in `refreshRateHours`: rotate at the user's next local midnight. */
+export const REFRESH_AT_MIDNIGHT = 0
+
+export const REFRESH_RATE_HOURS = [6, 12, 24, REFRESH_AT_MIDNIGHT] as const
 
 export type RefreshRateHours = (typeof REFRESH_RATE_HOURS)[number]
+
+export function isRefreshRateHours(value: unknown): value is RefreshRateHours {
+  return (
+    typeof value === 'number' &&
+    (REFRESH_RATE_HOURS as readonly number[]).includes(value)
+  )
+}
+
+/**
+ * Whether a citation set at `setAtMs` should rotate given the refresh setting.
+ * For `REFRESH_AT_MIDNIGHT`, due once the local calendar date of `now` is after `setAt`.
+ */
+export function isWidgetRefreshDue(
+  setAtMs: number,
+  refreshRateHours: number,
+  nowMs: number = Date.now(),
+): boolean {
+  if (refreshRateHours === REFRESH_AT_MIDNIGHT) {
+    const setAt = new Date(setAtMs)
+    const now = new Date(nowMs)
+    return (
+      setAt.getFullYear() !== now.getFullYear() ||
+      setAt.getMonth() !== now.getMonth() ||
+      setAt.getDate() !== now.getDate()
+    )
+  }
+  return nowMs - setAtMs >= refreshRateHours * 60 * 60 * 1000
+}

@@ -1,3 +1,4 @@
+import { isWidgetRefreshDue, REFRESH_AT_MIDNIGHT } from "@citations/shared";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
@@ -29,8 +30,9 @@ import {
  * all, and Android's `WIDGET_UPDATE` deliberately skips fetching when a quote is
  * already cached (see `task-handler.tsx`). Without this, the same citation stays
  * on the home screen until the user opens Settings or taps refresh. Launch is
- * the natural rotation point, and `forceFresh: false` leaves the decision to the
- * server, so relaunching the app repeatedly doesn't burn through citations.
+ * the natural rotation point. Interval rates leave the decision to the server;
+ * midnight forces after the local date changes so UTC offset cannot skip a day.
+ * Relaunching the app repeatedly the same day doesn't burn through citations.
  *
  * Returns null when the cache is still warm or the fetch fails — the caller then
  * keeps showing the cached quote rather than blanking the widget while offline.
@@ -40,20 +42,25 @@ async function rotateStaleWidgetCitation(
   cached: CachedWidgetCitation | null,
   guest: boolean,
 ): Promise<WidgetCitation | null> {
-  const rotationMs = settings.refreshRateHours * 60 * 60 * 1000;
   const isWarm =
     Boolean(cached?.citation) &&
     cached?.sourceSelection === settings.sourceSelection &&
-    Date.now() - (cached?.fetchedAt ?? 0) < rotationMs;
+    !isWidgetRefreshDue(cached?.fetchedAt ?? 0, settings.refreshRateHours);
   if (isWarm) return null;
 
   try {
     // A signed-out (but non-guest) user has no token to fetch with, so use the
     // local pool instead of provoking a 401 on every launch.
     const useLocalPool = guest || !(await getAccessToken());
+    // Midnight uses the device calendar day; force so the server rotates even
+    // when its UTC day has not changed yet.
+    const forceMidnight =
+      !useLocalPool &&
+      settings.refreshRateHours === REFRESH_AT_MIDNIGHT &&
+      Boolean(cached?.citation);
     const result = useLocalPool
       ? await pickGuestWidgetCitation(settings.sourceSelection, settings.widgetDesign)
-      : await fetchWidgetCitation(false);
+      : await fetchWidgetCitation(forceMidnight);
     await setCachedWidgetCitation({
       citation: result.citation,
       fetchedAt: Date.now(),

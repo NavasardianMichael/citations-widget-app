@@ -1,5 +1,9 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { DEFAULT_SOURCE_SELECTION } from '@citations/shared'
+import {
+  DEFAULT_SOURCE_SELECTION,
+  isWidgetRefreshDue,
+  REFRESH_AT_MIDNIGHT,
+} from '@citations/shared'
 import { useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -89,11 +93,16 @@ const SOURCE_OPTIONS: {
 
 const REFRESH_OPTIONS: {
   value: RefreshRateHours
-  labelKey: 'settings.refresh6' | 'settings.refresh12' | 'settings.refresh24'
+  labelKey:
+    | 'settings.refresh6'
+    | 'settings.refresh12'
+    | 'settings.refresh24'
+    | 'settings.refreshMidnight'
 }[] = [
   { value: 6, labelKey: 'settings.refresh6' },
   { value: 12, labelKey: 'settings.refresh12' },
   { value: 24, labelKey: 'settings.refresh24' },
+  { value: REFRESH_AT_MIDNIGHT, labelKey: 'settings.refreshMidnight' },
 ]
 
 const FONT_OPTIONS = WIDGET_FONT_OPTIONS.map((font) => ({
@@ -140,23 +149,28 @@ export default function SettingsScreen() {
     ) => {
       setPreviewLoading(true)
       try {
+        let midnightDue = false
         if (!forceFresh) {
           const cached = await getCachedWidgetCitation()
           if (cached && cached.sourceSelection === source) {
-            const rotationMs = refreshRateHours * 60 * 60 * 1000
-            const ageMs = Date.now() - cached.fetchedAt
             // Never treat a null citation as a warm cache hit — that freezes an empty
             // preview for the whole refresh window (e.g. after an empty/unseeded pool).
-            if (cached.citation && ageMs < rotationMs) {
+            if (
+              cached.citation &&
+              !isWidgetRefreshDue(cached.fetchedAt, refreshRateHours)
+            ) {
               setPreview(cached.citation)
               return
             }
+            midnightDue =
+              Boolean(cached.citation) &&
+              refreshRateHours === REFRESH_AT_MIDNIGHT
           }
         }
 
         const result = isGuest
           ? await pickGuestWidgetCitation(source, draftRef.current.widgetDesign)
-          : await fetchWidgetCitation(forceFresh)
+          : await fetchWidgetCitation(forceFresh || midnightDue)
         setPreview(result.citation)
         await setCachedWidgetCitation({
           citation: result.citation,
