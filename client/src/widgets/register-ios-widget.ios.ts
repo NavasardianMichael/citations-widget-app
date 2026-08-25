@@ -10,8 +10,9 @@ import CitationWidget from '@/widgets/CitationWidget'
 
 try {
   CitationWidget.reload()
-} catch {
+} catch (error) {
   // Native module unavailable (e.g. Expo Go); the widget sync retries later.
+  import('@/lib/sentry').then(({ Sentry }) => Sentry.captureException(error))
 }
 
 export default CitationWidget

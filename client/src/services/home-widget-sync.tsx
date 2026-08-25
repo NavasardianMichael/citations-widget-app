@@ -67,7 +67,9 @@ async function rotateStaleWidgetCitation(
       sourceSelection: settings.sourceSelection,
     });
     return result.citation;
-  } catch {
+  } catch (error) {
+    const { Sentry } = await import("@/lib/sentry");
+    Sentry.captureException(error);
     return null;
   }
 }

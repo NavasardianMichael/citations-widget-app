@@ -133,12 +133,21 @@ const ENTRY_UNREDACTED = `  public var body: some View {
         // of upstream's "No layout found" red box.
         ZStack {
           Color(red: 0.07, green: 0.055, blue: 0.047)
-          Text("Բացեք հավելվածը՝ մեջբերումները ցուցադրելու համար")
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
-            .minimumScaleFactor(0.7)
-            .padding(12)
+          VStack(spacing: 6) {
+            Text("Բացեք հավելվածը՝ մեջբերումները ցուցադրելու համար")
+              .font(.system(size: 15, weight: .semibold))
+              .foregroundStyle(.white)
+              .multilineTextAlignment(.center)
+              .minimumScaleFactor(0.7)
+            // ${MARKER}-diagnostic: temporary, remove once the App Group
+            // sharing bug is confirmed and fixed.
+            Text("group=\\(WidgetsStorage.appGroupIdentifier ?? "nil") bundle=\\(Bundle.main.bundleIdentifier ?? "nil")")
+              .font(.system(size: 8, design: .monospaced))
+              .foregroundStyle(.white.opacity(0.55))
+              .multilineTextAlignment(.center)
+              .minimumScaleFactor(0.5)
+          }
+          .padding(12)
         }
       }
     }

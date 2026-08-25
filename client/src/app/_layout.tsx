@@ -74,7 +74,7 @@ function HomeWidgetBootstrap() {
 
   useEffect(() => {
     if (isLoading || Platform.OS === 'web') return
-    syncHomeWidgetFromStoredState().catch(() => undefined)
+    syncHomeWidgetFromStoredState().catch((error) => Sentry.captureException(error))
   }, [isLoading, isGuest, user?.id])
 
   return null
