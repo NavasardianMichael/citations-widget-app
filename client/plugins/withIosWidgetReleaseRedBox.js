@@ -121,12 +121,27 @@ const ENTRY_BODY = `  public var body: some View {
     }
   }`;
 
-const ENTRY_UNREDACTED = `  public var body: some View {
+const ENTRY_UNREDACTED = `  // ${MARKER}-diagnostic: temporary — distinguishes "the app never stored props"
+  // from "props stored but unreadable here". Remove once the sync is confirmed.
+  private var timelineDebug: String {
+    let raw = WidgetsStorage.getArray(forKey: "__expo_widgets_\\(entry.name)_timeline") ?? []
+    return "tl=\\(raw.count) props=\\(entry.props == nil ? "nil" : "empty")"
+  }
+
+  public var body: some View {
     Group {
       if let layout = WidgetsStorage.getString(forKey: "__expo_widgets_\\(entry.name)_layout"),
          !layout.isEmpty {
         let node = evaluateLayout(layout: layout, props: entry.props ?? [:], environment: widgetEnvironment)
-        WidgetsDynamicView(name: entry.name, kind: .widget, node: node, entryIndex: entry.entryIndex, environmentString: widgetEnvironmentString)
+        ZStack(alignment: .bottom) {
+          WidgetsDynamicView(name: entry.name, kind: .widget, node: node, entryIndex: entry.entryIndex, environmentString: widgetEnvironmentString)
+          if entry.props?.isEmpty ?? true {
+            Text(timelineDebug)
+              .font(.system(size: 8, design: .monospaced))
+              .foregroundStyle(.white.opacity(0.6))
+              .padding(4)
+          }
+        }
       } else {
         // ${MARKER}: only the running app writes the layout into the App Group,
         // so a widget added before the first launch gets onboarding copy instead

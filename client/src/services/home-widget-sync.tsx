@@ -119,6 +119,12 @@ function withoutNullProps(snapshot: HomeWidgetSnapshot): HomeWidgetSnapshot {
 async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId) {
   try {
     const CitationWidget = (await import("@/widgets/CitationWidget")).default;
+
+    // Store the quote before resolving fonts/background: those copy files into the
+    // App Group container, and anything that stalls or fails there must not cost the
+    // widget its text — an unstyled citation beats WidgetKit's empty-props fallback.
+    CitationWidget.updateSnapshot(withoutNullProps(snapshot));
+
     const { resolveIosBackgroundImageUri } = await import("@/widgets/ios-background");
     const { resolveIosWidgetFonts } = await import("@/widgets/ios-fonts");
     const [backgroundImageUri, fonts] = await Promise.all([
@@ -132,6 +138,15 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
         iosFontFamily: fonts.quote,
         iosGlyphFontFamily: fonts.glyph,
       }),
+    );
+
+    // TEMP diagnostic: reads the timeline back out of the App Group so a push that
+    // "succeeds" but stores nothing is distinguishable from one that never ran.
+    const written = await CitationWidget.getTimeline();
+    const { Sentry } = await import("@/lib/sentry");
+    Sentry.captureMessage(
+      `widget-sync: ios timeline entries=${written.length} propKeys=${Object.keys(written[0]?.props ?? {}).length}`,
+      "info",
     );
   } catch (error) {
     const { Sentry } = await import("@/lib/sentry");
