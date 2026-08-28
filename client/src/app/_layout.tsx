@@ -74,7 +74,18 @@ function HomeWidgetBootstrap() {
 
   useEffect(() => {
     if (isLoading || Platform.OS === 'web') return
-    syncHomeWidgetFromStoredState().catch((error) => Sentry.captureException(error))
+    // A sync that never settles reports nothing on its own — a pending promise
+    // doesn't throw — and that silence is exactly how the iOS widget was left
+    // holding a layout with no props. Time it out so the breadcrumb trail naming
+    // the step it stopped on actually reaches Sentry.
+    const stalled = setTimeout(
+      () => Sentry.captureException(new Error('home widget sync did not settle in 20s')),
+      20_000,
+    )
+    syncHomeWidgetFromStoredState()
+      .catch((error) => Sentry.captureException(error))
+      .finally(() => clearTimeout(stalled))
+    return () => clearTimeout(stalled)
   }, [isLoading, isGuest, user?.id])
 
   return null

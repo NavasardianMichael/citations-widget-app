@@ -2,6 +2,7 @@ import { isWidgetRefreshDue, REFRESH_AT_MIDNIGHT } from "@citations/shared";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
+import { Sentry } from "@/lib/sentry";
 import { DEFAULT_WIDGET_FONT, type WidgetFontId } from "@/fonts/registry";
 import { fetchWidgetCitation, getWidgetSettings } from "@/services/api";
 import { getAccessToken } from "@/services/auth-storage";
@@ -16,11 +17,22 @@ import {
 import type { WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
 import { buildHomeWidgetSnapshotAsync } from "@/widgets/build-snapshot";
+import { withoutNullProps } from "@/widgets/ios-props";
 import {
   ANDROID_WIDGET_NAMES,
   HOME_WIDGET_SNAPSHOT_KEY,
   type HomeWidgetSnapshot,
 } from "@/widgets/types";
+
+/**
+ * The sync is a long `await` chain that reports nothing when it simply never
+ * settles, which is how the iOS widget ended up holding a layout and no props.
+ * These land on whatever error is eventually captured — including the stall
+ * timeout in `_layout.tsx` — so the last step reached names the culprit.
+ */
+function mark(step: string): void {
+  Sentry.addBreadcrumb({ category: "widget-sync", message: step, level: "info" });
+}
 
 /**
  * Rotates the cached citation once its refresh window has passed, mirroring what
@@ -68,7 +80,6 @@ async function rotateStaleWidgetCitation(
     });
     return result.citation;
   } catch (error) {
-    const { Sentry } = await import("@/lib/sentry");
     Sentry.captureException(error);
     return null;
   }
@@ -77,13 +88,19 @@ async function rotateStaleWidgetCitation(
 /** Push the last saved settings + cached citation to the home-screen widget. */
 export async function syncHomeWidgetFromStoredState(): Promise<void> {
   if (Platform.OS === "web") return;
+  mark("start");
   const guest = await isGuestMode();
+  mark(`mode resolved (guest=${guest})`);
   const settings = guest
     ? await getGuestWidgetSettings()
     : await getWidgetSettings().catch(() => getGuestWidgetSettings());
+  mark("settings loaded");
   const cached = await getCachedWidgetCitation();
+  mark("cache read");
   const rotated = await rotateStaleWidgetCitation(settings, cached, guest);
+  mark("rotation resolved");
   await syncHomeWidget(settings, rotated ?? cached?.citation ?? null);
+  mark("sync complete");
 }
 
 export async function syncHomeWidget(
@@ -93,7 +110,9 @@ export async function syncHomeWidget(
   if (Platform.OS === "web") return;
 
   const snapshot = await buildHomeWidgetSnapshotAsync(settings, citation);
+  mark("snapshot built");
   await AsyncStorage.setItem(HOME_WIDGET_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  mark("snapshot stored");
 
   if (Platform.OS === "ios") {
     await pushIosWidget(snapshot, (settings.fontStyle ?? DEFAULT_WIDGET_FONT) as WidgetFontId);
@@ -102,28 +121,17 @@ export async function syncHomeWidget(
   }
 }
 
-/**
- * `expo-widgets` stores widget props in the App Group's `UserDefaults`, which
- * only accepts property-list types — and every JS `null` crosses into Swift as
- * `NSNull`. One null anywhere in the snapshot makes the insert raise, surfacing
- * as `Exception in HostFunction: <unknown>`, and the timeline is never written.
- * Dropping those keys is safe because `CitationWidget.ios.tsx` treats a missing
- * value and an empty one the same way.
- */
-function withoutNullProps(snapshot: HomeWidgetSnapshot): HomeWidgetSnapshot {
-  return Object.fromEntries(
-    Object.entries(snapshot).filter(([, value]) => value !== null && value !== undefined),
-  ) as HomeWidgetSnapshot;
-}
-
 async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId) {
   try {
+    mark("ios: importing widget");
     const CitationWidget = (await import("@/widgets/CitationWidget")).default;
+    mark("ios: widget imported");
 
     // Store the quote before resolving fonts/background: those copy files into the
     // App Group container, and anything that stalls or fails there must not cost the
     // widget its text — an unstyled citation beats WidgetKit's empty-props fallback.
     CitationWidget.updateSnapshot(withoutNullProps(snapshot));
+    mark("ios: text-only props stored");
 
     const { resolveIosBackgroundImageUri } = await import("@/widgets/ios-background");
     const { resolveIosWidgetFonts } = await import("@/widgets/ios-fonts");
@@ -131,6 +139,7 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
       resolveIosBackgroundImageUri(snapshot.designId, snapshot.backgroundImageIndex),
       resolveIosWidgetFonts(fontId),
     ]);
+    mark("ios: fonts and background resolved");
     CitationWidget.updateSnapshot(
       withoutNullProps({
         ...snapshot,
@@ -143,13 +152,11 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
     // TEMP diagnostic: reads the timeline back out of the App Group so a push that
     // "succeeds" but stores nothing is distinguishable from one that never ran.
     const written = await CitationWidget.getTimeline();
-    const { Sentry } = await import("@/lib/sentry");
     Sentry.captureMessage(
       `widget-sync: ios timeline entries=${written.length} propKeys=${Object.keys(written[0]?.props ?? {}).length}`,
       "info",
     );
   } catch (error) {
-    const { Sentry } = await import("@/lib/sentry");
     Sentry.captureException(error);
   }
 }
