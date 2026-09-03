@@ -1,5 +1,11 @@
 /**
- * Four fixes to `expo-widgets`' iOS widget host, none of which are configurable:
+ * Five fixes to `expo-widgets`' iOS widget host, none of which are configurable:
+ *
+ * - Writes into the App Group are never flushed, so they sit in the app's memory
+ *   until iOS chooses to persist them and a force-quit drops them entirely. The
+ *   extension is a separate process reading the same container, which is how it
+ *   saw no timeline while the layout — written at launch, long since flushed —
+ *   arrived fine.
  *
  * - Release (TestFlight) builds render layout errors as `EmptyView` — a blank
  *   widget — so RedBox and SwiftUI prop-decode failures stay diagnosable.
@@ -83,6 +89,28 @@ const NONEMPTY_TIMELINE = `    let entries = parseTimeline(identifier: groupIden
       : entries
     let timeline = Timeline<WidgetsTimelineEntry>(entries: resolved, policy: .atEnd)
     completion(timeline)`;
+
+const STORAGE_SET = `    defaults.set(value, forKey: key)
+  }`;
+
+const STORAGE_SET_SYNCED = `    defaults.set(value, forKey: key)
+    // ${MARKER}: force the group container to disk. Without this the value only
+    // lives in this process's memory until iOS decides to persist it, so the
+    // widget extension — a separate process reading the same App Group — sees
+    // nothing, and a force-quit loses the write outright. Deprecated since
+    // iOS 12, and still the only way to flush on demand.
+    defaults.synchronize()
+  }`;
+
+function patchWidgetsStorage(contents) {
+  if (contents.includes(MARKER)) return contents;
+  if (!contents.includes(STORAGE_SET)) {
+    throw new Error(
+      "withIosWidgetReleaseRedBox: WidgetsStorage.swift setter body not found",
+    );
+  }
+  return contents.split(STORAGE_SET).join(STORAGE_SET_SYNCED);
+}
 
 function patchDynamicView(contents) {
   if (contents.includes(MARKER) && contents.includes("RedBoxView")) return contents;
@@ -252,6 +280,11 @@ function withIosWidgetReleaseRedBox(config) {
       const root = mod.modRequest.projectRoot;
       patchFile(
         root,
+        path.join("node_modules", "expo-widgets", "ios", "WidgetsStorage.swift"),
+        patchWidgetsStorage,
+      );
+      patchFile(
+        root,
         path.join("node_modules", "expo-widgets", "ios", "Widgets", "DynamicView.swift"),
         patchDynamicView,
       );
@@ -277,6 +310,7 @@ function withIosWidgetReleaseRedBox(config) {
 }
 
 module.exports = withIosWidgetReleaseRedBox;
+module.exports.patchWidgetsStorage = patchWidgetsStorage;
 module.exports.patchDynamicView = patchDynamicView;
 module.exports.patchTimelineProvider = patchTimelineProvider;
 module.exports.patchEntryView = patchEntryView;
