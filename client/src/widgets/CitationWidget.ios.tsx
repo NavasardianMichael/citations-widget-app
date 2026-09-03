@@ -26,6 +26,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers'
 import { createWidget, type WidgetEnvironment } from 'expo-widgets'
 
+import { type IosWidgetProps } from '@/widgets/ios-props'
 import { IOS_WIDGET_NAME, type HomeWidgetSnapshot } from '@/widgets/types'
 
 /**
@@ -54,8 +55,17 @@ import { IOS_WIDGET_NAME, type HomeWidgetSnapshot } from '@/widgets/types'
  *   a widget can render before the app has ever copied the files — so every
  *   custom face falls back to the system font and Unicode glyphs.
  */
-function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnvironment) {
+function CitationWidgetView(raw: IosWidgetProps, environment: WidgetEnvironment) {
   'widget'
+
+  // The snapshot arrives as one JSON string. A ~40-key dictionary of mixed values
+  // does not survive the App Group's `UserDefaults` round trip — the app read its
+  // own write back with 3 keys left and the extension saw no entry at all — while
+  // a string does, which is how the layout itself has always crossed.
+  const props: HomeWidgetSnapshot =
+    raw && typeof raw.json === 'string'
+      ? JSON.parse(raw.json)
+      : ({} as HomeWidgetSnapshot)
 
   const family = environment.widgetFamily
   const quote = props.isRefreshing
@@ -366,7 +376,7 @@ function CitationWidgetView(props: HomeWidgetSnapshot, environment: WidgetEnviro
   )
 }
 
-const CitationWidget = createWidget<HomeWidgetSnapshot>(
+const CitationWidget = createWidget<IosWidgetProps>(
   IOS_WIDGET_NAME,
   CitationWidgetView,
 )

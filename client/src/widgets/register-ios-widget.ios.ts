@@ -9,7 +9,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import CitationWidget from '@/widgets/CitationWidget'
-import { withoutNullProps } from '@/widgets/ios-props'
+import { toIosWidgetProps } from '@/widgets/ios-props'
 import { HOME_WIDGET_SNAPSHOT_KEY, type HomeWidgetSnapshot } from '@/widgets/types'
 
 try {
@@ -36,7 +36,7 @@ async function restoreStoredSnapshot(): Promise<void> {
   try {
     const raw = await AsyncStorage.getItem(HOME_WIDGET_SNAPSHOT_KEY)
     if (!raw) return
-    CitationWidget.updateSnapshot(withoutNullProps(JSON.parse(raw) as HomeWidgetSnapshot))
+    CitationWidget.updateSnapshot(toIosWidgetProps(JSON.parse(raw) as HomeWidgetSnapshot))
   } catch (error) {
     const { Sentry } = await import('@/lib/sentry')
     Sentry.captureException(error)

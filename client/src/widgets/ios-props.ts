@@ -1,15 +1,20 @@
 import type { HomeWidgetSnapshot } from "@/widgets/types";
 
+/** What actually crosses into the widget extension: the snapshot as one string. */
+export type IosWidgetProps = { json: string };
+
 /**
- * `expo-widgets` stores widget props in the App Group's `UserDefaults`, which
- * only accepts property-list types — and every JS `null` crosses into Swift as
- * `NSNull`. One null anywhere in the snapshot makes the insert raise, surfacing
- * as `Exception in HostFunction: <unknown>`, and the timeline is never written.
- * Dropping those keys is safe because `CitationWidget.ios.tsx` treats a missing
- * value and an empty one the same way.
+ * A snapshot is ~40 mixed strings, numbers and booleans, and that dictionary does
+ * not survive the trip into the App Group's `UserDefaults`: the app reads its own
+ * write back with nearly every key gone (`propKeys=3`), and the extension finds no
+ * entry at all (`tl=0`). The layout crosses the same boundary intact because it is
+ * stored as a single string, so send the props as one too and parse them inside
+ * the layout.
+ *
+ * Nulls are safe here — they stay inside the string instead of arriving as
+ * `NSNull`, which is what used to make the whole insert raise, so this also
+ * retires `withoutNullProps`.
  */
-export function withoutNullProps(snapshot: HomeWidgetSnapshot): HomeWidgetSnapshot {
-  return Object.fromEntries(
-    Object.entries(snapshot).filter(([, value]) => value !== null && value !== undefined),
-  ) as HomeWidgetSnapshot;
+export function toIosWidgetProps(snapshot: HomeWidgetSnapshot): IosWidgetProps {
+  return { json: JSON.stringify(snapshot) };
 }

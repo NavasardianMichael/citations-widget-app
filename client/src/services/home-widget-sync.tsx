@@ -17,7 +17,7 @@ import {
 import type { WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 import { CitationAndroidWidget } from "@/widgets/android/CitationAndroidWidget";
 import { buildHomeWidgetSnapshotAsync } from "@/widgets/build-snapshot";
-import { withoutNullProps } from "@/widgets/ios-props";
+import { toIosWidgetProps } from "@/widgets/ios-props";
 import {
   ANDROID_WIDGET_NAMES,
   HOME_WIDGET_SNAPSHOT_KEY,
@@ -130,7 +130,7 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
     // Store the quote before resolving fonts/background: those copy files into the
     // App Group container, and anything that stalls or fails there must not cost the
     // widget its text — an unstyled citation beats WidgetKit's empty-props fallback.
-    CitationWidget.updateSnapshot(withoutNullProps(snapshot));
+    CitationWidget.updateSnapshot(toIosWidgetProps(snapshot));
     mark("ios: text-only props stored");
 
     const { resolveIosBackgroundImageUri } = await import("@/widgets/ios-background");
@@ -141,7 +141,7 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
     ]);
     mark("ios: fonts and background resolved");
     CitationWidget.updateSnapshot(
-      withoutNullProps({
+      toIosWidgetProps({
         ...snapshot,
         backgroundImageUri,
         iosFontFamily: fonts.quote,
@@ -149,11 +149,17 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
       }),
     );
 
-    // TEMP diagnostic: reads the timeline back out of the App Group so a push that
-    // "succeeds" but stores nothing is distinguishable from one that never ran.
+    // TEMP diagnostic: reads the timeline back out of the App Group, so props that
+    // are dropped in transit stay distinguishable from a push that never ran. Names
+    // the surviving keys — a bare count is what hid the truncation for so long.
     const written = await CitationWidget.getTimeline();
+    const stored = written[0]?.props ?? {};
     Sentry.captureMessage(
-      `widget-sync: ios timeline entries=${written.length} propKeys=${Object.keys(written[0]?.props ?? {}).length}`,
+      `widget-sync: ios entries=${written.length} keys=[${Object.keys(stored).join(",")}] jsonChars=${
+        typeof (stored as { json?: string }).json === "string"
+          ? (stored as { json: string }).json.length
+          : -1
+      }`,
       "info",
     );
   } catch (error) {

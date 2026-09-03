@@ -239,7 +239,31 @@ function collectNodeTypes(node, found = new Set()) {
   return found;
 }
 
-function assertRenders(render, label, props, widgetFamily) {
+function collectText(node, found = []) {
+  if (node === null || node === undefined) return found;
+  if (typeof node === "string" || typeof node === "number") {
+    found.push(String(node));
+    return found;
+  }
+  if (typeof node !== "object") return found;
+  const children = node.props?.children;
+  for (const child of Array.isArray(children) ? children : [children]) {
+    collectText(child, found);
+  }
+  return found;
+}
+
+/**
+ * The extension receives the snapshot as one JSON string, not as a dictionary —
+ * a ~40-key dictionary does not survive the App Group's `UserDefaults` round
+ * trip (see `ios-props.ts`). Rendering has to be checked through that envelope,
+ * or this passes while the widget shows its empty state on the device.
+ */
+function asProps(snapshot) {
+  return { json: JSON.stringify(snapshot) };
+}
+
+function assertRenders(render, label, props, widgetFamily, expectedText) {
   let tree;
   try {
     tree = render(props, { widgetFamily, colorScheme: "dark", showsContainerBackground: true });
@@ -251,6 +275,14 @@ function assertRenders(render, label, props, widgetFamily) {
   const unsupported = [...types].filter((type) => !NATIVE_NODE_TYPES.includes(type));
   if (unsupported.length) {
     throw new Error(`${label}: DynamicView.swift cannot render ${unsupported.join(", ")}`);
+  }
+  // Rendering *something* is not enough: props that never arrive still produce a
+  // full tree, just one showing the "no citation" fallback.
+  if (expectedText && !collectText(tree).join(" ").includes(expectedText)) {
+    throw new Error(
+      `${label}: expected the rendered text to include ${JSON.stringify(expectedText)}, ` +
+        `got ${JSON.stringify(collectText(tree).join(" ").slice(0, 160))}`,
+    );
   }
 }
 
@@ -273,20 +305,28 @@ function main() {
     // Timeline entries can reach the extension without props at all (a widget
     // added before the app ever synced), so the empty case has to render too.
     assertRenders(render, `${family} / no props`, {}, family);
-    assertRenders(render, `${family} / full snapshot`, FULL_SNAPSHOT, family);
+    assertRenders(
+      render,
+      `${family} / full snapshot`,
+      asProps(FULL_SNAPSHOT),
+      family,
+      FULL_SNAPSHOT.quoteText,
+    );
     assertRenders(
       render,
       `${family} / refreshing`,
-      { ...FULL_SNAPSHOT, isRefreshing: true },
+      asProps({ ...FULL_SNAPSHOT, isRefreshing: true }),
       family,
+      FULL_SNAPSHOT.loadingMessage,
     );
     // The App Group fonts are copied by the app, so the layout has to survive
     // rendering before (or without) a successful copy.
     assertRenders(
       render,
       `${family} / no app group fonts`,
-      { ...FULL_SNAPSHOT, iosFontFamily: null, iosGlyphFontFamily: null },
+      asProps({ ...FULL_SNAPSHOT, iosFontFamily: null, iosGlyphFontFamily: null }),
       family,
+      FULL_SNAPSHOT.quoteText,
     );
   }
 
