@@ -112,6 +112,83 @@ function patchWidgetsStorage(contents) {
   return contents.split(STORAGE_SET).join(STORAGE_SET_SYNCED);
 }
 
+const TIMELINE_WRITE = `    WidgetsStorage.set(entries.map { $0.toDictionary() }, forKey: "__expo_widgets_\\(name)_timeline")
+
+    self.reload()
+  }`;
+
+const TIMELINE_WRITE_MIRRORED = `    WidgetsStorage.set(entries.map { $0.toDictionary() }, forKey: "__expo_widgets_\\(name)_timeline")
+    // ${MARKER}: mirror the timeline as text. The dictionary above survives in
+    // this process — the app reads its own write straight back — but does not
+    // reach the widget extension, which finds the key empty. A plain string
+    // crosses reliably, which is how the layout has always arrived.
+    WidgetsStorage.set(Self.encodeForAppGroup(entries), forKey: "__expo_widgets_\\(name)_timeline_json")
+
+    self.reload()
+  }
+
+  // ${MARKER}: JSON text built only from primitives, so nothing bridge-backed
+  // can make the value unserializable on the way to the App Group container.
+  private static func encodeForAppGroup(_ entries: [WidgetsJSTimelineEntry]) -> String {
+    let payload: [[String: Any]] = entries.map { entry in
+      var props: [String: String] = [:]
+      for (key, value) in entry.props {
+        props[key] = value as? String ?? String(describing: value)
+      }
+      return ["timestamp": entry.timestamp, "props": props]
+    }
+    guard let data = try? JSONSerialization.data(withJSONObject: payload),
+          let json = String(data: data, encoding: .utf8) else {
+      return ""
+    }
+    return json
+  }`;
+
+function patchWidgetObject(contents) {
+  if (contents.includes(MARKER)) return contents;
+  if (!contents.includes(TIMELINE_WRITE)) {
+    throw new Error(
+      "withIosWidgetReleaseRedBox: WidgetObject.swift updateTimeline body not found",
+    );
+  }
+  let next = contents.replace(TIMELINE_WRITE, TIMELINE_WRITE_MIRRORED);
+  if (!/^import Foundation$/m.test(next)) {
+    next = next.replace("import WidgetKit", "import WidgetKit\nimport Foundation");
+  }
+  return next;
+}
+
+const TIMELINE_READ = `  let timeline = WidgetsStorage.getArray(forKey: "__expo_widgets_\\(name)_timeline") ?? []`;
+
+const TIMELINE_READ_MIRRORED = `  // ${MARKER}: read the text mirror first — the dictionary form written
+  // alongside it does not survive the trip into this process.
+  let timeline = decodeTimelineFromAppGroup(name: name)
+    ?? WidgetsStorage.getArray(forKey: "__expo_widgets_\\(name)_timeline")
+    ?? []`;
+
+const DECODE_HELPER = `// ${MARKER}: counterpart to WidgetObject.encodeForAppGroup.
+func decodeTimelineFromAppGroup(name: String) -> [Any]? {
+  guard let json = WidgetsStorage.getString(forKey: "__expo_widgets_\\(name)_timeline_json"),
+        !json.isEmpty,
+        let data = json.data(using: .utf8),
+        let array = try? JSONSerialization.jsonObject(with: data) as? [Any] else {
+    return nil
+  }
+  return array
+}
+
+func parseTimeline(`;
+
+function patchTimelineUtils(contents) {
+  if (contents.includes(MARKER)) return contents;
+  if (!contents.includes(TIMELINE_READ)) {
+    throw new Error("withIosWidgetReleaseRedBox: Utils.swift timeline read not found");
+  }
+  return contents
+    .replace(TIMELINE_READ, TIMELINE_READ_MIRRORED)
+    .replace("func parseTimeline(", DECODE_HELPER);
+}
+
 function patchDynamicView(contents) {
   if (contents.includes(MARKER) && contents.includes("RedBoxView")) return contents;
   let next = contents;
@@ -153,7 +230,8 @@ const ENTRY_UNREDACTED = `  // ${MARKER}-diagnostic: temporary — distinguishes
   // from "props stored but unreadable here". Remove once the sync is confirmed.
   private var timelineDebug: String {
     let raw = WidgetsStorage.getArray(forKey: "__expo_widgets_\\(entry.name)_timeline") ?? []
-    return "tl=\\(raw.count) props=\\(entry.props == nil ? "nil" : "empty")"
+    let mirrored = WidgetsStorage.getString(forKey: "__expo_widgets_\\(entry.name)_timeline_json")?.count ?? -1
+    return "tl=\\(raw.count) json=\\(mirrored) props=\\(entry.props == nil ? "nil" : "empty")"
   }
 
   public var body: some View {
@@ -285,6 +363,16 @@ function withIosWidgetReleaseRedBox(config) {
       );
       patchFile(
         root,
+        path.join("node_modules", "expo-widgets", "ios", "WidgetObject.swift"),
+        patchWidgetObject,
+      );
+      patchFile(
+        root,
+        path.join("node_modules", "expo-widgets", "ios", "Widgets", "Utils.swift"),
+        patchTimelineUtils,
+      );
+      patchFile(
+        root,
         path.join("node_modules", "expo-widgets", "ios", "Widgets", "DynamicView.swift"),
         patchDynamicView,
       );
@@ -311,6 +399,8 @@ function withIosWidgetReleaseRedBox(config) {
 
 module.exports = withIosWidgetReleaseRedBox;
 module.exports.patchWidgetsStorage = patchWidgetsStorage;
+module.exports.patchWidgetObject = patchWidgetObject;
+module.exports.patchTimelineUtils = patchTimelineUtils;
 module.exports.patchDynamicView = patchDynamicView;
 module.exports.patchTimelineProvider = patchTimelineProvider;
 module.exports.patchEntryView = patchEntryView;
