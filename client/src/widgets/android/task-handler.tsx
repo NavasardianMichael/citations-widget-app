@@ -38,6 +38,7 @@ import {
   isAndroidWidgetName,
   type HomeWidgetSnapshot,
 } from "@/widgets/types";
+import { WIDGET_REFRESH_ACTION_ENABLED } from "@/widgets/widget-features";
 
 const FALLBACK_SETTINGS = {
   sourceSelection: DEFAULT_SOURCE_SELECTION,
@@ -294,7 +295,14 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
       snapshot = await awaitBootstrapSnapshot();
     }
 
-    if (props.widgetAction === "WIDGET_CLICK" && props.clickAction === "REFRESH") {
+    // Parked; see `widgets/widget-features.ts`. The chip is not rendered, so this
+    // click cannot arrive — the guard keeps the fetch from running for a widget
+    // still on a home screen from an older build.
+    if (
+      WIDGET_REFRESH_ACTION_ENABLED &&
+      props.widgetAction === "WIDGET_CLICK" &&
+      props.clickAction === "REFRESH"
+    ) {
       // Paint loading copy + refresh-button spinner first, then fetch.
       renderSnapshot(props, {
         ...snapshot,

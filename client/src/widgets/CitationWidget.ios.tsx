@@ -163,6 +163,12 @@ function CitationWidgetView(raw: IosWidgetProps, environment: WidgetEnvironment)
     flare: glyphFamily ? '\ue3e4' : '✦',
   }
 
+  // Parked, and inlined rather than imported: this function is serialized and
+  // evaluated in a bare JavaScriptCore context where module-scope imports are
+  // `undefined`, so it cannot read `WIDGET_REFRESH_ACTION_ENABLED`. Keep the two
+  // in step — see `widgets/widget-features.ts`.
+  const refreshActionEnabled = false
+
   // Mirrors buildWidgetActionUri(): a widget tap can only open the app, so the
   // app performs the refresh/save/share work on launch.
   const actionUri = (action: string) => 'citationswidget://widget-action?action=' + action
@@ -282,7 +288,7 @@ function CitationWidgetView(raw: IosWidgetProps, environment: WidgetEnvironment)
               modifiers={[frame({ maxWidth: Infinity, alignment: 'trailing' })]}
             >
               <Spacer />
-              {chip(icon.refresh, actionUri('refresh'))}
+              {refreshActionEnabled ? chip(icon.refresh, actionUri('refresh')) : null}
               {chip(
                 props.isSaved ? icon.saved : icon.unsaved,
                 props.citationId ? actionUri('toggle-save') : '',

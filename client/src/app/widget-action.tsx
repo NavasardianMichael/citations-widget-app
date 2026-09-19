@@ -19,6 +19,7 @@ import { syncHomeWidget } from '@/services/home-widget-sync'
 import { getWidgetSettings } from '@/services/widget-settings'
 import { HOME_WIDGET_SNAPSHOT_KEY, type HomeWidgetSnapshot } from '@/widgets/types'
 import type { WidgetActionId } from '@/widgets/widget-action-uri'
+import { WIDGET_REFRESH_ACTION_ENABLED } from '@/widgets/widget-features'
 
 async function shouldUseLocalWidgetSettings(): Promise<boolean> {
   if (await isGuestMode()) return true
@@ -107,8 +108,12 @@ export default function WidgetActionScreen() {
 
     void (async () => {
       try {
-        if (action === 'refresh') await runRefresh()
-        else if (action === 'toggle-save') await runToggleSave()
+        // `refresh` is parked; see `widgets/widget-features.ts`. No chip opens
+        // this link any more, so the guard only covers a widget left on screen
+        // from an older build.
+        if (action === 'refresh') {
+          if (WIDGET_REFRESH_ACTION_ENABLED) await runRefresh()
+        } else if (action === 'toggle-save') await runToggleSave()
         else if (action === 'share') await runShare()
       } catch {
         // Best-effort — a failed widget action must never block entering the app.

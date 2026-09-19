@@ -24,6 +24,7 @@ import {
   WIDGET_SOURCE_FONT_WEIGHT,
 } from "@/constants/widget-layout";
 import { buildShareText } from "@/services/build-share-text";
+import { WIDGET_REFRESH_ACTION_ENABLED } from "@/widgets/widget-features";
 import type { HomeWidgetSnapshot } from "@/widgets/types";
 import {
   clampQuotePageIndex,
@@ -188,13 +189,18 @@ function WidgetBody({
   );
   const actions: WidgetAction[] = snapshot.showActions
     ? [
-        {
-          id: "refresh",
-          icon: WIDGET_ICON_GLYPH.refresh,
-          loading: isRefreshing,
-          // Only the busy action is disabled; others stay tappable.
-          clickAction: isRefreshing ? undefined : "REFRESH",
-        },
+        // Parked; see `widgets/widget-features.ts`.
+        ...(WIDGET_REFRESH_ACTION_ENABLED
+          ? [
+              {
+                id: "refresh",
+                icon: WIDGET_ICON_GLYPH.refresh,
+                loading: isRefreshing,
+                // Only the busy action is disabled; others stay tappable.
+                clickAction: isRefreshing ? undefined : "REFRESH",
+              } satisfies WidgetAction,
+            ]
+          : []),
         {
           id: "save",
           icon: snapshot.isSaved
