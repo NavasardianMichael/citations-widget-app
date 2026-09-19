@@ -149,6 +149,55 @@ reload is needed after a deploy.
 The two layers are fully independent — editing the privacy policy does not
 rebuild Docker, and a server change does not republish the policy.
 
+## Troubleshooting
+
+### 404 on every page, but `nginx -t` passes
+
+Look above the `test is successful` line for warnings:
+
+```
+nginx: [warn] conflicting server name "legal.citations.mnavasardian.com" on 0.0.0.0:443, ignored
+```
+
+Two server blocks claim the name; nginx keeps the first one loaded and discards
+the rest. `sites-enabled/*` globs alphabetically, so anything prefixed `000-`
+wins over this file no matter how many times you reload it.
+
+Find every file declaring the name:
+
+```bash
+sudo grep -rln "legal.citations.mnavasardian.com" /etc/nginx/
+```
+
+The usual culprit is a block `certbot --nginx` added to
+`000-default-404.conf`. When certbot cannot find an existing HTTPS block for the
+domain, it clones the `default_server` one — which here is a catch-all whose
+body is `return 404;`. The clone gets the right certificate and the wrong body,
+and because of the filename it outranks this config. Delete that block; keep the
+two `server_name _;` catch-alls, which legitimately refuse hostnames we do not
+own.
+
+This is why step 4 above uses `certbot certonly --webroot`. It issues and renews
+and never edits a config file.
+
+### 403 instead of 404
+
+Permissions, not routing. nginx runs as `www-data` and cannot traverse to the
+files — re-run the `chmod o+x` chain in step 2.
+
+### Serving stale content
+
+Confirm the path nginx is actually reading:
+
+```bash
+sudo tail -20 /var/log/nginx/citations-legal.error.log
+grep -n "root" /etc/nginx/sites-available/legal.citations.mnavasardian.com.conf
+ls -la /home/michael/apps/citations/legal/
+```
+
+The `root` is a literal path while the deploy target comes from the `APP_DIR`
+secret, so the two can disagree silently. See the APP_DIR section at the top.
+
 ## Why CI does not deploy the nginx configs
 
 It ships *content* into `$APP_DIR/legal`, never anything under `/etc/nginx`.
