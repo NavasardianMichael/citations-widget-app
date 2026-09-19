@@ -10,10 +10,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.mnavasardian.citations",
+      "bundleIdentifier": "com.anonymous.citationswidgetapp",
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.mnavasardian.citations"
+          "group.com.anonymous.citationswidgetapp"
         ]
       },
       "infoPlist": {
@@ -86,8 +86,8 @@
       [
         "expo-widgets",
         {
-          "bundleIdentifier": "com.mnavasardian.citations.widgets",
-          "groupIdentifier": "group.com.mnavasardian.citations",
+          "bundleIdentifier": "com.anonymous.citationswidgetapp.widgets",
+          "groupIdentifier": "group.com.anonymous.citationswidgetapp",
           "widgets": [
             {
               "name": "CitationWidget",
