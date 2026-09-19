@@ -20,7 +20,7 @@ EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=  # Android OAuth client ID (required on An
 EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=      # iOS OAuth client ID (required for iOS Google sign-in)
 ```
 
-Google Android client in Cloud Console must use package `com.anonymous.citationswidgetapp` and the **SHA-1** of the keystore that signs the APK.
+Google Android client in Cloud Console must use package `com.mnavasardian.citations` and the **SHA-1** of the keystore that signs the APK.
 
 Shareable release APKs (`npm run android:apk`) are signed with **`android/app/debug.keystore`** (not `%USERPROFILE%\.android\debug.keystore`). Get the correct fingerprint with:
 
@@ -59,7 +59,7 @@ npx expo-doctor
 | Android emulator | `npx expo run:android` |
 | Physical device | `npx expo run:android --device` |
 
-First Android build compiles the native app and installs the dev client (`com.anonymous.citationswidgetapp`). Allow several minutes.
+First Android build compiles the native app and installs the dev client (`com.mnavasardian.citations`). Allow several minutes.
 
 ## Daily workflow
 

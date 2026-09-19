@@ -10,10 +10,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.citationswidgetapp",
+      "bundleIdentifier": "com.mnavasardian.citations",
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.anonymous.citationswidgetapp"
+          "group.com.mnavasardian.citations"
         ]
       },
       "infoPlist": {
@@ -28,7 +28,11 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.citationswidgetapp",
+      "package": "com.mnavasardian.citations",
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -82,8 +86,8 @@
       [
         "expo-widgets",
         {
-          "bundleIdentifier": "com.anonymous.citationswidgetapp.widgets",
-          "groupIdentifier": "group.com.anonymous.citationswidgetapp",
+          "bundleIdentifier": "com.mnavasardian.citations.widgets",
+          "groupIdentifier": "group.com.mnavasardian.citations",
           "widgets": [
             {
               "name": "CitationWidget",

@@ -205,7 +205,7 @@ try {
   Write-Host ""
   Write-Host "Install: adb install -r `"$apk`"" -ForegroundColor Cyan
   Write-Host ""
-  Write-Host "Google login: Android OAuth client must use package com.anonymous.citationswidgetapp" -ForegroundColor Cyan
+  Write-Host "Google login: Android OAuth client must use package com.mnavasardian.citations" -ForegroundColor Cyan
   Write-Host "and SHA-1 of android/app/debug.keystore (release currently signs with that key)." -ForegroundColor Cyan
 }
 finally {

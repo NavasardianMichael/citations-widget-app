@@ -96,7 +96,7 @@ npx eas-cli build --platform android --profile preview
 ### Clear emulator install (stale widgets / storage)
 
 ```bash
-adb uninstall com.anonymous.citationswidgetapp
+adb uninstall com.mnavasardian.citations
 adb -s emulator-5554 shell pm trim-caches 2G
 ```
 

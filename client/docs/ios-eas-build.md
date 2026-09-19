@@ -14,7 +14,7 @@ In [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Servic
 
 1. **Create credentials** → **OAuth client ID** (not an API key).
 2. Application type: **iOS**.
-3. **Bundle ID:** `com.anonymous.citationswidgetapp` (must match `app.json`).
+3. **Bundle ID:** `com.mnavasardian.citations` (must match `app.json`).
 4. Leave App Store ID / Team ID empty until the app is on the App Store (optional later).
 5. Create → copy the Client ID (`….apps.googleusercontent.com`).
 
@@ -57,8 +57,8 @@ When prompted:
 1. Sign in with your **Apple ID** (Apple Developer membership).
 2. Allow EAS to create/manage the **Distribution Certificate**.
 3. Allow provisioning profiles for **both** targets:
-   - `com.anonymous.citationswidgetapp` (main app)
-   - `com.anonymous.citationswidgetapp.widgets` (home-screen widget)
+   - `com.mnavasardian.citations` (main app)
+   - `com.mnavasardian.citations.widgets` (home-screen widget)
 
 Wait for the cloud build to finish (link shown in the terminal / [expo.dev builds](https://expo.dev/accounts/michael.navasardyan/projects/citations-widget-app/builds)).
 
@@ -87,7 +87,7 @@ Complete any App Store Connect prompts (app record, encryption export = already 
 
 - **No Mac / Xcode** is required for this path.
 - Re-run step 3 after native changes (plugins, bundle ID, widgets, fonts). JS-only changes still need a new native build for TestFlight unless you add EAS Update later.
-- Bundle ID must stay `com.anonymous.citationswidgetapp` everywhere (Apple, Google iOS OAuth, Expo).
+- Bundle ID must stay `com.mnavasardian.citations` everywhere (Apple, Google iOS OAuth, Expo).
 - Local `npm run ios` / `expo run:ios` needs a Mac; ignore that on Windows.
 
 ## Troubleshooting
@@ -100,7 +100,7 @@ Complete any App Store Connect prompts (app record, encryption export = already 
 | API calls fail | `EXPO_PUBLIC_API_URL` on EAS must be a URL the phone can reach (HTTPS public API, not `localhost`). |
 | App name contains invalid characters | App Store Connect rejects Armenian for the **store listing** name. `eas.json` `submit.production.ios.appName` is the Latin name (`Bible Citations`). The home-screen name stays `expo.name`. If submit still fails, rename the app in [App Store Connect](https://appstoreconnect.apple.com) to that Latin name, then retry. |
 | Instant close, no Sentry / Analytics log (`DYLD Symbol missing` in TestFlight `crashlog.crash`) | Prebuilt `ExpoFileSystem` / `ExpoModulesCore` ABI skew. Production/preview EAS sets `EXPO_USE_PRECOMPILED_MODULES=0` and `package.json` `expo.autolinking.ios.buildFromSource` compiles iOS Expo modules from source. Run `npx expo install --fix`, then a **new** native iOS build. |
-| Home-screen widget is a white/dark empty rectangle with a gray bar | WidgetKit placeholder. TestFlight Release used to hide JS/Swift errors as `EmptyView`; `plugins/withIosWidgetReleaseRedBox.js` now surfaces them as a red box, always hands WidgetKit a timeline entry, and unredacts the entry view. Open the app once, then remove and re-add the widget. Confirm App Group `group.com.anonymous.citationswidgetapp` on both the app and `.widgets` identifiers. |
+| Home-screen widget is a white/dark empty rectangle with a gray bar | WidgetKit placeholder. TestFlight Release used to hide JS/Swift errors as `EmptyView`; `plugins/withIosWidgetReleaseRedBox.js` now surfaces them as a red box, always hands WidgetKit a timeline entry, and unredacts the entry view. Open the app once, then remove and re-add the widget. Confirm App Group `group.com.mnavasardian.citations` on both the app and `.widgets` identifiers. |
 | Widget says "Բացեք հավելվածը…" | Expected on a freshly installed build: only the running app writes the serialized layout into the App Group (`createWidget()`, imported from `src/app/_layout.tsx`). Open the app once — the widget reloads itself. |
 | Widget colors look transparent or washed out | expo-modules-core parses 8-digit hex as `#RRGGBBAA`, while `src/widgets/color.ts`'s `toArgbHex()` emits Android's `#AARRGGBB`. Pass `rgba()` / `#rrggbb` straight through in `CitationWidget.ios.tsx`; `toArgbHex()` is Android-only. |
 | Widget content missing after editing the layout | Run `npm run verify:widget` before building. The `'widget'` function is serialized and evaluated in a bare JavaScriptCore context, so shared constants, helper components and `require()`d assets are `undefined` there. The check also flags nodes `expo-widgets` cannot render, and note that `Image` only honours the `resizable` modifier. |
