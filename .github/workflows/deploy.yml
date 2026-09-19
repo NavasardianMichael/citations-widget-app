@@ -13,6 +13,14 @@
 # On-host layout after deploy:
 #   $APP_DIR/server/.env.production  (persistent; not inside a release)
 #   $APP_DIR/server/releases/<sha>/  and  $APP_DIR/server/current -> releases/<sha>
+#   $APP_DIR/legal/                  (flat; rsync --delete each deploy, no releases)
+#
+# Two independent layers behind two domains:
+#   api.citations.mnavasardian.com    -> nginx proxy  -> Docker server on 127.0.0.1:9003
+#   legal.citations.mnavasardian.com  -> nginx static -> $APP_DIR/legal
+# A privacy-policy edit deploys without rebuilding Docker; a server change never
+# republishes the policy. nginx configs live in deployment/ and are installed by
+# hand once (see that directory's README).
 # Run: cd $APP_DIR/server/current && export CITATIONS_ENV_FILE=$APP_DIR/server/.env.production \
 #      && docker compose -f docker-compose.prod.yml ...
 # ==============================================================================
@@ -28,6 +36,7 @@ on:
       - 'docker-compose.prod.yml'
       - '.dockerignore'
       - '.github/workflows/deploy.yml'
+      - 'client/docs/legal/**'
   workflow_dispatch:
 
 permissions:
@@ -45,6 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deploy_server: ${{ steps.flags.outputs.deploy_server }}
+      deploy_legal: ${{ steps.flags.outputs.deploy_legal }}
       release_name: ${{ github.sha }}
     steps:
       - name: Checkout repository
@@ -63,6 +73,8 @@ jobs:
               - 'server/Dockerfile'
               - 'server/entrypoint.sh'
               - '.github/workflows/deploy.yml'
+            legal_pkg:
+              - 'client/docs/legal/**'
 
       - name: Set deploy flags
         id: flags
@@ -72,8 +84,18 @@ jobs:
              [ "${{ steps.filter.outputs.deploy_config }}" = "true" ]; then
             deploy_server=true
           fi
+
+          # Independent of the server: the legal pages are static files behind a
+          # different domain, so a privacy-policy edit must not rebuild Docker
+          # and a server change must not touch the published policy.
+          deploy_legal=false
+          if [ "${{ steps.filter.outputs.legal_pkg }}" = "true" ]; then
+            deploy_legal=true
+          fi
+
           echo "deploy_server=$deploy_server" >> "$GITHUB_OUTPUT"
-          echo "deploy_server=$deploy_server"
+          echo "deploy_legal=$deploy_legal" >> "$GITHUB_OUTPUT"
+          echo "deploy_server=$deploy_server deploy_legal=$deploy_legal"
 
   build-server:
     name: Build / server
@@ -150,18 +172,46 @@ jobs:
           path: server-build.tar.gz
           retention-days: 1
 
+  package-legal:
+    name: Package / legal pages
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.deploy_legal == 'true'
+    concurrency:
+      group: package-legal
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # No build, no toolchain, no dependencies — these are hand-written static
+      # HTML with inline CSS. Tarred only so the deploy job can ship them the
+      # same way it ships the server bundle.
+      - name: Create legal archive
+        run: tar -czf legal-build.tar.gz -C client/docs/legal .
+
+      - name: Upload legal artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: legal-build
+          path: legal-build.tar.gz
+          retention-days: 1
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-production
-    needs: [changes, build-server]
+    needs: [changes, build-server, package-legal]
     if: |
       always() &&
-      needs.changes.outputs.deploy_server == 'true' &&
-      needs.build-server.result == 'success'
+      (
+        (needs.changes.outputs.deploy_server == 'true' && needs.build-server.result == 'success') ||
+        (needs.changes.outputs.deploy_legal == 'true' && needs.package-legal.result == 'success')
+      )
     steps:
       - name: Download server artifact
+        if: needs.changes.outputs.deploy_server == 'true'
         uses: actions/download-artifact@v7
         with:
           name: server-build
@@ -177,6 +227,7 @@ jobs:
           ssh-keyscan -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Prepare server env file
+        if: needs.changes.outputs.deploy_server == 'true'
         env:
           ENV_FILE_BASE64: ${{ secrets.ENV_FILE_BASE64 }}
         run: |
@@ -213,19 +264,67 @@ jobs:
             exit 1
           fi
 
+      # ── Deploy legal pages (static, separate domain) ─────────────────────
+      # Runs before the server so a combined push publishes the policy first;
+      # neither depends on the other.
+
+      - name: Download legal artifact
+        if: needs.changes.outputs.deploy_legal == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          name: legal-build
+
+      - name: Copy legal bundle to host
+        if: needs.changes.outputs.deploy_legal == 'true'
+        run: |
+          scp ${{ env.SSH_OPTS }} -P "${{ secrets.SSH_PORT || 22 }}" \
+            legal-build.tar.gz \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/"
+
+      - name: Deploy legal pages
+        if: needs.changes.outputs.deploy_legal == 'true'
+        run: |
+          ssh ${{ env.SSH_OPTS }} -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -s -- \
+            "${{ secrets.APP_DIR }}" << 'EOF'
+          set -e
+          APP_DIR="$1"
+          TARGET="$APP_DIR/legal"
+
+          # No releases, no symlink: two static files with no build step and no
+          # rollback story worth keeping. Git is the history.
+          STAGE=$(mktemp -d)
+          tar -xzf /tmp/legal-build.tar.gz -C "$STAGE"
+
+          # --delete so a file removed from the repo also leaves the server.
+          mkdir -p "$TARGET"
+          rsync -a --delete "$STAGE/" "$TARGET/"
+
+          # nginx runs as www-data and only needs to read. Traversal of the
+          # parent dirs is a one-time chmod (see deployment/README.md).
+          chmod -R a+rX "$TARGET"
+
+          rm -rf "$STAGE" /tmp/legal-build.tar.gz
+          echo "Legal pages deployed: $(ls -1 "$TARGET" | tr '\n' ' ')"
+          EOF
+
+      # ── Deploy server (Docker) ───────────────────────────────────────────
+
       - name: Copy server bundle to host
+        if: needs.changes.outputs.deploy_server == 'true'
         run: |
           scp ${{ env.SSH_OPTS }} -P "${{ secrets.SSH_PORT || 22 }}" \
             server-build.tar.gz \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/"
 
       - name: Copy env to host
+        if: needs.changes.outputs.deploy_server == 'true'
         run: |
           scp ${{ env.SSH_OPTS }} -P "${{ secrets.SSH_PORT || 22 }}" \
             /tmp/env.production \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/env.production"
 
       - name: Deploy server
+        if: needs.changes.outputs.deploy_server == 'true'
         run: |
           ssh ${{ env.SSH_OPTS }} -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -s -- \
             "${{ secrets.APP_DIR }}" \
@@ -299,10 +398,16 @@ jobs:
           EOF
 
       - name: Deployment summary
+        if: always()
         run: |
           echo "## Deployment complete" >> "$GITHUB_STEP_SUMMARY"
           echo "**Release:** \`${{ needs.changes.outputs.release_name }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Server (Docker under \`server/current\`)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Database migrations (container entrypoint)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Citation seed if DB empty (container entrypoint; skipped when citations already exist)" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ needs.changes.outputs.deploy_server }}" = "true" ]; then
+            echo "- Server (Docker under \`server/current\`)" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Database migrations (container entrypoint)" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Citation seed if DB empty (container entrypoint; skipped when citations already exist)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "${{ needs.changes.outputs.deploy_legal }}" = "true" ]; then
+            echo "- Legal pages (static under \`legal/\`) — https://legal.citations.mnavasardian.com/privacy" >> "$GITHUB_STEP_SUMMARY"
+          fi
