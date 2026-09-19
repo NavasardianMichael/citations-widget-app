@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ջնջել հաշիվը · Մեջբերումներ Աստվածաշնչից</title>
+<style>
+  :root{
+    --bg:#fbf9f8; --panel:#ffffff; --ink:#021a35; --muted:#5d6b7d;
+    --rule:#e6e2df; --accent:#fed65b; --link:#1f4f8f;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0c1522; --panel:#111d2e; --ink:#e8eef6; --muted:#9aa9bb;
+           --rule:#1f2d40; --link:#8ab4f8; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:48px 20px 80px}
+  header{border-bottom:3px solid var(--accent); padding-bottom:20px; margin-bottom:36px}
+  h1{font-size:28px; line-height:1.25; margin:0 0 8px}
+  .sub{color:var(--muted); font-size:15px; margin:0}
+  h2{font-size:19px; margin:38px 0 12px}
+  p,li{color:var(--ink)}
+  ul{padding-left:22px}
+  li{margin:6px 0}
+  a{color:var(--link)}
+  .step{background:var(--panel); border:1px solid var(--rule); border-radius:10px;
+        padding:20px 22px; margin:18px 0}
+  .step h3{margin:0 0 10px; font-size:17px}
+  .badge{display:inline-block; background:var(--accent); color:#021a35;
+         font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+         border-radius:999px; padding:3px 11px; margin-bottom:10px}
+  .en{margin-top:64px; padding-top:32px; border-top:1px solid var(--rule)}
+  footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--rule);
+         color:var(--muted); font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Ջնջել հաշիվը և տվյալները</h1>
+  <p class="sub">Մեջբերումներ Աստվածաշնչից · Վերջին թարմացումը՝ 2026 թ. սեպտեմբերի 19</p>
+</header>
+
+<p>Հաշիվը ջնջելու երկու եղանակ կա։ Երկուսն էլ ջնջում են նույն տվյալները։</p>
+
+<div class="step">
+  <span class="badge">Եղանակ 1 · ամենաարագը</span>
+  <h3>Հավելվածի միջոցով</h3>
+  <p style="margin:0">Բացեք հավելվածը → <strong>Պրոֆիլ</strong> →
+  <strong>Ջնջել հաշիվը</strong>։ Հաստատումից հետո հաշիվն ու տվյալները ջնջվում են անմիջապես։</p>
+</div>
+
+<div class="step">
+  <span class="badge">Եղանակ 2</span>
+  <h3>Հայտով՝ առանց հավելվածը տեղադրելու</h3>
+  <p>Ուղարկեք նամակ <a href="mailto:{{SUPPORT_EMAIL}}?subject=Delete%20my%20account">{{SUPPORT_EMAIL}}</a>
+  հասցեին <strong>այն էլ․ փոստից, որով գրանցվել եք</strong>։</p>
+  <p style="margin:0">Թեման՝ <strong>Delete my account</strong>։ Հայցը կատարվում է
+  <strong>30 օրվա</strong> ընթացքում, և ավարտից հետո Դուք կստանաք հաստատում։</p>
+</div>
+
+<h2>Ի՞նչ է ջնջվում</h2>
+<ul>
+  <li>Էլ․ փոստի հասցեն և անունը</li>
+  <li>Գաղտնաբառի hash-ը</li>
+  <li>Google հաշվի նույնացուցիչը և պրոֆիլի նկարը</li>
+  <li>Սոցիալական հղումը և պրոֆիլի կարգավորումները</li>
+  <li>Պահպանված մեջբերումները</li>
+  <li>Վիջեթի բոլոր կարգավորումները</li>
+  <li>Բոլոր նստաշրջանները և մուտքի տոկենները</li>
+</ul>
+
+<h2>Ի՞նչ է մնում</h2>
+<ul>
+  <li><strong>Հաստատված մեջբերումները, որոնք Դուք ուղարկել եք</strong>, մնում են ընդհանուր
+      հավաքածուում՝ արդեն առանց Ձեր անվան կամ որևէ կապի Ձեզ հետ։ Եթե ցանկանում եք, որ
+      դրանք նույնպես հեռացվեն, նշեք դա նամակում։</li>
+  <li>Վթարների անանուն հաշվետվությունները Sentry-ում, որոնք Ձեզ չեն նույնականացնում,
+      ջնջվում են ըստ Sentry-ի պահպանման ժամկետի (90 օր)։</li>
+</ul>
+
+<h2>Հարցեր</h2>
+<p><a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a> ·
+<a href="./privacy.html">Գաղտնիության քաղաքականություն</a></p>
+
+<!-- ------------------------------------------------------------------ -->
+<div class="en">
+<h1>Delete your account and data</h1>
+<p class="sub">Bible Citations · Last updated 19 September 2026</p>
+
+<p>There are two ways to delete your account. Both remove the same data.</p>
+
+<div class="step">
+  <span class="badge">Option 1 · fastest</span>
+  <h3>In the app</h3>
+  <p style="margin:0">Open the app → <strong>Profile</strong> →
+  <strong>Delete account</strong>. After you confirm, the account and its data are
+  deleted immediately.</p>
+</div>
+
+<div class="step">
+  <span class="badge">Option 2</span>
+  <h3>By request, without installing the app</h3>
+  <p>Email <a href="mailto:{{SUPPORT_EMAIL}}?subject=Delete%20my%20account">{{SUPPORT_EMAIL}}</a>
+  <strong>from the address you registered with</strong>, with the subject
+  <strong>Delete my account</strong>.</p>
+  <p style="margin:0">Requests are completed within <strong>30 days</strong> and you will
+  receive a confirmation.</p>
+</div>
+
+<h2>What is deleted</h2>
+<p>Email address, name, password hash, Google account identifier and profile picture,
+social link and profile settings, saved citations, all widget settings, and every session
+and access token.</p>
+
+<h2>What is kept</h2>
+<p><strong>Approved citations you submitted</strong> remain in the shared collection, no
+longer attributed to you or linked to you in any way. Say so in your email if you want
+those removed too.</p>
+<p>Anonymous crash reports in Sentry, which do not identify you, expire on Sentry's
+retention schedule (90 days).</p>
+
+<h2>Questions</h2>
+<p><a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a> ·
+<a href="./privacy.html">Privacy Policy</a></p>
+</div>
+
+<footer>
+  Մեջբերումներ Աստվածաշնչից · Bible Citations
+</footer>
+
+</div>
+</body>
+</html>

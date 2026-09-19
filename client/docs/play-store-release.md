@@ -1,143 +1,162 @@
 # Publishing to Google Play
 
-Checklist for the first production release. Verified against Play policy as of
-September 2026.
+Verified against Play policy as of September 2026.
 
-The long pole is step 5 (14 days minimum), so start it early and do steps 2–4
-while the clock runs.
+The long pole is the 14-day closed test, so start it as early as you can and do
+everything else while the clock runs.
 
 ---
 
-## 1. Blockers in this repo
+## Done in the repo
 
-These are wrong today and must be fixed before the first upload.
+Nothing below needs your attention; it is recorded so you know what changed.
 
-**Package name.** `app.json` declares `com.anonymous.citationswidgetapp` — the
-Expo prebuild default. It is **permanent once uploaded**; Play will never let
-you change it, and you cannot reuse the listing. Pick a real one
-(`com.navasardyan.citations`) and change it in every place it appears:
+| | |
+|---|---|
+| **Package / bundle ID** | `com.anonymous.citationswidgetapp` → `com.mnavasardian.citations`, across `app.json` (app, iOS bundle, App Group, widget extension), `README.md`, `commands.md`, `.env.example`, `run-android-apk.ps1`, `docs/ios-eas-build.md` |
+| **Overlay permission** | `android.blockedPermissions` now strips `SYSTEM_ALERT_WINDOW` and `VIBRATE`. Both came from Expo's default bare-template manifest, under its own "REMOVE WHATEVER YOU DO NOT NEED" comment — neither is used anywhere in `src/` |
+| **App icon** | `store/play/icon-512.png` — 512×512, 32-bit with alpha, 29 KB |
+| **Feature graphic** | `store/play/feature-graphic-1024x500.png` — 1024×500, 24-bit, no alpha, 45 KB |
+| **Listing copy** | `store/play/listing.md` — Armenian and English, all within Play's limits |
+| **Privacy policy** | `docs/legal/privacy.html` — written against the real Prisma schema, including the `shareProfile` disclosure |
+| **Deletion page** | `docs/legal/delete-account.html` — matches the real cascade behaviour (submitted citations are `SetNull`, everything else `Cascade`) |
 
-- `expo.android.package`
-- `expo.ios.bundleIdentifier`
-- `expo.ios.entitlements` → the App Group (`group.<package>`)
-- the `expo-widgets` plugin block → `bundleIdentifier` and `groupIdentifier`
-- the Google OAuth Android client in Google Cloud Console
-- the trailing note in `run-android-apk.ps1`
+Already compliant, no action needed:
 
-Renaming the App Group breaks iOS widget sync until the extension is rebuilt,
-so do it in one commit and rebuild both platforms.
-
-**Signing key.** `run-android-apk.ps1` produces a release APK signed with
-`android/app/debug.keystore`. That is fine for sideloading, never for Play. Let
-EAS generate and hold the upload key: `eas credentials -p android`. Back up the
-keystore it creates — losing it means you cannot ship updates.
-
-**Format.** Play requires an App Bundle (`.aab`), not an APK. The `production`
-profile in `eas.json` already builds one; the local script is for device testing
-only.
-
-**Privacy policy.** Nothing in the repo references one. It is required, must be
-a public URL, and must be reachable outside the app.
-
-**Account deletion web URL.** The in-app path exists (`profile.tsx` →
-`auth/account-deleted.tsx`), which satisfies half the rule. Play also requires a
-**web** URL where a user can request deletion without reinstalling. Host it on
-the existing server and link it in the Data safety form.
-
-**Audit the permission list.** The generated manifest requests
-`SYSTEM_ALERT_WINDOW` (Display over other apps), which the app does not appear
-to need — it is likely pulled in by `expo-dev-client`, which sits in
-`dependencies` rather than `devDependencies`. Overlay is a sensitive permission
-and attracts review scrutiny. Confirm the production AAB's manifest and strip
-it if it is only a dev-client artifact.
-
-## 2. Already compliant
-
-No action needed, but worth knowing why:
-
-| Requirement | Deadline | Status |
+| Requirement | Deadline | Why you are fine |
 |---|---|---|
 | Target API 36 (Android 16) | 31 Aug 2026 — passed | Expo SDK 57 targets 36 |
-| 16 KB page size support | 31 May 2026 — passed | RN 0.86 / Expo 57 are compliant |
-| Version codes increment | always | `appVersionSource: remote` + `autoIncrement` |
+| 16 KB page size | 31 May 2026 — passed | RN 0.86 / Expo 57 are compliant |
+| Incrementing version codes | always | `appVersionSource: remote` + `autoIncrement` |
 
-## 3. Assets to generate
+---
 
-| Asset | Spec | Notes |
-|---|---|---|
-| App icon | 512×512 PNG, 32-bit **with** alpha, ≤1 MB | separate upload from the in-app icon |
-| Feature graphic | 1024×500 JPEG or 24-bit PNG, **no** alpha | required; you do not have one |
-| Phone screenshots | 2 minimum, 8 maximum | use 1080×1920 (9:16) — below 1080px you lose eligibility for featured placement |
-| Tablet screenshots | 4 minimum, 1080–7680px, 16:9 or 9:16 | optional, but improves store visibility |
+## Yours to do
 
-Text fields: title ≤30 chars (the current Armenian name is 24, fine), short
-description ≤80, full description ≤4000. Play truncates titles around 20
-characters in list views, so front-load the important word.
+### 1. Fill in the support email
 
-For a home-screen widget app, spend the screenshots on the widget in place on a
-real launcher, not on in-app screens. That is the thing being sold.
+Both legal pages contain the literal token `{{SUPPORT_EMAIL}}`. Replace every
+occurrence with the address you want published. I left it as a placeholder
+rather than publishing a personal address for you.
 
-Set Armenian as the default store listing language. Add an English listing too
-if you want reach beyond Armenian-language search.
+```bash
+cd client/docs/legal
+sed -i 's/{{SUPPORT_EMAIL}}/you@example.com/g' privacy.html delete-account.html
+```
 
-## 4. Play Console setup
+### 2. Host the two pages
 
-1. Create a developer account — $25, one time, and identity verification now
-   takes a few days. Do this first.
-2. Create the app. Declare app or game, free or paid. **Free/paid is permanent.**
-3. Fill in **App content**, all of it:
-   - Privacy policy URL
-   - Data safety form — declare what the auth flow and Sentry collect, and
-     include the account deletion web URL
-   - Content rating questionnaire (IARC)
-   - Target audience, ads declaration, news/government/financial declarations
-   - **App access** — the app is behind a login, so you must supply working
-     test credentials or reviewers will reject it
-4. Set up a Google Cloud service account and grant it Play Console access if you
-   want `eas submit` to upload for you.
+They are self-contained HTML — no build step, no assets, no dependencies. Drop
+them anywhere that serves static files (Cloudflare Pages, Netlify, a folder on
+the box already running the API). Both URLs must be publicly reachable without
+logging in.
 
-## 5. Closed testing — plan for 14 days
+Write the final URLs down; step 6 needs them.
 
-If your Play account is a **personal** account created after 13 Nov 2023, you
-cannot publish to production until you have run a closed test with **12 testers
-opted in continuously for 14 days**. Organization accounts and personal accounts
-older than that date are exempt.
+### 3. Shoot the screenshots
 
-The 14 days must be consecutive and the testers must stay opted in for the whole
-window — someone who opts out resets their own contribution. Recruit more than
-12 for slack.
+Minimum 2, maximum 8. Use **1080×1920** portrait — below 1080px you lose
+eligibility for Play's featured placements.
 
-After the window closes, apply for production access from the Play Console
-dashboard.
+Spend them on the widget sitting on a real home screen, not on in-app screens.
+The widget is the product; a screenshot of a settings page sells nothing. Four
+to six is the sweet spot: one per widget size, one showing the font choices, one
+of the share card.
 
-## 6. Build, upload, ship
+Tablet screenshots (4 minimum, 16:9 or 9:16) are optional but help visibility.
+
+### 4. Rebuild both platforms
+
+The rename changed the App Group, so the iOS widget will not sync until the
+extension is rebuilt. Android needs a fresh prebuild for the new package.
 
 ```bash
 cd client
+npm run android:apk          # local test build
+eas build -p ios --profile production
+```
 
-# Production App Bundle, signed with the EAS-managed upload key
-eas build -p android --profile production
+The APK currently on your phone has the old package name, so a renamed build
+installs **alongside** it as a second app. Uninstall the old one:
 
-# Upload to Play (or drag the .aab into the Console manually)
+```bash
+adb uninstall com.anonymous.citationswidgetapp
+```
+
+### 5. Re-register the Google OAuth clients
+
+The rename invalidates both. In Google Cloud Console → Credentials:
+
+- **Android client** — package `com.mnavasardian.citations`, plus the SHA-1 of
+  whichever keystore signs the build. For Play builds that is the EAS upload key
+  (`eas credentials -p android`), **not** `android/app/debug.keystore`.
+- **iOS client** — bundle ID `com.mnavasardian.citations`.
+
+Update `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` and
+`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` in `.env` and in EAS production env.
+
+### 6. Play Console
+
+1. Create the developer account — $25 one-off, plus identity verification that
+   now takes a few days. Do this first; it gates everything else.
+2. Create the app. Free vs paid is **permanent**.
+3. Let EAS hold the upload key (`eas credentials -p android`) and back up the
+   keystore it generates. Losing it means you can never ship an update.
+4. Fill in **App content**, all of it:
+   - Privacy policy URL (from step 2)
+   - Data safety form — declare the auth data and Sentry crash reporting, and
+     paste the account-deletion URL
+   - Content rating questionnaire (IARC)
+   - Target audience, ads declaration
+   - **App access** — the app has a login, so supply working test credentials or
+     reviewers will reject it. Guest mode exists, but say so explicitly.
+5. Paste the listing copy and upload the assets from `store/play/`.
+
+### 7. Closed testing — 14 days minimum
+
+If your Play account is a **personal** account created after 13 Nov 2023, you
+cannot reach production until **12 testers have been opted in continuously for
+14 days**. Organization accounts and older personal accounts are exempt.
+
+The days must be consecutive and the testers must stay opted in throughout, so
+recruit more than 12. Apply for production access from the dashboard afterwards.
+
+### 8. Build and ship
+
+```bash
+cd client
+eas build -p android --profile production   # AAB, not the local APK
 eas submit -p android --latest
 ```
 
-Promote through the tracks: **internal → closed (the 14-day test) → production**.
-Check the Play Console pre-launch report after the first upload — it runs the
-app on real devices and flags 16 KB, accessibility, and crash issues before
-reviewers see them.
-
-First production review typically takes a few days. Updates are faster.
+Promote internal → closed → production. Read the pre-launch report after the
+first upload; it runs the app on real devices and catches things before a
+reviewer does.
 
 ---
 
-## Order of operations
+## Known issues, not blockers
 
-1. Fix the package name and rebuild both platforms — everything downstream
-   depends on the final identifier
-2. Create the developer account and start identity verification
-3. Publish the privacy policy and the account-deletion web page
-4. Generate the icon, feature graphic, and screenshots
-5. Build the AAB, upload to internal testing, start the 12-tester closed test
-6. Fill in every App content form while the 14 days run
-7. Apply for production access, then promote
+- **`StyleSheet.absoluteFillObject` typecheck error** in
+  `src/components/animated-icon.tsx:63`. Pre-existing on master, unrelated to
+  the release work, and it does not stop a build — Metro bundles fine. Worth
+  fixing before you rely on `tsc` as a gate.
+- **`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE`** (both `maxSdkVersion=32`)
+  are still in the manifest, also from the Expo template. `react-native-view-shot`
+  writes to the app cache and `expo-sharing` uses a FileProvider, so neither
+  should need them — but that is untested on an API ≤32 device. Test sharing on
+  one, then add them to `blockedPermissions` too. They show on the listing as
+  "Photos and media".
+
+## The iOS side of the rename
+
+You have been building TestFlight under the old bundle ID, so renaming costs you
+there:
+
+- A **new App Store Connect record** — the old one cannot be renamed
+- New provisioning profiles and a new App Group (EAS regenerates on next build)
+- Existing TestFlight testers must install the new app; build history does not
+  carry over
+
+This is the right moment to pay that — you are pre-App Store, and after your
+first production release it becomes impossible.
