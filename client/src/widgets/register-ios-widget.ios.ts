@@ -2,9 +2,7 @@
  * `createWidget()` is what writes the serialized layout into the App Group, and
  * the widget extension shows onboarding copy until that happens. Importing this
  * module from the root layout registers the layout on every app launch instead
- * of waiting for the first widget sync to pull `CitationWidget` in, and reloads
- * WidgetKit so a widget added before this install renders without waiting for
- * the system's own refresh.
+ * of waiting for the first widget sync to pull `CitationWidget` in.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
@@ -12,25 +10,20 @@ import CitationWidget from '@/widgets/CitationWidget'
 import { toIosWidgetProps } from '@/widgets/ios-props'
 import { HOME_WIDGET_SNAPSHOT_KEY, type HomeWidgetSnapshot } from '@/widgets/types'
 
-try {
-  CitationWidget.reload()
-} catch (error) {
-  // Native module unavailable (e.g. Expo Go); the widget sync retries later.
-  import('@/lib/sentry').then(({ Sentry }) => Sentry.captureException(error))
-}
-
 /**
- * Puts the last stored snapshot back on the widget as soon as the layout exists.
+ * Replays the last stored snapshot so a widget has something to show while the
+ * sync runs.
  *
- * `HomeWidgetBootstrap` only syncs once auth has resolved and a citation has been
- * fetched, so until that finishes — or if anything in it stalls, which reports
- * nothing because a pending promise never throws — the extension holds a layout
- * with no props and WidgetKit draws the empty panel. Android never had this gap:
- * its task handler rebuilds from this same key on every widget update.
+ * Deliberately leaves the App Group file alone. That file is what the extension
+ * actually reads and `home-widget-sync` owns it, whereas this snapshot is the
+ * stored one — saved before the sync resolves the font and photo paths. Writing
+ * it here replaced a styled file with an unstyled one and raced the sync that
+ * had just written it. Breadcrumbs put that sync at well under a second on every
+ * launch, so there is nothing left for a second writer to rescue.
  *
- * Deliberately independent of `home-widget-sync`: one `AsyncStorage` read and a
- * synchronous native call, so a stall further up the sync chain cannot take the
- * widget's content down with it.
+ * No `reload()` either: `updateSnapshot` already asks WidgetKit for one, iOS
+ * budgets how many it honours, and this module used to spend three of them per
+ * launch before any content existed to show.
  */
 async function restoreStoredSnapshot(): Promise<void> {
   try {
@@ -38,6 +31,8 @@ async function restoreStoredSnapshot(): Promise<void> {
     if (!raw) return
     CitationWidget.updateSnapshot(toIosWidgetProps(JSON.parse(raw) as HomeWidgetSnapshot))
   } catch (error) {
+    // Also covers the native module being unavailable (e.g. Expo Go), which the
+    // widget sync then retries later.
     const { Sentry } = await import('@/lib/sentry')
     Sentry.captureException(error)
   }

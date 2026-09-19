@@ -127,27 +127,56 @@ async function pushIosWidget(snapshot: HomeWidgetSnapshot, fontId: WidgetFontId)
     const CitationWidget = (await import("@/widgets/CitationWidget")).default;
     mark("ios: widget imported");
 
-    // Store the quote before resolving fonts/background: those copy files into the
-    // App Group container, and anything that stalls or fails there must not cost the
-    // widget its text — an unstyled citation beats WidgetKit's empty-props fallback.
-    CitationWidget.updateSnapshot(toIosWidgetProps(snapshot));
-    mark("ios: text-only props stored");
-
+    // The App Group file is what the extension actually reads; the prop push
+    // alongside it stays for the in-app diagnostic and as a fallback path.
+    const { writeIosSnapshotFile, relaxIosWidgetFileProtection } = await import(
+      "@/widgets/ios-snapshot-file"
+    );
     const { resolveIosBackgroundImageUri } = await import("@/widgets/ios-background");
     const { resolveIosWidgetFonts } = await import("@/widgets/ios-fonts");
-    const [backgroundImageUri, fonts] = await Promise.all([
-      resolveIosBackgroundImageUri(snapshot.designId, snapshot.backgroundImageIndex),
-      resolveIosWidgetFonts(fontId),
+
+    // The face names and the photo URI only exist once these copies land, so the
+    // snapshot cannot carry them until they finish. Racing a timer keeps that
+    // from deciding whether the widget gets written at all: this step copies
+    // files into the App Group container and has stalled silently before, and a
+    // pending promise never throws, so an unguarded await here simply never
+    // reaches the write. Losing the styling is recoverable; losing the quote is
+    // what puts the empty panel back on the home screen.
+    const styling = await Promise.race([
+      Promise.all([
+        resolveIosBackgroundImageUri(snapshot.designId, snapshot.backgroundImageIndex),
+        resolveIosWidgetFonts(fontId),
+      ]).then(([backgroundImageUri, fonts]) => ({ backgroundImageUri, fonts })),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
     ]);
-    mark("ios: fonts and background resolved");
-    CitationWidget.updateSnapshot(
-      toIosWidgetProps({
-        ...snapshot,
-        backgroundImageUri,
-        iosFontFamily: fonts.quote,
-        iosGlyphFontFamily: fonts.glyph,
-      }),
-    );
+    mark(`ios: styling resolved=${styling !== null}`);
+
+    // One write per sync. `File.write` replaces the file in place rather than
+    // atomically, so every extra write is a window for the extension to read a
+    // half-written file — it did once, landing on a one-character read.
+    const payload: HomeWidgetSnapshot = styling
+      ? {
+          ...snapshot,
+          backgroundImageUri: styling.backgroundImageUri,
+          iosFontFamily: styling.fonts.quote,
+          iosGlyphFontFamily: styling.fonts.glyph,
+        }
+      : snapshot;
+    const bytes = JSON.stringify(payload).length;
+    mark(`ios: snapshot file written=${writeIosSnapshotFile(payload)} bytes=${bytes}`);
+    // The container this process resolves, so it can be compared against the one
+    // the extension reports on the widget. The app writing a full snapshot while
+    // the extension reads a single byte means they are addressing different
+    // containers, which no change to the writing side can fix.
+    const { widgetsDirectory } = await import("expo-widgets");
+    mark(`ios: widgetsDirectory=${widgetsDirectory ?? "null"}`);
+
+    // Must run after the snapshot and the font/photo copies, not before: a file
+    // keeps the protection class it was created with, so relaxing the directory
+    // ahead of the writes left the extension unable to read any of them while
+    // the device was locked — which is when it renders.
+    mark(`ios: protection relaxed on ${relaxIosWidgetFileProtection()} entries`);
+    CitationWidget.updateSnapshot(toIosWidgetProps(payload));
 
     // TEMP diagnostic: reads the timeline back out of the App Group, so props that
     // are dropped in transit stay distinguishable from a push that never ran. Names

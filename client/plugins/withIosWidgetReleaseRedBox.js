@@ -1,5 +1,10 @@
 /**
- * Five fixes to `expo-widgets`' iOS widget host, none of which are configurable:
+ * Six fixes to `expo-widgets`' iOS widget host, none of which are configurable:
+ *
+ * - The App Group directory it hands out is created with iOS's default data
+ *   protection, so everything written there — the snapshot, the copied Armenian
+ *   faces — is unreadable while the device is locked, which is exactly when a
+ *   widget renders. Protection is dropped on that directory and its contents.
  *
  * - Writes into the App Group are never flushed, so they sit in the app's memory
  *   until iOS chooses to persist them and a force-quit drops them entirely. The
@@ -102,6 +107,100 @@ const STORAGE_SET_SYNCED = `    defaults.set(value, forKey: key)
     defaults.synchronize()
   }`;
 
+const WIDGETS_DIRECTORY = `      do {
+        try FileManager.default.createDirectory(at: directoryUrl, withIntermediateDirectories: true)
+        return directoryUrl.absoluteString
+      } catch {
+        return nil
+      }`;
+
+const WIDGETS_DIRECTORY_UNPROTECTED = `      do {
+        try FileManager.default.createDirectory(at: directoryUrl, withIntermediateDirectories: true)
+        // ${MARKER}: drop data protection on this directory and everything in it.
+        //
+        // A widget renders while the device is locked, and iOS makes files
+        // written with the default protection class unreadable in exactly that
+        // state — the extension reported this container's snapshot as absent
+        // minutes after the app had written 1365 bytes to it, and the Armenian
+        // faces beside it never loaded either. New files inherit the
+        // directory's class; the ones already written keep whatever they were
+        // created with, so they are relaxed individually. Nothing here is
+        // secret: it is a quote already on the home screen.
+        try? FileManager.default.setAttributes(
+          [.protectionKey: FileProtectionType.none],
+          ofItemAtPath: directoryUrl.path
+        )
+        if let existing = try? FileManager.default.contentsOfDirectory(atPath: directoryUrl.path) {
+          for name in existing {
+            try? FileManager.default.setAttributes(
+              [.protectionKey: FileProtectionType.none],
+              ofItemAtPath: directoryUrl.appendingPathComponent(name).path
+            )
+          }
+        }
+        return directoryUrl.absoluteString
+      } catch {
+        return nil
+      }`;
+
+const RELOAD_ALL = `    Function("reloadAllWidgets") {
+      WidgetCenter.shared.reloadAllTimelines()
+    }`;
+
+const RELOAD_ALL_PLUS_RELAX = `    Function("reloadAllWidgets") {
+      WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    // ${MARKER}: strip data protection from everything the extension has to read.
+    //
+    // Relaxing the directory is not enough — a file does not reliably inherit
+    // its directory's class, so the snapshot and the copied faces are written
+    // with the default one and become unreadable while the device is locked,
+    // which is exactly when a widget renders. The extension reported the
+    // snapshot as absent on a fresh install for that reason, and as present on
+    // the next launch, when the directory pass had had a chance to catch the
+    // previous launch's file. Call this after writing, not before.
+    Function("relaxWidgetFileProtection") { () -> Int in
+      guard let identifier = WidgetsStorage.appGroupIdentifier,
+            let container = FileManager.default.containerURL(
+              forSecurityApplicationGroupIdentifier: identifier
+            ) else {
+        return -1
+      }
+      let directoryUrl = container.appendingPathComponent("ExpoWidgets", isDirectory: true)
+      let unprotected: [FileAttributeKey: Any] = [.protectionKey: FileProtectionType.none]
+      try? FileManager.default.setAttributes(unprotected, ofItemAtPath: directoryUrl.path)
+
+      guard let names = try? FileManager.default.contentsOfDirectory(atPath: directoryUrl.path) else {
+        return 0
+      }
+      var relaxed = 0
+      for name in names {
+        let path = directoryUrl.appendingPathComponent(name).path
+        if (try? FileManager.default.setAttributes(unprotected, ofItemAtPath: path)) != nil {
+          relaxed += 1
+        }
+      }
+      return relaxed
+    }`;
+
+function patchWidgetsModule(contents) {
+  if (contents.includes(MARKER)) return contents;
+  if (!contents.includes(WIDGETS_DIRECTORY)) {
+    throw new Error(
+      "withIosWidgetReleaseRedBox: WidgetsModule.swift widgetsDirectory body not found",
+    );
+  }
+  if (!contents.includes(RELOAD_ALL)) {
+    throw new Error(
+      "withIosWidgetReleaseRedBox: WidgetsModule.swift reloadAllWidgets not found",
+    );
+  }
+  return contents
+    .replace(WIDGETS_DIRECTORY, WIDGETS_DIRECTORY_UNPROTECTED)
+    .replace(RELOAD_ALL, RELOAD_ALL_PLUS_RELAX);
+}
+
 function patchWidgetsStorage(contents) {
   if (contents.includes(MARKER)) return contents;
   if (!contents.includes(STORAGE_SET)) {
@@ -160,13 +259,49 @@ function patchWidgetObject(contents) {
 
 const TIMELINE_READ = `  let timeline = WidgetsStorage.getArray(forKey: "__expo_widgets_\\(name)_timeline") ?? []`;
 
-const TIMELINE_READ_MIRRORED = `  // ${MARKER}: read the text mirror first — the dictionary form written
-  // alongside it does not survive the trip into this process.
+const TIMELINE_READ_MIRRORED = `  // ${MARKER}: the container file wins — see readSnapshotFromAppGroup. The two
+  // UserDefaults paths stay behind it so nothing regresses if it is absent.
+  if let props = readSnapshotFromAppGroup(name: name) {
+    return [WidgetsTimelineEntry(date: Date(), name: name, props: props, entryIndex: 0)]
+  }
+
   let timeline = decodeTimelineFromAppGroup(name: name)
     ?? WidgetsStorage.getArray(forKey: "__expo_widgets_\\(name)_timeline")
     ?? []`;
 
-const DECODE_HELPER = `// ${MARKER}: counterpart to WidgetObject.encodeForAppGroup.
+const DECODE_HELPER = `// ${MARKER}: the App Group's container is the channel that actually crosses
+// into this process. UserDefaults did not: a dictionary of the snapshot's ~40
+// values reached the writing process's own read with 3 keys left and this one
+// with no entry at all, and mirroring it as a single string did not arrive
+// either. Files do — the Armenian faces are copied into this same directory by
+// the app and loaded from it here — so the app writes the snapshot as JSON text
+// beside them and this reads it back.
+func readSnapshotFromAppGroup(name: String) -> [String: Any]? {
+  guard let identifier = WidgetsStorage.appGroupIdentifier,
+        let container = FileManager.default.containerURL(
+          forSecurityApplicationGroupIdentifier: identifier
+        ) else {
+    return nil
+  }
+  let url = container
+    .appendingPathComponent("ExpoWidgets", isDirectory: true)
+    .appendingPathComponent("\\(name)-snapshot.json")
+  // The app replaces this file in place rather than atomically, so a read can
+  // land mid-write, and the layout throws while parsing a partial string — a
+  // one-character read is what put the widget back on its empty state. Checking
+  // the first and last brace rejects a truncated write without being able to
+  // reject a complete object: a full \`JSONSerialization\` parse was tried here
+  // first and threw out a perfectly good 1655-byte file, which cost a build.
+  guard let data = try? Data(contentsOf: url),
+        let json = String(data: data, encoding: .utf8),
+        json.hasPrefix("{"),
+        json.hasSuffix("}") else {
+    return nil
+  }
+  return ["json": json]
+}
+
+// ${MARKER}: counterpart to WidgetObject.encodeForAppGroup.
 func decodeTimelineFromAppGroup(name: String) -> [Any]? {
   guard let json = WidgetsStorage.getString(forKey: "__expo_widgets_\\(name)_timeline_json"),
         !json.isEmpty,
@@ -229,9 +364,25 @@ const ENTRY_BODY = `  public var body: some View {
 const ENTRY_UNREDACTED = `  // ${MARKER}-diagnostic: temporary — distinguishes "the app never stored props"
   // from "props stored but unreadable here". Remove once the sync is confirmed.
   private var timelineDebug: String {
+    // Reports which container this process resolves and what is in it, byte for
+    // byte. The app logs the same path to Sentry: when the app writes 1355 bytes
+    // and this reads 1, the two are not addressing the same container, and no
+    // amount of changing how the file is written can bridge that.
+    let identifier = WidgetsStorage.appGroupIdentifier ?? "nil"
+    let container = FileManager.default.containerURL(
+      forSecurityApplicationGroupIdentifier: identifier
+    )
+    let url = container?
+      .appendingPathComponent("ExpoWidgets", isDirectory: true)
+      .appendingPathComponent("\\(entry.name)-snapshot.json")
+    let bytes = url.flatMap { try? Data(contentsOf: $0) }?.count ?? -1
+    let group = String(identifier.suffix(12))
+    let box = String((container?.lastPathComponent ?? "nil").prefix(8))
     let raw = WidgetsStorage.getArray(forKey: "__expo_widgets_\\(entry.name)_timeline") ?? []
-    let mirrored = WidgetsStorage.getString(forKey: "__expo_widgets_\\(entry.name)_timeline_json")?.count ?? -1
-    return "tl=\\(raw.count) json=\\(mirrored) props=\\(entry.props == nil ? "nil" : "empty")"
+    // Whether the read the timeline actually depends on succeeded. Byte counts
+    // alone hid a readable file being rejected by this function's own guard.
+    let ok = readSnapshotFromAppGroup(name: entry.name) == nil ? 0 : 1
+    return "g=\\(group) box=\\(box) b=\\(bytes) ok=\\(ok) tl=\\(raw.count)"
   }
 
   public var body: some View {
@@ -358,6 +509,11 @@ function withIosWidgetReleaseRedBox(config) {
       const root = mod.modRequest.projectRoot;
       patchFile(
         root,
+        path.join("node_modules", "expo-widgets", "ios", "WidgetsModule.swift"),
+        patchWidgetsModule,
+      );
+      patchFile(
+        root,
         path.join("node_modules", "expo-widgets", "ios", "WidgetsStorage.swift"),
         patchWidgetsStorage,
       );
@@ -398,6 +554,7 @@ function withIosWidgetReleaseRedBox(config) {
 }
 
 module.exports = withIosWidgetReleaseRedBox;
+module.exports.patchWidgetsModule = patchWidgetsModule;
 module.exports.patchWidgetsStorage = patchWidgetsStorage;
 module.exports.patchWidgetObject = patchWidgetObject;
 module.exports.patchTimelineUtils = patchTimelineUtils;
