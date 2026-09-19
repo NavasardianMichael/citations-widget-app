@@ -9,8 +9,26 @@ the directory they point at.
 | `api.citations.mnavasardian.com` | the JSON API | proxy to the Docker server on `127.0.0.1:9003` |
 | `legal.citations.mnavasardian.com` | privacy policy, account deletion | static files in `$APP_DIR/legal` |
 
-Only the second is in this repo. The API config predates it and lives only on the
-server — copy it in when convenient so both are versioned:
+## APP_DIR
+
+```
+/home/michael/apps/citations
+```
+
+The deploy workflow writes to `$APP_DIR/legal`, taken from a GitHub secret, but
+the nginx `root` below has to spell that path out as a literal. The two can drift
+silently and the symptom is a plain 404, so the value is recorded here.
+
+GitHub will not show a secret's value once set. To recover it from the server:
+
+```bash
+ls -d /home/*/apps/*/server/current    # strip /server/current
+```
+
+---
+
+Only the legal config is in this repo. The API config predates it and lives only
+on the server — copy it in when convenient so both are versioned:
 
 ```bash
 scp michael@YOUR_HOST:/etc/nginx/sites-available/api.citations.mnavasardian.com.conf \
@@ -44,9 +62,9 @@ usually block:
 
 ```bash
 ssh michael@YOUR_HOST
-mkdir -p ~/apps/citations-widget-app/legal
-chmod o+x /home/michael /home/michael/apps /home/michael/apps/citations-widget-app
-chmod o+x /home/michael/apps/citations-widget-app/legal
+mkdir -p ~/apps/citations/legal
+chmod o+x /home/michael /home/michael/apps /home/michael/apps/citations
+chmod o+x /home/michael/apps/citations/legal
 ```
 
 **3. Install the config with only the port-80 block active.** The `443` block

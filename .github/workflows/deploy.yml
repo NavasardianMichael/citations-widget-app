@@ -3,7 +3,7 @@
 # ==============================================================================
 # REQUIRED GITHUB SECRETS:
 # - SSH_HOST, SSH_USER, SSH_KEY, SSH_PORT (optional, default 22)
-# - APP_DIR: Deployment root (e.g. /home/user/apps/citations-widget-app)
+# - APP_DIR: Deployment root (/home/michael/apps/citations)
 # - ENV_FILE_BASE64: Base64-encoded server/.env.production
 #
 # Encode env locally:
