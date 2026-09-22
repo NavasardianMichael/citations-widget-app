@@ -5,7 +5,7 @@
  * so it keeps type-checking and cannot silently rot against the code around it.
  * Flipping a flag back to `true` is meant to be the whole change.
  *
- * See `docs/parked-widget-features.md` for what each one does and every place
+ * See `docs/parked-features.md` for what each one does and every place
  * it is wired in.
  */
 

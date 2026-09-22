@@ -1,10 +1,13 @@
-# Parked widget features
+# Parked features
 
 Features that are fully built but deliberately not shipped. The code stays in the
-tree, compiled and referenced through a flag in
-[`../src/widgets/widget-features.ts`](../src/widgets/widget-features.ts), so it
-keeps type-checking and cannot rot against the code around it. Turning one back on
-is meant to be the flag and nothing else.
+tree, compiled and referenced through a flag, so it keeps type-checking and cannot
+rot against the code around it. Turning one back on is meant to be the flag and
+nothing else.
+
+Flags live next to the feature they gate, not in one central file — widget flags
+in [`../src/widgets/widget-features.ts`](../src/widgets/widget-features.ts), a
+single-component flag at the top of that component.
 
 Delete a parked feature only when we decide we will not want it — not to tidy up.
 
@@ -50,6 +53,43 @@ with this chip. Gating it would leave new widgets permanently empty.
 
 `WidgetActionId` still includes `'refresh'`, and `runRefresh()` in
 `widget-action.tsx` is still compiled — only its call site is behind the flag.
+
+## Tutorial video links — `TUTORIAL_VIDEO_LINKS_ENABLED` (off)
+
+The "Video guides" subtitle and the two YouTube links under it, one per OS.
+
+Off everywhere. The component returns `null`, so nothing renders and the links
+cannot be opened.
+
+### Where it is gated
+
+One place:
+[`../src/components/tutorial-video-links.tsx`](../src/components/tutorial-video-links.tsx).
+The flag is an early `return null` inside `TutorialVideoLinks` itself, not a
+condition at the call sites.
+
+That is deliberate. There are three call sites and none of them know about each
+other:
+
+| File | Context |
+|------|---------|
+| [`../src/app/(tabs)/index.tsx`](../src/app/(tabs)/index.tsx) | under the "open tutorial" button, when the CTA is showing |
+| [`../src/app/(tabs)/settings.tsx`](../src/app/(tabs)/settings.tsx) | at the foot of the page, for signed-out users with no widget placed |
+| [`../src/components/tutorial-modal.tsx`](../src/components/tutorial-modal.tsx) | inside the `longPress` step, under the heading |
+
+Gating each of them separately would let the feature come back on in one place
+and stay off in another. Gating the component keeps all three rendering it
+exactly as before, and makes the flag the only thing to change.
+
+None of the three leaves a hole behind: in `index.tsx` and `settings.tsx` it sits
+among siblings, and in `tutorial-modal.tsx` the `gap-2` wrapper only spaces
+between rendered children, so a `null` child adds nothing.
+
+### What stays live
+
+`TUTORIAL_VIDEO_URLS` in `constants/tutorial-videos.ts` and the
+`tutorial.videoGuide*` message keys are untouched, and the component still
+type-checks against both.
 
 ## Still open: save and share open the app on iOS
 

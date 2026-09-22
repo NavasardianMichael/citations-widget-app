@@ -15,8 +15,23 @@ function openVideo(url: string) {
   void Linking.openURL(url).catch(() => undefined)
 }
 
+/**
+ * Parked: the video guides are not shown anywhere for now.
+ *
+ * Gated here rather than at the three call sites — `(tabs)/index.tsx`,
+ * `(tabs)/settings.tsx` and `tutorial-modal.tsx` — so the component cannot come
+ * back on in one place and stay off in another, and so those files keep
+ * rendering it exactly as they did. Flipping this back to `true` is the whole
+ * change; nothing else about the feature was removed.
+ *
+ * See `docs/parked-features.md`.
+ */
+export const TUTORIAL_VIDEO_LINKS_ENABLED = false
+
 /** "Video guides" subtitle plus one YouTube link per OS. */
 export function TutorialVideoLinks({ className = '' }: { className?: string }) {
+  if (!TUTORIAL_VIDEO_LINKS_ENABLED) return null
+
   return (
     <View className={`gap-1 ${className}`}>
       <Text className='text-center font-semibold text-on-surface-variant'>
