@@ -18,7 +18,10 @@ export const hy = {
     'Չհաջողվեց կապ հաստատել սերվերի հետ։ Ստուգեք ինտերնետը և կրկին փորձեք։',
   'errors.server':
     'Սերվերի ժամանակավոր խնդիր է առաջացել։ Խնդրում ենք մի փոքր ուշ կրկին փորձել։',
-  'errors.unauthorized': 'Խնդրում ենք կրկին մուտք գործել։',
+  'errors.unauthorized':
+    'Ձեր մուտքի ժամկետը լրացել է։ Խնդրում ենք նորից մուտք գործել՝ շարունակելու համար։',
+  'errors.invalidCredentials':
+    'Էլ․ փոստը կամ գաղտնաբառը սխալ է։ Ստուգեք և կրկին փորձեք։',
   'errors.forbidden':
     'Դուք չունեք այս գործողությունը կատարելու թույլտվություն։',
   'errors.notFound': 'Պահանջված տվյալները չեն գտնվել։',
@@ -212,10 +215,23 @@ export const hy = {
   'profile.signOut': 'Դուրս գալ',
   'profile.signOutConfirmTitle': 'Դուրս գա՞լ հաշվից',
   'profile.signOutConfirmBody': 'Դուք կդուրս գաք Ձեր հաշվից այս սարքում։',
+  'profile.changePassword': 'Փոխել գաղտնաբառը',
+  'profile.changePasswordTitle': 'Գաղտնաբառի փոփոխություն',
+  'profile.changePasswordSubtitle': 'Մուտքագրեք ընթացիկ գաղտնաբառը, ապա՝ նորը։',
+  'profile.currentPassword': 'Ընթացիկ գաղտնաբառ',
+  'profile.currentPasswordPlaceholder': 'Ձեր ներկայիս գաղտնաբառը',
+  'profile.currentPasswordWrong': 'Ընթացիկ գաղտնաբառը սխալ է',
+  'profile.newPassword': 'Նոր գաղտնաբառ',
+  'profile.newPasswordPlaceholder': 'Առնվազն 8 նիշ',
+  'profile.confirmNewPassword': 'Կրկնել նոր գաղտնաբառը',
+  'profile.confirmNewPasswordPlaceholder': 'Կրկին մուտքագրեք նոր գաղտնաբառը',
+  'profile.changePasswordSubmit': 'Թարմացնել գաղտնաբառը',
+  'profile.passwordChanged': 'Գաղտնաբառը հաջողությամբ թարմացվել է։',
+  'profile.changePasswordFailed': 'Չհաջողվեց փոխել գաղտնաբառը',
   'profile.removeAccount': 'Ջնջել հաշիվը',
   'profile.removeAccountConfirmTitle': 'Ջնջե՞լ հաշիվը',
   'profile.removeAccountConfirmBody':
-    'Այս գործողությունը անդառնալի է։ Ձեր հաշիվը և բոլոր տվյալները վերջնականապես կջնջվեն։',
+    'Այս գործողությունը անդառնալի է։ Ձեր հաշիվը և բոլոր տվյալները կջնջվեն և հետագայում վերականգնել հնարավոր չի լինի․ համոզվա՞ծ եք, որ ցանկանում եք ջնջել հաշիվը։',
   'profile.removeAccountFailed': 'Չհաջողվեց ջնջել հաշիվը',
   'profile.updated': 'Պրոֆիլը թարմացված է։',
   'profile.loadFailed': 'Չհաջողվեց բեռնել պրոֆիլը',
@@ -236,9 +252,8 @@ export const hy = {
   'contact.sendFailed': 'Չհաջողվեց ուղարկել հաղորդագրությունը',
   'contact.successTitle': 'Հաղորդագրությունն ուղարկված է',
   'contact.successBody':
-    'Շնորհակալություն։ Մենք ստացել ենք Ձեր նամակը և կպատասխանենք հնարավորինս շուտ։',
+    'Շնորհակալություն։ Մենք ստացել ենք Ձեր նամակը և անհրաժեշտության դեպքում կպատասխանենք հնարավորինս շուտ։',
   'contact.backToProfile': 'Վերադառնալ պրոֆիլ',
-
   'settings.title': 'Վիջեթի կարգավորումներ',
   'settings.sourcePool': 'Աղբյուրների ընտրություն',
   'settings.refreshRate': 'Մեջբերման թարմացման հաճախականություն',
@@ -377,6 +392,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const;
+} as const
 
-export type HyMessages = typeof hy;
+export type HyMessages = typeof hy

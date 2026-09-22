@@ -21,9 +21,10 @@ export function getUserFacingError(
   }
 
   if (error instanceof AuthApiError) {
-    if (error.code === 'UNAUTHORIZED' || error.code === 'INVALID_CREDENTIALS') {
-      return t('errors.unauthorized')
+    if (error.code === 'INVALID_CREDENTIALS') {
+      return t('errors.invalidCredentials')
     }
+    if (error.code === 'UNAUTHORIZED') return t('errors.unauthorized')
     if (error.code === 'INTERNAL_ERROR') return t('errors.server')
   }
 

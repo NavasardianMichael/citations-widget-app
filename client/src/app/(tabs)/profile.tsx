@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native'
 
+import { ChangePasswordModal } from '@/components/change-password-modal'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
 import { TopAppBar } from '@/components/ui/top-app-bar'
@@ -80,6 +81,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
 
   const tutorialAction = (
     <Pressable
@@ -142,6 +144,9 @@ export default function ProfileScreen() {
       </View>
     )
   }
+
+  // Google accounts have no local password to change.
+  const canChangePassword = user?.provider === 'local'
 
   const savedName = profile?.name ?? ''
   const savedSocialUrl = profile?.socialUrl ?? ''
@@ -315,6 +320,15 @@ export default function ProfileScreen() {
                 disabled={saving || !hasChanges}
                 className='w-full md:w-auto'
               />
+              {canChangePassword ? (
+                <Button
+                  label={t('profile.changePassword')}
+                  variant='secondary'
+                  icon='lock-outline'
+                  onPress={() => setChangingPassword(true)}
+                  className='w-full md:w-auto'
+                />
+              ) : null}
               <Button
                 label={t('profile.signOut')}
                 variant='secondary'
@@ -336,6 +350,17 @@ export default function ProfileScreen() {
           <ContactUsPrompt className='mt-8 text-center' />
         </View>
       </ScrollView>
+      <ChangePasswordModal
+        visible={changingPassword}
+        onClose={() => setChangingPassword(false)}
+        onSuccess={() => {
+          setChangingPassword(false)
+          Alert.alert(
+            t('profile.changePasswordTitle'),
+            t('profile.passwordChanged'),
+          )
+        }}
+      />
     </View>
   )
 }

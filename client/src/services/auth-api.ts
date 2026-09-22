@@ -112,6 +112,18 @@ export async function resendVerificationRequest(email: string) {
   });
 }
 
+export async function changePasswordRequest(
+  accessToken: string,
+  currentPassword: string,
+  newPassword: string,
+) {
+  return authFetch<{ message: string }>("/api/auth/change-password", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
 export async function deleteAccountRequest(accessToken: string) {
   return authFetch<{ message: string }>("/api/auth/account", {
     method: "DELETE",

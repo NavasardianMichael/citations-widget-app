@@ -152,6 +152,21 @@ export function validateResetPassword(fields: {
   return errors;
 }
 
+export function validateChangePassword(fields: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}): FieldErrors<"currentPassword" | "newPassword" | "confirmPassword"> {
+  const errors: FieldErrors<"currentPassword" | "newPassword" | "confirmPassword"> = {};
+  const currentPassword = required(fields.currentPassword, "validation.passwordRequired");
+  const newPassword = validatePassword(fields.newPassword);
+  const confirmPassword = validatePasswordConfirm(fields.newPassword, fields.confirmPassword);
+  if (currentPassword) errors.currentPassword = currentPassword;
+  if (newPassword) errors.newPassword = newPassword;
+  if (confirmPassword) errors.confirmPassword = confirmPassword;
+  return errors;
+}
+
 export function validateCitationForm(fields: {
   text: string;
   source: string;
