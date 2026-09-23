@@ -1,180 +1,324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hy">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Գաղտնիության քաղաքականություն · Մեջբերումներ Աստվածաշնչից</title>
-<style>
-  :root{
-    --bg:#fbf9f8; --panel:#ffffff; --ink:#021a35; --muted:#5d6b7d;
-    --rule:#e6e2df; --accent:#fed65b; --link:#1f4f8f;
-  }
-  @media (prefers-color-scheme:dark){
-    :root{ --bg:#0c1522; --panel:#111d2e; --ink:#e8eef6; --muted:#9aa9bb;
-           --rule:#1f2d40; --link:#8ab4f8; }
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  }
-  .wrap{max-width:760px; margin:0 auto; padding:48px 20px 80px}
-  header{border-bottom:3px solid var(--accent); padding-bottom:20px; margin-bottom:36px}
-  h1{font-size:28px; line-height:1.25; margin:0 0 8px}
-  .sub{color:var(--muted); font-size:15px; margin:0}
-  h2{font-size:19px; margin:38px 0 12px; padding-top:4px}
-  h3{font-size:16px; margin:24px 0 8px; color:var(--muted); font-weight:600;
-     text-transform:uppercase; letter-spacing:.04em}
-  p,li{color:var(--ink)}
-  ul{padding-left:22px}
-  li{margin:6px 0}
-  a{color:var(--link)}
-  code{background:var(--panel); border:1px solid var(--rule); border-radius:4px;
-       padding:1px 5px; font-size:14px}
-  .card{background:var(--panel); border:1px solid var(--rule); border-radius:10px;
-        padding:18px 20px; margin:20px 0}
-  .en{margin-top:64px; padding-top:32px; border-top:1px solid var(--rule)}
-  footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--rule);
-         color:var(--muted); font-size:14px}
-</style>
-</head>
-<body>
-<div class="wrap">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Գաղտնիության քաղաքականություն · Մեջբերումներ Աստվածաշնչից</title>
+    <style>
+      :root {
+        --bg: #fbf9f8;
+        --panel: #ffffff;
+        --ink: #021a35;
+        --muted: #5d6b7d;
+        --rule: #e6e2df;
+        --accent: #fed65b;
+        --link: #1f4f8f;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1522;
+          --panel: #111d2e;
+          --ink: #e8eef6;
+          --muted: #9aa9bb;
+          --rule: #1f2d40;
+          --link: #8ab4f8;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          16px/1.65 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          sans-serif;
+      }
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 48px 20px 80px;
+      }
+      header {
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 20px;
+        margin-bottom: 36px;
+      }
+      h1 {
+        font-size: 28px;
+        line-height: 1.25;
+        margin: 0 0 8px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 15px;
+        margin: 0;
+      }
+      h2 {
+        font-size: 19px;
+        margin: 38px 0 12px;
+        padding-top: 4px;
+      }
+      h3 {
+        font-size: 16px;
+        margin: 24px 0 8px;
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      p,
+      li {
+        color: var(--ink);
+      }
+      ul {
+        padding-left: 22px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      a {
+        color: var(--link);
+      }
+      code {
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 14px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 18px 20px;
+        margin: 20px 0;
+      }
+      .en {
+        margin-top: 64px;
+        padding-top: 32px;
+        border-top: 1px solid var(--rule);
+      }
+      footer {
+        margin-top: 56px;
+        padding-top: 20px;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Գաղտնիության քաղաքականություն</h1>
+        <p class="sub">
+          Մեջբերումներ Աստվածաշնչից · Վերջին թարմացումը՝ 2026 թ. սեպտեմբերի 19
+        </p>
+      </header>
 
-<header>
-  <h1>Գաղտնիության քաղաքականություն</h1>
-  <p class="sub">Մեջբերումներ Աստվածաշնչից · Վերջին թարմացումը՝ 2026 թ. սեպտեմբերի 19</p>
-</header>
+      <p>
+        Այս փաստաթուղթը նկարագրում է, թե ինչ տվյալներ է հավաքում «Մեջբերումներ
+        Աստվածաշնչից» հավելվածը, ինչու և ինչպես կարող եք դրանք ջնջել։
+      </p>
 
-<p>Այս փաստաթուղթը նկարագրում է, թե ինչ տվյալներ է հավաքում «Մեջբերումներ
-Աստվածաշնչից» հավելվածը, ինչու և ինչպես կարող եք դրանք ջնջել։</p>
+      <h2>Ի՞նչ տվյալներ ենք հավաքում</h2>
 
-<h2>Ի՞նչ տվյալներ ենք հավաքում</h2>
+      <h3>Հաշվի տվյալներ</h3>
+      <ul>
+        <li>Էլ․ փոստի հասցե և անուն</li>
+        <li>
+          Գաղտնաբառ՝ պահվում է միայն գաղտնագրված (hash) տեսքով, երբեք՝ բաց
+          տեքստով
+        </li>
+        <li>
+          Google-ով մուտք գործելիս՝ Google հաշվի նույնացուցիչը և պրոֆիլի նկարը
+        </li>
+        <li>Էլ․ փոստի հաստատման կարգավիճակ և լեզվի նախընտրություն</li>
+      </ul>
 
-<h3>Հաշվի տվյալներ</h3>
-<ul>
-  <li>Էլ․ փոստի հասցե և անուն</li>
-  <li>Գաղտնաբառ՝ պահվում է միայն գաղտնագրված (hash) տեսքով, երբեք՝ բաց տեքստով</li>
-  <li>Google-ով մուտք գործելիս՝ Google հաշվի նույնացուցիչը և պրոֆիլի նկարը</li>
-  <li>Էլ․ փոստի հաստատման կարգավիճակ և լեզվի նախընտրություն</li>
-</ul>
+      <h3>Հավելվածի բովանդակություն</h3>
+      <ul>
+        <li>Պահպանված մեջբերումներ</li>
+        <li>Ձեր ուղարկած մեջբերումները և դրանց վիճակը</li>
+        <li>
+          Վիջեթի կարգավորումները՝ ձևավորում, տառատեսակ, աղբյուր, թարմացման
+          հաճախականություն
+        </li>
+      </ul>
 
-<h3>Հավելվածի բովանդակություն</h3>
-<ul>
-  <li>Պահպանված մեջբերումներ</li>
-  <li>Ձեր ուղարկած մեջբերումները և դրանց վիճակը</li>
-  <li>Վիջեթի կարգավորումները՝ ձևավորում, տառատեսակ, աղբյուր, թարմացման հաճախականություն</li>
-</ul>
+      <h3>Ձեր հրապարակային պրոֆիլը</h3>
+      <div class="card">
+        <p style="margin: 0">
+          Եթե միացրած է <strong>«Կիսվել պրոֆիլով»</strong> կարգավորումը, Ձեր
+          <strong>անունը</strong> և Ձեր նշած
+          <strong>սոցիալական հղումը</strong> կարող են երևալ այլ օգտատերերի
+          վիջեթների վրա՝ Ձեր ուղարկած մեջբերումների կողքին։ Այս կարգավորումը
+          կարող եք ցանկացած պահի անջատել հավելվածի «Պրոֆիլ» բաժնից։ Ձեր էլ․
+          փոստը երբեք չի ցուցադրվում։
+        </p>
+      </div>
 
-<h3>Ձեր հրապարակային պրոֆիլը</h3>
-<div class="card">
-  <p style="margin:0">Եթե միացրած է <strong>«Կիսվել պրոֆիլով»</strong> կարգավորումը, Ձեր
-  <strong>անունը</strong> և Ձեր նշած <strong>սոցիալական հղումը</strong> կարող են երևալ այլ
-  օգտատերերի վիջեթների վրա՝ Ձեր ուղարկած մեջբերումների կողքին։ Այս կարգավորումը կարող եք
-  ցանկացած պահի անջատել հավելվածի «Պրոֆիլ» բաժնից։ Ձեր էլ․ փոստը երբեք չի ցուցադրվում։</p>
-</div>
+      <h3>Տեխնիկական տվյալներ</h3>
+      <ul>
+        <li>Նստաշրջանի (session) թոքեններ՝ Ձեզ մուտք գործած պահելու համար</li>
+        <li>
+          Խնդիրների հաշվետվություններ
+          <a href="https://sentry.io/privacy/">Sentry</a>-ի միջոցով՝ սարքի
+          տեսակը, ՕՀ-ի տարբերակը և սխալի հետքը։ Կարգավորված է
+          <code>sendDefaultPii: false</code>-ով, այսինքն՝ անձնական տվյալներ և IP
+          հասցե դիտավորյալ չեն ուղարկվում։
+        </li>
+      </ul>
 
-<h3>Տեխնիկական տվյալներ</h3>
-<ul>
-  <li>Նստաշրջանի (session) թոքեններ՝ Ձեզ մուտք գործած պահելու համար</li>
-  <li>Վթարների հաշվետվություններ <a href="https://sentry.io/privacy/">Sentry</a>-ի միջոցով՝
-      սարքի տեսակը, ՕՀ-ի տարբերակը և սխալի հետքը։ Կարգավորված է
-      <code>sendDefaultPii: false</code>-ով, այսինքն՝ անձնական տվյալներ և IP հասցե
-      դիտավորյալ չեն ուղարկվում։</li>
-</ul>
+      <h2>Ի՞նչ չենք հավաքում</h2>
+      <ul>
+        <li>Տեղորոշում, կոնտակտներ, օրացույց, ֆայլեր</li>
+        <li>Գովազդային նույնացուցիչներ. հավելվածը գովազդ չի ցուցադրում</li>
+        <li>
+          Վարքագծային վերլուծություն կամ տվյալների տարամդրում երրորդ կողմի համար
+        </li>
+        <li>Ձեր տվյալները չեն վաճառվում և չեն փոխանցվում գովազդատուներին</li>
+      </ul>
 
-<h2>Ի՞նչ չենք հավաքում</h2>
-<ul>
-  <li>Տեղորոշում, կոնտակտներ, օրացույց, լուսանկարներ կամ ֆայլեր</li>
-  <li>Գովազդային նույնացուցիչներ. հավելվածը գովազդ չի ցուցադրում</li>
-  <li>Վարքագծային վերլուծություն կամ հետագծում երրորդ կողմերի համար</li>
-  <li>Ձեր տվյալները չեն վաճառվում և չեն փոխանցվում գովազդատուներին</li>
-</ul>
+      <h2>Ինչու՞ ենք օգտագործում այս տվյալները</h2>
+      <ul>
+        <li>Ձեր հաշիվը ստեղծելու և պաշտպանելու համար</li>
+        <li>
+          Ձեր կարգավորումներն ու պահպանված մեջբերումները սարքերի միջև
+          համաժամեցնելու համար
+        </li>
+        <li>Վիջեթին բովանդակություն մատուցելու համար</li>
+        <li>Խնդիրներն ուղղելու և ծրագրի կայունությունը բարելավելու համար</li>
+      </ul>
 
-<h2>Ինչու՞ ենք օգտագործում այս տվյալները</h2>
-<ul>
-  <li>Ձեր հաշիվը ստեղծելու և պաշտպանելու համար</li>
-  <li>Ձեր կարգավորումներն ու պահպանված մեջբերումները սարքերի միջև համաժամեցնելու համար</li>
-  <li>Վիջեթին բովանդակություն մատուցելու համար</li>
-  <li>Վթարներն ուղղելու և կայունությունը բարելավելու համար</li>
-</ul>
+      <h2>Երրորդ կողմեր</h2>
+      <ul>
+        <li>
+          <strong>Google Sign-In</strong> — միայն եթե ընտրեք Google-ով մուտք
+          գործել
+        </li>
+        <li><strong>Sentry</strong> — խնդիրների հաշվետվություն</li>
+      </ul>
+      <p>Ձեր տվյալները այլ երրորդ կողմի չեն փոխանցվում։</p>
 
-<h2>Երրորդ կողմեր</h2>
-<ul>
-  <li><strong>Google Sign-In</strong> — միայն եթե ընտրեք Google-ով մուտք գործել</li>
-  <li><strong>Sentry</strong> — վթարների հաշվետվություն</li>
-</ul>
-<p>Այլ երրորդ կողմերի Ձեր տվյալները չեն փոխանցվում։</p>
+      <h2>Պահպանման ժամկետ և ջնջում</h2>
+      <p>
+        Ձեր տվյալները պահվում են այնքան, քանի դեռ հաշիվը գործում է։ Հաշիվը
+        ջնջելիս ջնջվում են նաև Ձեր էլ․ փոստը, անունը, գաղտնաբառի hash-ը, Google
+        նույնացուցիչը, պահպանված մեջբերումները, վիջեթի կարգավորումները և բոլոր
+        նստաշրջանները։
+      </p>
+      <p>
+        <strong>Ջնջել հաշիվը՝</strong> հավելվածում «Պրոֆիլ» → «Ջնջել հաշիվը»,
+        կամ <a href="./delete-account.html">հայցեք ջնջումը այս էջից</a>։
+      </p>
 
-<h2>Պահպանման ժամկետ և ջնջում</h2>
-<p>Ձեր տվյալները պահվում են այնքան, քանի դեռ հաշիվը գործում է։ Հաշիվը ջնջելիս ջնջվում են
-նաև Ձեր էլ․ փոստը, անունը, գաղտնաբառի hash-ը, Google նույնացուցիչը, պահպանված
-մեջբերումները, վիջեթի կարգավորումները և բոլոր նստաշրջանները։</p>
-<p><strong>Ջնջել հաշիվը՝</strong> հավելվածում «Պրոֆիլ» → «Ջնջել հաշիվը», կամ
-<a href="./delete-account.html">հայցեք ջնջումը այս էջից</a>։</p>
+      <h2>Երեխաներ</h2>
+      <p>
+        Հավելվածը նախատեսված չէ 13 տարեկանից փոքր երեխաների համար և դիտավորյալ
+        նրանցից տվյալներ չի հավաքում։
+      </p>
 
-<h2>Երեխաներ</h2>
-<p>Հավելվածը նախատեսված չէ 13 տարեկանից փոքր երեխաների համար և դիտավորյալ նրանցից
-տվյալներ չի հավաքում։</p>
+      <h2>Փոփոխություններ</h2>
+      <p>
+        Այս քաղաքականության փոփոխությունների դեպքում վերևի ամսաթիվը կթարմացվի։
+      </p>
 
-<h2>Փոփոխություններ</h2>
-<p>Այս քաղաքականության փոփոխությունների դեպքում վերևի ամսաթիվը կթարմացվի։</p>
+      <h2>Կապ</h2>
+      <p>
+        Հարցերի համար՝
+        <a href="mailto:navasardianmichael@gmail.com"
+          >navasardianmichael@gmail.com</a
+        >
+      </p>
 
-<h2>Կապ</h2>
-<p>Հարցերի համար՝ <a href="mailto:navasardianmichael@gmail.com">navasardianmichael@gmail.com</a></p>
+      <!-- ------------------------------------------------------------------ -->
+      <div class="en">
+        <h1>Privacy Policy</h1>
+        <p class="sub">Bible Citations · Last updated 19 September 2026</p>
 
-<!-- ------------------------------------------------------------------ -->
-<div class="en">
-<h1>Privacy Policy</h1>
-<p class="sub">Bible Citations · Last updated 19 September 2026</p>
+        <h2>Data we collect</h2>
+        <p>
+          <strong>Account:</strong> email address, name, password (stored only
+          as a hash), and — if you sign in with Google — your Google account
+          identifier and profile picture. Also your email-verification status
+          and language preference.
+        </p>
 
-<h2>Data we collect</h2>
-<p><strong>Account:</strong> email address, name, password (stored only as a hash),
-and — if you sign in with Google — your Google account identifier and profile picture.
-Also your email-verification status and language preference.</p>
+        <p>
+          <strong>App content:</strong> saved citations, citations you submit,
+          and your widget settings (design, font, source, refresh interval).
+        </p>
 
-<p><strong>App content:</strong> saved citations, citations you submit, and your widget
-settings (design, font, source, refresh interval).</p>
+        <p>
+          <strong>Public profile:</strong> if the <em>Share profile</em> setting
+          is on, your <strong>name</strong> and any
+          <strong>social link</strong> you provide may appear on other users'
+          widgets alongside citations you submitted. You can turn this off at
+          any time in Profile. Your email address is never displayed.
+        </p>
 
-<p><strong>Public profile:</strong> if the <em>Share profile</em> setting is on, your
-<strong>name</strong> and any <strong>social link</strong> you provide may appear on other
-users' widgets alongside citations you submitted. You can turn this off at any time in
-Profile. Your email address is never displayed.</p>
+        <p>
+          <strong>Technical:</strong> session tokens, and crash reports via
+          <a href="https://sentry.io/privacy/">Sentry</a> containing device
+          model, OS version and a stack trace. Sentry is configured with
+          <code>sendDefaultPii: false</code>, so personal data and IP addresses
+          are not intentionally transmitted.
+        </p>
 
-<p><strong>Technical:</strong> session tokens, and crash reports via
-<a href="https://sentry.io/privacy/">Sentry</a> containing device model, OS version and a
-stack trace. Sentry is configured with <code>sendDefaultPii: false</code>, so personal
-data and IP addresses are not intentionally transmitted.</p>
+        <h2>What we do not collect</h2>
+        <p>
+          No location, contacts, calendar, photos or files. No advertising
+          identifiers — the app shows no ads. No behavioural analytics or
+          third-party tracking. We do not sell your data.
+        </p>
 
-<h2>What we do not collect</h2>
-<p>No location, contacts, calendar, photos or files. No advertising identifiers — the app
-shows no ads. No behavioural analytics or third-party tracking. We do not sell your data.</p>
+        <h2>Why we use it</h2>
+        <p>
+          To create and secure your account, sync your settings and saved
+          citations across devices, deliver content to the home-screen widget,
+          and fix crashes.
+        </p>
 
-<h2>Why we use it</h2>
-<p>To create and secure your account, sync your settings and saved citations across
-devices, deliver content to the home-screen widget, and fix crashes.</p>
+        <h2>Third parties</h2>
+        <p>
+          Google Sign-In (only if you choose it) and Sentry (crash reporting).
+          No other third parties receive your data.
+        </p>
 
-<h2>Third parties</h2>
-<p>Google Sign-In (only if you choose it) and Sentry (crash reporting). No other
-third parties receive your data.</p>
+        <h2>Retention and deletion</h2>
+        <p>
+          Data is kept while your account is active. Deleting your account
+          removes your email, name, password hash, Google identifier, saved
+          citations, widget settings and all sessions.
+        </p>
+        <p>
+          <strong>To delete:</strong> in the app, Profile → Delete account, or
+          <a href="./delete-account.html">request deletion here</a>.
+        </p>
 
-<h2>Retention and deletion</h2>
-<p>Data is kept while your account is active. Deleting your account removes your email,
-name, password hash, Google identifier, saved citations, widget settings and all sessions.</p>
-<p><strong>To delete:</strong> in the app, Profile → Delete account, or
-<a href="./delete-account.html">request deletion here</a>.</p>
+        <h2>Children</h2>
+        <p>
+          The app is not directed at children under 13 and does not knowingly
+          collect their data.
+        </p>
 
-<h2>Children</h2>
-<p>The app is not directed at children under 13 and does not knowingly collect their data.</p>
+        <h2>Contact</h2>
+        <p>
+          <a href="mailto:navasardianmichael@gmail.com"
+            >navasardianmichael@gmail.com</a
+          >
+        </p>
+      </div>
 
-<h2>Contact</h2>
-<p><a href="mailto:navasardianmichael@gmail.com">navasardianmichael@gmail.com</a></p>
-</div>
-
-<footer>
-  Մեջբերումներ Աստվածաշնչից · Bible Citations
-</footer>
-
-</div>
-</body>
+      <footer>Մեջբերումներ Աստվածաշնչից · Bible Citations</footer>
+    </div>
+  </body>
 </html>
