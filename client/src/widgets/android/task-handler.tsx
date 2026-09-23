@@ -125,10 +125,7 @@ async function refreshCitationSnapshot(
         ? await getGuestWidgetSettings()
         : await getWidgetSettings();
       const result = local
-        ? await pickGuestWidgetCitation(
-            settings.sourceSelection,
-            settings.widgetDesign,
-          )
+        ? await pickGuestWidgetCitation(settings.sourceSelection)
         : await fetchWidgetCitation(force);
       await setCachedWidgetCitation({
         citation: result.citation,
@@ -196,7 +193,6 @@ async function shiftQuotePage(
     widgetHeight,
     fontSize: snapshot.fontSize,
     showOrnament: designShowsOrnament(snapshot.designId),
-    showLargeQuotes: snapshot.showLargeQuotes,
     hasSource: Boolean(snapshot.sourceText),
     showActions: snapshot.showActions,
     actionRowCount: estimateActionRowCount(widgetWidth, snapshot.showActions),

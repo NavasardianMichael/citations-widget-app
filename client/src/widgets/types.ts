@@ -55,7 +55,6 @@ export type HomeWidgetSnapshot = {
   ornamentColor: string;
   ornamentOpacity: number;
   showOrnament: boolean;
-  showLargeQuotes: boolean;
   /** Dark scrim over photo backgrounds; null for solid designs. */
   overlayColor: string | null;
   hasBackgroundImage: boolean;

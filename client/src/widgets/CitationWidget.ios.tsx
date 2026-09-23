@@ -220,7 +220,7 @@ function CitationWidgetView(raw: IosWidgetProps, environment: WidgetEnvironment)
         spacing={0}
         modifiers={[
           padding({
-            top: props.showOrnament || props.showLargeQuotes ? pad : 8,
+            top: props.showOrnament ? pad : 8,
             leading: pad,
             bottom: pad,
             trailing: pad,
@@ -229,18 +229,6 @@ function CitationWidgetView(raw: IosWidgetProps, environment: WidgetEnvironment)
           background(scrim),
         ]}
       >
-        {props.showLargeQuotes ? (
-          <Text
-            modifiers={[
-              quoteFont(48, 'bold'),
-              foregroundStyle(ornamentColor),
-              opacity(Math.min(1, ornamentOpacity + 0.15)),
-            ]}
-          >
-            “
-          </Text>
-        ) : null}
-
         <VStack
           alignment='leading'
           spacing={gap}

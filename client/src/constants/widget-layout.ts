@@ -33,9 +33,8 @@ export const WIDGET_LAYOUT = {
   actionSize: 40,
   actionIconSize: 22,
   actionGap: 10,
-  /** Preview ornament / large quotes */
+  /** Preview ornament */
   ornamentIconSize: 20,
-  largeQuoteFontSize: 48,
   ornamentInset: 8,
 } as const;
 

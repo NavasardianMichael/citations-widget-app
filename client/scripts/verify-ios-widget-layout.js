@@ -126,7 +126,6 @@ const FULL_SNAPSHOT = {
   ornamentColor: "#fed65b",
   ornamentOpacity: 0.35,
   showOrnament: true,
-  showLargeQuotes: true,
   overlayColor: "rgba(12, 10, 8, 0.72)",
   hasBackgroundImage: true,
   emptyMessage: "Մեջբերում չկա",

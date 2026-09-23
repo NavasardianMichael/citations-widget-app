@@ -179,10 +179,6 @@ function WidgetBody({
   const quoteColor = isRefreshing
     ? snapshot.attributionColor
     : snapshot.quoteColor;
-  const largeQuoteColor = colorWithOpacity(
-    snapshot.ornamentColor,
-    Math.min(1, snapshot.ornamentOpacity + 0.15),
-  );
   const shareText = buildShareText(
     snapshot.citationText,
     snapshot.citationSource,
@@ -230,7 +226,6 @@ function WidgetBody({
     fontSize: snapshot.fontSize,
     // Flare is overlaid; this flag only picks compact vs full top padding.
     showOrnament: designShowsOrnament(snapshot.designId),
-    showLargeQuotes: snapshot.showLargeQuotes,
     hasSource,
     showActions: actions.length > 0,
     actionRowCount: actionRows.length,
@@ -261,7 +256,7 @@ function WidgetBody({
         justifyContent: "space-between",
         padding: WIDGET_LAYOUT.padding,
         paddingTop: getWidgetContentPaddingTop(
-          designShowsOrnament(snapshot.designId) || snapshot.showLargeQuotes,
+          designShowsOrnament(snapshot.designId),
         ),
       }}
     >
@@ -271,20 +266,6 @@ function WidgetBody({
           flexDirection: "column",
         }}
       >
-        {snapshot.showLargeQuotes ? (
-          <TextWidget
-            text="“"
-            allowFontScaling={false}
-            style={{
-              fontSize: WIDGET_LAYOUT.largeQuoteFontSize,
-              color: asColor(largeQuoteColor),
-              fontFamily: snapshot.androidFontFile,
-              lineHeight: WIDGET_LAYOUT.largeQuoteFontSize,
-              marginBottom: -8,
-            }}
-          />
-        ) : null}
-
         <FlexWidget
           style={{
             width: "match_parent",

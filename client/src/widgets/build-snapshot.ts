@@ -6,6 +6,7 @@ import {
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import {
   DEFAULT_WIDGET_FONT,
+  formatWidgetQuote,
   getWidgetFontFamily,
   WIDGET_FONT_OPTIONS,
   type WidgetFontId,
@@ -77,7 +78,7 @@ export function buildHomeWidgetSnapshot(
   const attributionUrl = name ? resolved.url : null;
 
   return {
-    quoteText: citation?.text ? `«${citation.text}»` : "",
+    quoteText: formatWidgetQuote(citation?.text ?? "", fontId),
     sourceText: citation?.source ?? "",
     attributionText: attribution?.full ?? null,
     attributionBefore: attribution?.before ?? "",
@@ -113,7 +114,6 @@ export function buildHomeWidgetSnapshot(
     ornamentColor: design.ornamentColor,
     ornamentOpacity: design.ornamentOpacity,
     showOrnament: designShowsOrnament(design.id),
-    showLargeQuotes: design.showLargeQuotes,
     overlayColor: design.overlayColor ?? null,
     hasBackgroundImage: Boolean(design.randomBackground),
     emptyMessage: t("settings.previewEmpty"),

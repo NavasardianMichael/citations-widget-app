@@ -18,7 +18,6 @@ import {
   type WidgetDesignId,
 } from '@/constants/widget-designs'
 import {
-  colorWithOpacity,
   getQuoteLineHeight,
   getWidgetContentPaddingTop,
   WIDGET_ATTRIBUTION_NAME_FONT_WEIGHT,
@@ -27,7 +26,7 @@ import {
   widgetPreviewSourceWeightStyle,
   widgetPreviewUsesFakeQuoteBold,
 } from '@/constants/widget-layout'
-import { getWidgetFontFamily } from '@/fonts/registry'
+import { formatWidgetQuote, getWidgetFontFamily } from '@/fonts/registry'
 import { useWidgetFont } from '@/fonts/use-widget-font'
 import { t } from '@/i18n'
 import type { FontStyle, WidgetCitation } from '@/types/citation'
@@ -205,11 +204,9 @@ export function WidgetPreview({
     overflow: 'hidden' as const,
   }
 
-  const hasTopChrome =
-    designShowsOrnament(design) || tokens.showLargeQuotes
   const contentPad = {
     padding: WIDGET_LAYOUT.padding,
-    paddingTop: getWidgetContentPaddingTop(hasTopChrome),
+    paddingTop: getWidgetContentPaddingTop(designShowsOrnament(design)),
     // Quote + source stay together at the top; actions/attribution pin to the bottom.
     ...(fillWidgetHeight
       ? { flex: 1, justifyContent: 'space-between' as const }
@@ -275,7 +272,7 @@ export function WidgetPreview({
         )
       ) : citation ? (
         renderFaceText(
-          `«${citation.text}»`,
+          formatWidgetQuote(citation.text, fontStyle),
           {
             fontFamily,
             fontSize,
@@ -377,23 +374,6 @@ export function WidgetPreview({
         </View>
       ) : null}
 
-      {tokens.showLargeQuotes ? (
-        <Text
-          className='absolute leading-none'
-          style={{
-            left: WIDGET_LAYOUT.padding / 2,
-            top: WIDGET_LAYOUT.ornamentInset,
-            fontSize: WIDGET_LAYOUT.largeQuoteFontSize,
-            color: colorWithOpacity(
-              tokens.ornamentColor,
-              tokens.ornamentOpacity + 0.15,
-            ),
-            zIndex: 2,
-          }}
-        >
-          “
-        </Text>
-      ) : null}
       {topContent}
       {metaContent}
     </>

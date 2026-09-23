@@ -18,7 +18,6 @@ export type QuotePagingInput = {
   widgetHeight: number;
   fontSize: number;
   showOrnament: boolean;
-  showLargeQuotes: boolean;
   hasSource: boolean;
   showActions: boolean;
   actionRowCount: number;
@@ -91,11 +90,7 @@ function estimateChromeHeight(
   // separates the top quote block from bottom actions, and counting it here
   // made linesPerPage collapse to 1 on typical 4×4 sizes.
   let used =
-    getWidgetContentPaddingTop(input.showOrnament || input.showLargeQuotes) +
-    WIDGET_LAYOUT.padding;
-  if (input.showLargeQuotes) {
-    used += Math.max(0, WIDGET_LAYOUT.largeQuoteFontSize - 8);
-  }
+    getWidgetContentPaddingTop(input.showOrnament) + WIDGET_LAYOUT.padding;
   if (input.hasSource) {
     // Source allows maxLines={2}; reserve one line (common) + gap.
     used += WIDGET_LAYOUT.quoteSourceGap + lineHeight;

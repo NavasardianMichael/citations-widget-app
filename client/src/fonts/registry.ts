@@ -25,10 +25,17 @@ export const APP_FONT_SOURCES = {
  * the latter — it loads the face through Core Text, not `expo-font`, so the
  * app's alias means nothing there. Run `node ./scripts/print-font-names.js`
  * after adding a font to read its real name instead of guessing.
+ *
+ * `hasGuillemets` records whether the face can draw « and » (U+00AB / U+00BB).
+ * Several of these ship a cmap holding the Armenian block and almost nothing
+ * else, and a face loaded from an asset gets no system fallback, so on those the
+ * brackets came out as blank gaps around the quote. Verify with
+ * `node ./scripts/check-font-glyphs.js` after adding or replacing a font.
  */
 export const WIDGET_FONT_OPTIONS = [
   {
     id: 'vrdznagir',
+    hasGuillemets: true,
     label: 'Վրձնագիր',
     family: 'Vrdznagir',
     postScriptName: 'Vrdznagir',
@@ -36,6 +43,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'braind_amanor',
+    hasGuillemets: true,
     label: 'Բրեինդ Ամանոր',
     family: 'BraindAmanor',
     postScriptName: 'BraindAmanorRegular',
@@ -43,6 +51,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'artsakh',
+    hasGuillemets: false,
     label: 'Արցախ',
     family: 'Artsakh',
     postScriptName: 'ArtsakhFontRegular',
@@ -50,6 +59,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'davel_aghvor',
+    hasGuillemets: true,
     label: 'Դավել Աղվոր',
     family: 'DavelAghvor',
     postScriptName: 'DavelAghvor',
@@ -57,6 +67,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'mardoto',
+    hasGuillemets: true,
     label: 'Մարդոտո',
     family: 'Mardoto',
     postScriptName: 'Mardoto-Regular',
@@ -64,6 +75,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'arti',
+    hasGuillemets: true,
     label: 'Արդի',
     family: 'Arti',
     postScriptName: 'Artiv05-Regular',
@@ -71,6 +83,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'arian_grqi',
+    hasGuillemets: true,
     label: 'Արիան Գրքի',
     family: 'ArianGrqi',
     postScriptName: 'ArianGrqi',
@@ -78,6 +91,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'braind_zbans',
+    hasGuillemets: true,
     label: 'Բրեինդ Զբանս',
     family: 'BraindZbans',
     postScriptName: 'BraindIjevanRegular',
@@ -85,6 +99,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'nortar_body',
+    hasGuillemets: true,
     label: 'Նորտառ և Նորտառ Բոդի',
     family: 'NorTarBody',
     postScriptName: 'NorTarBody',
@@ -92,6 +107,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'arm_hmks_script',
+    hasGuillemets: true,
     label: "Արմ Հմկ'ս Սքրիփթ",
     family: 'ArmHmksScript',
     postScriptName: "ArmHmk'sScript",
@@ -99,6 +115,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'noyemi',
+    hasGuillemets: false,
     label: 'Նոյեմի',
     family: 'Noyemi',
     postScriptName: 'NoyemiRegular',
@@ -106,6 +123,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'armeniapedia_garun',
+    hasGuillemets: false,
     label: 'Արմենիապեդիա Գարուն',
     family: 'ArmeniapediaGarun',
     postScriptName: 'ArmeniapediaGarun',
@@ -113,6 +131,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'armeniapedia_geghagrutyun',
+    hasGuillemets: false,
     label: 'Արմենիապեդիա Գեղագրություն',
     family: 'ArmeniapediaGeghagrutyun',
     postScriptName: 'ArmeniapediaGeghagrutyun',
@@ -120,6 +139,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'sasuntsi',
+    hasGuillemets: true,
     label: 'Սասունցի',
     family: 'Sasuntsi',
     postScriptName: 'Sasuntsi-Regular',
@@ -127,6 +147,7 @@ export const WIDGET_FONT_OPTIONS = [
   },
   {
     id: 'armeniapedia_jhapaven',
+    hasGuillemets: false,
     label: 'Արմենիապեդիա Ժապավեն',
     family: 'ArmeniapediaJhapaven',
     postScriptName: 'ArmeniapediaJhapaven',
@@ -193,4 +214,14 @@ export function getWidgetFontSource(id: WidgetFontId): number {
 
 export function getWidgetFontLabel(id: WidgetFontId): string {
   return byId[id].label
+}
+
+/**
+ * Wrap a citation in Armenian quotation marks, but only in a face that has them.
+ * On the rest the brackets simply do not appear, which reads as a rendering
+ * fault rather than a style — so those faces show the quote unbracketed.
+ */
+export function formatWidgetQuote(text: string, id: WidgetFontId): string {
+  if (!text) return ''
+  return byId[id].hasGuillemets ? `«${text}»` : text
 }
