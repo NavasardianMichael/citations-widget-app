@@ -293,7 +293,7 @@ router.post("/resend-verification-email", authLimiter, async (req, res, next) =>
   try {
     const { email } = req.body;
     if (!email || typeof email !== "string") {
-      res.status(400).json({ success: false, error: { code: ErrorCode.VALIDATION_ERROR, message: "Email is required" } });
+      res.status(400).json({ success: false, error: { code: ErrorCode.VALIDATION_ERROR, message: "Մուտքագրեք էլ․ փոստը" } });
       return;
     }
     const result = await authService.resendVerification(email);

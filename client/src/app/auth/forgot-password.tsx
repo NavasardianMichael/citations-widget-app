@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/form-field";
 import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { TextLink } from "@/components/ui/text-link";
 import { t } from "@/i18n";
+import { getUserFacingError } from "@/lib/user-facing-error";
 import { hasErrors, validateForgotPassword, type FieldErrors } from "@/lib/validation";
 import { forgotPasswordRequest } from "@/services/auth-api";
 
@@ -33,7 +34,7 @@ export default function ForgotPasswordScreen() {
         `/auth/forgot-password-sent?email=${encodeURIComponent(trimmedEmail)}` as Href,
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("auth.forgot.failed"));
+      setError(getUserFacingError(e, "auth.forgot.failed"));
     } finally {
       setLoading(false);
     }

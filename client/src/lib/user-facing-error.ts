@@ -26,6 +26,9 @@ export function getUserFacingError(
     }
     if (error.code === 'UNAUTHORIZED') return t('errors.unauthorized')
     if (error.code === 'INTERNAL_ERROR') return t('errors.server')
+    // The API speaks Armenian, so its own message is the most specific copy we
+    // have (e.g. "Այս էլ․ փոստով հաշիվ արդեն գոյություն ունի").
+    if (error.message.trim()) return error.message
   }
 
   if (error instanceof TypeError) {

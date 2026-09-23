@@ -264,27 +264,34 @@ export default function CitationsScreen() {
     )
   }
 
-  function confirmDelete(id: string) {
-    Alert.alert(t('submit.deleteTitle'), t('submit.deleteBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('submit.deleteAction'),
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteCitation(id)
-            setItems((prev) => prev.filter((item) => item.citation.id !== id))
-            await loadLibrary()
-          } catch (e) {
-            Alert.alert(
-              t('common.error'),
-              getUserFacingError(e, 'citations.loadFailed'),
-            )
-            await loadLibrary()
-          }
+  function confirmDelete(id: string, status: OwnedCitation['status']) {
+    // Withdrawing a pending submission pulls it back out of review, which is a
+    // different promise to the user than deleting an approved/private one.
+    const isPending = status === 'pending'
+    Alert.alert(
+      isPending ? t('card.removePendingConfirmTitle') : t('submit.deleteTitle'),
+      isPending ? t('card.removePendingConfirmBody') : t('submit.deleteBody'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('submit.deleteAction'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteCitation(id)
+              setItems((prev) => prev.filter((item) => item.citation.id !== id))
+              await loadLibrary()
+            } catch (e) {
+              Alert.alert(
+                t('common.error'),
+                getUserFacingError(e, 'citations.loadFailed'),
+              )
+              await loadLibrary()
+            }
+          },
         },
-      },
-    ])
+      ],
+    )
   }
 
   return (
@@ -394,19 +401,19 @@ export default function CitationsScreen() {
                   footerActions.push({
                     icon: 'delete',
                     labelKey: 'card.removePending',
-                    onPress: () => confirmDelete(owned.id),
+                    onPress: () => confirmDelete(owned.id, owned.status),
                   })
                 } else if (owned?.status === 'private') {
                   footerActions.push({
                     icon: 'delete',
                     labelKey: 'card.removePrivate',
-                    onPress: () => confirmDelete(owned.id),
+                    onPress: () => confirmDelete(owned.id, owned.status),
                   })
                 } else if (owned?.status === 'approved') {
                   footerActions.push({
                     icon: 'delete',
                     labelKey: 'card.removeApproved',
-                    onPress: () => confirmDelete(owned.id),
+                    onPress: () => confirmDelete(owned.id, owned.status),
                   })
                 }
 

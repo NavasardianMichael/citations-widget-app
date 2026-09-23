@@ -6,6 +6,7 @@ import { AuthStatusScreen } from "@/components/ui/auth-status-screen";
 import { Button } from "@/components/ui/button";
 import { TextLink } from "@/components/ui/text-link";
 import { t } from "@/i18n";
+import { getUserFacingError } from "@/lib/user-facing-error";
 import { resendVerificationRequest } from "@/services/auth-api";
 
 export default function CheckEmailScreen() {
@@ -24,7 +25,7 @@ export default function CheckEmailScreen() {
       await resendVerificationRequest(email);
       setMessage(t("auth.checkEmail.resent"));
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("auth.checkEmail.resendFailed"));
+      setError(getUserFacingError(e, "auth.checkEmail.resendFailed"));
     } finally {
       setLoading(false);
     }

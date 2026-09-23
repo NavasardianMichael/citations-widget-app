@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { pressableNoRipple } from "@/constants/pressable";
+import { t } from "@/i18n";
 
 type SelectOption<T extends string> = {
   value: T;
@@ -31,14 +32,14 @@ export function SelectField<T extends string>({ label, value, options, onChange 
         {...pressableNoRipple}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
-        accessibilityLabel={label ?? "Select option"}
+        accessibilityLabel={label ?? t("common.selectOption")}
         className="flex-row items-center justify-between border-b border-outline-variant py-2"
       >
         <Text
           className={`text-body-md text-on-surface ${selected?.fontFamily ? "" : "font-body-md"}`}
           style={selected?.fontFamily ? { fontFamily: selected.fontFamily } : undefined}
         >
-          {selected?.label ?? "Select…"}
+          {selected?.label ?? t("common.selectOption")}
         </Text>
         <MaterialIcons name="keyboard-arrow-down" size={22} color="#44474d" />
       </Pressable>
@@ -48,7 +49,7 @@ export function SelectField<T extends string>({ label, value, options, onChange 
           <Pressable {...pressableNoRipple} className="max-h-[50%] rounded-t-xl bg-surface-container-lowest" onPress={(e) => e.stopPropagation()}>
             <View className="border-b border-outline-variant px-4 py-3">
               <Text className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-                {label ?? "Select"}
+                {label ?? t("common.select")}
               </Text>
             </View>
             <ScrollView>

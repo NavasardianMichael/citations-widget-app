@@ -10,6 +10,7 @@ import { SkipAuthLink } from "@/components/ui/skip-auth-link";
 import { pressableNoRipple } from "@/constants/pressable";
 import { useAuth } from "@/contexts/auth-context";
 import { t } from "@/i18n";
+import { getUserFacingError } from "@/lib/user-facing-error";
 import { hasErrors, validateRegister, type FieldErrors } from "@/lib/validation";
 
 export default function RegisterScreen() {
@@ -37,7 +38,7 @@ export default function RegisterScreen() {
       await signUp(trimmedEmail, password, name.trim());
       router.replace(`/auth/check-email?email=${encodeURIComponent(trimmedEmail)}` as Href);
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("auth.register.failed"));
+      setError(getUserFacingError(e, "auth.register.failed"));
     } finally {
       setLoading(false);
     }

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
 import { SkipAuthLink } from '@/components/ui/skip-auth-link'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
 import {
   hasErrors,
   validateResetPassword,
@@ -46,7 +47,7 @@ export default function ResetPasswordScreen() {
       await resetPasswordRequest(token, password)
       router.replace('/auth/reset-success' as Href)
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : t('auth.reset.failed'))
+      setSubmitError(getUserFacingError(e, 'auth.reset.failed'))
     } finally {
       setLoading(false)
     }

@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 
+import { t } from "@/i18n";
 import type { AuthSession, UserPublic } from "@/types/auth";
 
 function getApiBaseUrl() {
@@ -43,7 +44,7 @@ async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const body = (await response.json()) as ApiSuccess<T> | ApiFailure;
 
   if (!response.ok || !("success" in body) || !body.success) {
-    const error = "error" in body ? body.error : { message: "Request failed", code: "UNKNOWN" };
+    const error = "error" in body ? body.error : { message: t("errors.generic"), code: "UNKNOWN" };
     throw new AuthApiError(error.message, error.code, error.details);
   }
 

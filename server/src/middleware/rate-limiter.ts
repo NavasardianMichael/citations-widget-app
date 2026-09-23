@@ -9,7 +9,7 @@ export const generalLimiter = rateLimit({
     success: false,
     error: {
       code: "RATE_LIMITED",
-      message: "Too many requests, please try again later",
+      message: "Չափազանց շատ հարցումներ։ Խնդրում ենք փորձել մի փոքր ուշ",
     },
   },
   standardHeaders: "draft-7",
@@ -23,7 +23,7 @@ export const authLimiter = rateLimit({
     success: false,
     error: {
       code: "RATE_LIMITED",
-      message: "Too many authentication attempts, please try again later",
+      message: "Մուտքի չափազանց շատ փորձեր։ Խնդրում ենք փորձել մի փոքր ուշ",
     },
   },
   standardHeaders: "draft-7",

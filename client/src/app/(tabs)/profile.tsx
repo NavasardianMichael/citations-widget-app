@@ -19,6 +19,7 @@ import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
 import { useOnboarding } from '@/contexts/onboarding-context'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
 import {
   hasErrors,
   validateName,
@@ -106,7 +107,7 @@ export default function ProfileScreen() {
     } catch (e) {
       Alert.alert(
         t('common.error'),
-        e instanceof Error ? e.message : t('profile.loadFailed'),
+        getUserFacingError(e, 'profile.loadFailed'),
       )
     } finally {
       setLoading(false)
@@ -177,7 +178,7 @@ export default function ProfileScreen() {
     } catch (e) {
       Alert.alert(
         t('common.error'),
-        e instanceof Error ? e.message : t('profile.updateFailed'),
+        getUserFacingError(e, 'profile.updateFailed'),
       )
     } finally {
       setSaving(false)
@@ -212,7 +213,7 @@ export default function ProfileScreen() {
     } catch (e) {
       Alert.alert(
         t('common.error'),
-        e instanceof Error ? e.message : t('profile.removeAccountFailed'),
+        getUserFacingError(e, 'profile.removeAccountFailed'),
       )
     } finally {
       setDeleting(false)

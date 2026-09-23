@@ -22,6 +22,7 @@ import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
 import { useOnboarding } from '@/contexts/onboarding-context'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
 import {
   hasErrors,
   validateCitationForm,
@@ -90,7 +91,7 @@ export default function SubmitScreen() {
     } catch (e) {
       Alert.alert(
         t('common.error'),
-        e instanceof Error ? e.message : t('submit.failed'),
+        getUserFacingError(e, 'submit.failed'),
       )
     } finally {
       setSubmitting(false)

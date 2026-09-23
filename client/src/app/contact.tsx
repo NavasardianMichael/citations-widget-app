@@ -9,6 +9,7 @@ import { TopAppBar } from '@/components/ui/top-app-bar'
 import { pressableNoRipple } from '@/constants/pressable'
 import { useAuth } from '@/contexts/auth-context'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
 import {
   hasErrors,
   validateContactMessage,
@@ -53,7 +54,7 @@ export default function ContactScreen() {
       setSent(true)
     } catch (e) {
       setFieldErrors({
-        message: e instanceof Error ? e.message : t('contact.sendFailed'),
+        message: getUserFacingError(e, 'contact.sendFailed'),
       })
     } finally {
       setSending(false)

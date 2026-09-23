@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
+import { getUserFacingError } from "@/lib/user-facing-error";
 import { verifyEmailRequest } from "@/services/auth-api";
 
 export default function VerifyEmailScreen() {
@@ -26,7 +27,7 @@ export default function VerifyEmailScreen() {
         const result = await verifyEmailRequest(token);
         setMessage(result.message);
       } catch (e) {
-        setError(e instanceof Error ? e.message : t("auth.verify.failed"));
+        setError(getUserFacingError(e, "auth.verify.failed"));
       } finally {
         setLoading(false);
       }

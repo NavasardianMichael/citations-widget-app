@@ -21,7 +21,7 @@ export function validate<T>(schema: ZodSchema<T>, target: ValidationTarget = "bo
           details[path].push(issue.message);
         }
         next(
-          new AppError(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.VALIDATION_ERROR, "Validation failed", details),
+          new AppError(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.VALIDATION_ERROR, "Ստուգումը ձախողվեց", details),
         );
         return;
       }
