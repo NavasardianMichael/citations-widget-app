@@ -225,12 +225,31 @@ Dashboard → **App content**. Play blocks release until all of it is green.
 **Data safety** is the fiddliest and the one Play cross-checks against the app's
 actual behaviour. Declare:
 
-- *Personal info* → Name, Email address — collected, not shared, required for
-  account creation, encrypted in transit, user can request deletion
+- *Personal info* → Name, Email address — **collected**, not shared, not
+  ephemeral, purposes *App functionality* + *Account management*
 - *App activity* → in-app actions (saved citations, widget settings)
 - *Crash logs* → Diagnostics, collected, not shared (Sentry, `sendDefaultPii:
   false`)
 - Data deletion question → `https://legal.citations.mnavasardian.com/delete-account`
+
+**Answer "users can choose whether this data is collected", not "required".**
+Guest mode means the widget works end to end with no account —
+`services/local-storage.ts` keeps settings and saved citations on the device —
+and Google's rule is that if users can reach app content without signing in, the
+account data is optional. Marking it required would be both wrong and a worse
+listing, since it would tell someone who never registers that their name and
+email are collected unavoidably.
+
+Nothing is **shared**. "Shared" means transferred to a third-party company:
+Sentry never receives the name or email, and Google Sign-In supplies them rather
+than receiving them. The name being visible to other users through
+`shareProfile` is not sharing in Play's sense — that is a privacy-policy
+disclosure, which `docs/legal/privacy.html` already makes.
+
+Leave *Developer communications* unchecked. Every mail in
+`server/src/services/email-service.ts` is transactional — verification, password
+reset, account deleted, citation approved or rejected. That purpose is for
+announcements and newsletters, which this app does not send.
 
 Do not declare location, contacts, photos or financial info — the app touches
 none of them, and over-declaring invites questions.

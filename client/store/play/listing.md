@@ -17,40 +17,39 @@ Play truncates titles near 20 characters in list views.
 Մեջբերումներ Աստվածաշնչից
 ```
 
+Wording follows `src/i18n/locales/hy.ts` — short declarative sentences, formal
+`Ձեր`, plain vocabulary, and the app's own phrasings (`հիմնական էկրանին`,
+`գրական ստեղծագործություններից`, `ընդհանուր հավաքածուին`) rather than anything
+translated out of English.
+
 ### Short description
 
 ```
-Ամեն օր նոր մեջբերում Աստվածաշնչից՝ ուղիղ Ձեր հիմնական էկրանին։
+Ամեն օր նոր մեջբերում Աստվածաշնչից՝ Ձեր հիմնական էկրանին
 ```
 
 ### Full description
 
 ```
-Դրեք մեջբերում Ձեր հեռախոսի հիմնական էկրանին և թող այն նորանա ինքնուրույն։
+Տեղադրեք վիջեթը Ձեր հիմնական էկրանին և ամեն օր տեսեք նոր մեջբերում Աստվածաշնչից կամ գրական ստեղծագործություններից։
 
-«Մեջբերումներ Աստվածաշնչից» հավելվածը վիջեթ է՝ Աստվածաշնչի և հայ գրականության
-մեջբերումներով։ Բացելու կարիք չկա. մեջբերումը միշտ էկրանին է։
+Հավելվածը բացելու կարիք չկա։ Մեջբերումը միշտ Ձեր աչքի առաջ է։
 
-ՎԻՋԵԹ՝ ՁԵՐ ՃԱՇԱԿՈՎ
+• Ութ դիզայն՝ Դասական, Մագաղաթ, Կեսգիշեր, Մութ, Ցրտաշունչ, Թափանցիկ և Սրբավայր
+• Սրբավայր դիզայնում ամեն նոր մեջբերման հետ փոխվում է նաև լուսանկարը
+• 15 հայկական տառատեսակ և կարգավորվող տառաչափ
 • Երեք չափս՝ 4×3, 4×4 և 4×5
-• 15 հայկական տառատեսակ՝ Վրծնագիր, Մարդոտո, Արցախ, Նոյեմի և այլն
-• Տարբեր ձևավորումներ և ֆոներ
-• Թափանցիկ տարբերակ՝ Ձեր պաստառի հետ ներդաշնակ
+• Նախադիտում՝ փոփոխությունները տեսնելու համար նախքան պահելը
+• Աղբյուրը՝ Աստվածաշունչ, Գրականություն, Միքս կամ միայն պահվածները
+• Թարմացումը՝ 6 ժամը մեկ, 12 ժամը մեկ, ամեն օր կամ ամեն օր կեսգիշերին
+• Էջանշեք և կիսվեք մեջբերումով ուղիղ վիջեթից
+• Կիսվեք գեղեցիկ քարտով
+• Ուղարկեք Ձեր մեջբերումը՝ վերանայումից հետո այն կհայտնվի ընդհանուր հավաքածուում
+• Ցույց տվեք կամ թաքցրեք մեջբերումն ավելացրած օգտատիրոջ անունը
 
-ԴՈՒՔ ԵՔ ԸՆՏՐՈՒՄ
-• Աղբյուրը՝ Աստվածաշունչ, գրականություն, խառը կամ միայն պահպանվածները
-• Թարմացման հաճախականությունը՝ ժամական, օրական կամ կեսգիշերին
+Գրանցումը պարտադիր չէ։ Գրանցվելու դեպքում Ձեր կարգավորումներն ու պահպանված մեջբերումները կվերականգնվեն նոր սարքում։
 
-ՊԱՀԵՔ ՈՒ ԿԻՍՎԵՔ
-• Պահպանեք սիրելի մեջբերումները մեկ հպումով
-• Կիսվեք գեղեցիկ քարտով ընկերների հետ
-• Ուղարկեք Ձեր մեջբերումը՝ հավաքածուին ավելացնելու համար
-
-ՀԱՇԻՎ
-Հաշիվը պարտադիր չէ՝ հավելվածն աշխատում է նաև առանց գրանցման։ Գրանցվելով՝ Ձեր
-կարգավորումներն ու պահպանված մեջբերումները կպահպանվեն և կվերականգնվեն նոր սարքում։
-
-Առանց գովազդի։ Առանց հետագծման։
+Առանց գովազդի։
 ```
 
 ---
@@ -72,31 +71,27 @@ A new Bible citation on your home screen every day. No app to open.
 ### Full description
 
 ```
-Put a citation on your home screen and let it change on its own.
+Put the widget on your home screen and see a new citation from the Bible or from
+Armenian literature every day.
 
-Bible Citations is a home-screen widget showing verses from the Bible and passages
-from Armenian literature. Nothing to open — the citation is simply there.
+Nothing to open. The citation is simply there.
 
-A WIDGET THAT FITS YOUR SCREEN
+• Eight designs: Classic, Parchment, Midnight, Noir, Frost, Transparent and Sanctuary
+• In Sanctuary the photograph changes with every new citation
+• 15 Armenian typefaces and an adjustable text size
 • Three sizes: 4×3, 4×4 and 4×5
-• 15 Armenian typefaces including Vrdznagir, Mardoto, Artsakh and Noyemi
-• Several designs and backgrounds
-• A transparent style that sits on your wallpaper
-
-YOU DECIDE WHAT APPEARS
+• Live preview, so you see a change before you save it
 • Source: Bible, literature, mixed, or only the ones you saved
-• Refresh: hourly, daily, or at midnight
+• Refresh every 6 hours, every 12 hours, daily, or daily at midnight
+• Bookmark and share a citation straight from the widget
+• Share it as a designed card
+• Submit your own — once reviewed, it joins the shared collection
+• Show or hide the name of whoever added the citation
 
-SAVE AND SHARE
-• Save the ones you love with a single tap
-• Share any citation as a designed card
-• Submit your own to be added to the collection
+An account is optional. Sign in and your settings and saved citations are
+restored on a new device.
 
-ACCOUNT
-An account is optional — the app works without signing up. Signing in keeps your
-settings and saved citations, and restores them on a new device.
-
-No ads. No tracking.
+No ads.
 ```
 
 ---
