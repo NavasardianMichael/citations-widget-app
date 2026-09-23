@@ -45,7 +45,7 @@ async function runRefresh(): Promise<void> {
   const local = await shouldUseLocalWidgetSettings()
   const settings = local ? await getGuestWidgetSettings() : await getWidgetSettings()
   const result = local
-    ? await pickGuestWidgetCitation(settings.sourceSelection, settings.widgetDesign)
+    ? await pickGuestWidgetCitation(settings.sourceSelection)
     : await fetchWidgetCitation(true)
 
   await setCachedWidgetCitation({

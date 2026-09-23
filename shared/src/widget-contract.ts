@@ -32,6 +32,28 @@ export const RANDOM_BACKGROUND_DESIGN: WidgetDesignId = 'sanctuary'
  */
 export const WIDGET_BACKGROUND_IMAGE_COUNT = 25
 
+/**
+ * Roll a sanctuary pool index for a freshly-assigned citation window.
+ *
+ * Never returns `previous`: a uniform draw repeats the last image about once
+ * every 25 rotations, and a repeat is the one outcome that reads as a fixed
+ * sequence rather than as chance. Excluding it keeps the draw uniform over the
+ * remaining 24. Both the server (`/widget/citation`) and the guest-mode client
+ * picker roll through here so the two pools behave identically.
+ */
+export function rollBackgroundImageIndex(
+  previous?: number | null,
+): number {
+  const count = WIDGET_BACKGROUND_IMAGE_COUNT
+  if (count <= 1) return 0
+  if (previous == null || !Number.isInteger(previous)) {
+    return Math.floor(Math.random() * count)
+  }
+  const excluded = ((previous % count) + count) % count
+  const roll = Math.floor(Math.random() * (count - 1))
+  return roll >= excluded ? roll + 1 : roll
+}
+
 /** Must stay aligned with Prisma `FontStyle` and client `WIDGET_FONT_OPTIONS`. */
 export const FONT_STYLE_IDS = [
   'vrdznagir',

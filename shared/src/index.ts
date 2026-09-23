@@ -14,6 +14,7 @@ export {
   WIDGET_DESIGN_IDS,
   isRefreshRateHours,
   isWidgetRefreshDue,
+  rollBackgroundImageIndex,
   type FontStyleId,
   type RefreshRateHours,
   type SourceSelectionId,

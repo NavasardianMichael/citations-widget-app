@@ -71,7 +71,7 @@ async function rotateStaleWidgetCitation(
       settings.refreshRateHours === REFRESH_AT_MIDNIGHT &&
       Boolean(cached?.citation);
     const result = useLocalPool
-      ? await pickGuestWidgetCitation(settings.sourceSelection, settings.widgetDesign)
+      ? await pickGuestWidgetCitation(settings.sourceSelection)
       : await fetchWidgetCitation(forceMidnight);
     await setCachedWidgetCitation({
       citation: result.citation,

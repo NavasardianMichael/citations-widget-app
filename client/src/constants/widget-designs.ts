@@ -14,6 +14,7 @@ import {
   RANDOM_BACKGROUND_DESIGN,
   WIDGET_BACKGROUND_IMAGE_COUNT,
   WIDGET_DESIGN_IDS,
+  rollBackgroundImageIndex,
   type WidgetDesignId,
 } from '@citations/shared'
 import type { ImageSourcePropType } from 'react-native'
@@ -50,7 +51,6 @@ export type WidgetDesignTokens = {
   ornamentColor: string
   ornamentOpacity: number
   showOrnament: boolean
-  showLargeQuotes: boolean
   shadow: string
   /** Scrim drawn over a photo so text stays readable. */
   overlayColor?: string
@@ -113,7 +113,6 @@ const PHOTO_TEXT = {
   ornamentColor: '#fed65b',
   ornamentOpacity: 0.35,
   showOrnament: true,
-  showLargeQuotes: false,
   panelBorderColor: 'rgba(255, 255, 255, 0.22)',
   accentBorderColor: 'rgba(254, 214, 91, 0.65)',
   accentBorderWidth: 2,
@@ -136,7 +135,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#735c00',
     ornamentOpacity: 0.2,
     showOrnament: true,
-    showLargeQuotes: false,
     shadow: '0 4px 20px rgba(2, 26, 53, 0.15)',
   },
   parchment: {
@@ -154,7 +152,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#8a6a2e',
     ornamentOpacity: 0.2,
     showOrnament: true,
-    showLargeQuotes: false,
     shadow: '0 6px 18px rgba(115, 92, 0, 0.16)',
   },
   midnight: {
@@ -172,7 +169,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#fed65b',
     ornamentOpacity: 0.25,
     showOrnament: true,
-    showLargeQuotes: false,
     shadow: '0 8px 24px rgba(2, 26, 53, 0.35)',
   },
   noir: {
@@ -190,7 +186,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#d4af37',
     ornamentOpacity: 0.2,
     showOrnament: false,
-    showLargeQuotes: true,
     shadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
   },
   frost: {
@@ -208,7 +203,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#6b9bd1',
     ornamentOpacity: 0.2,
     showOrnament: true,
-    showLargeQuotes: false,
     shadow: '0 8px 24px rgba(47, 95, 143, 0.16)',
   },
   transparentDark: {
@@ -227,7 +221,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#ffffff',
     ornamentOpacity: 0.3,
     showOrnament: false,
-    showLargeQuotes: false,
     shadow: 'none',
     // White text is invisible on the app's own white pages — give the Settings
     // preview / Citations rows a solid gray backdrop. The real widget
@@ -250,7 +243,6 @@ export const WIDGET_DESIGNS: Record<WidgetDesignId, WidgetDesignTokens> = {
     ornamentColor: '#000000',
     ornamentOpacity: 0.18,
     showOrnament: false,
-    showLargeQuotes: false,
     shadow: 'none',
   },
   sanctuary: {
@@ -330,9 +322,14 @@ export function shiftWidgetDesign(
   return WIDGET_DESIGN_IDS[next]
 }
 
-/** Roll a new random background image index — call once per freshly-fetched citation (sanctuary). */
-export function pickBackgroundImageIndex(): number {
-  return Math.floor(Math.random() * WIDGET_BACKGROUND_IMAGES.length)
+/**
+ * Roll a new random background image index — call once per freshly-fetched
+ * citation, never on a settings change. Pass the window's current index so the
+ * pool never hands back the same photo twice in a row (see
+ * `rollBackgroundImageIndex` in `@citations/shared`).
+ */
+export function pickBackgroundImageIndex(previous?: number | null): number {
+  return rollBackgroundImageIndex(previous)
 }
 
 export function normalizeBackgroundImageIndex(index: number): number {

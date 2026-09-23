@@ -2,12 +2,11 @@ import {
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
   FONT_STYLE_IDS,
-  RANDOM_BACKGROUND_DESIGN,
   REFRESH_RATE_HOURS,
   SOURCE_SELECTION_IDS,
-  WIDGET_BACKGROUND_IMAGE_COUNT,
   WIDGET_DESIGN_IDS,
   isWidgetRefreshDue,
+  rollBackgroundImageIndex,
 } from "@citations/shared";
 import type { FontStyle, SourceSelection, WidgetDesign } from "@prisma/client";
 import { Router } from "express";
@@ -38,15 +37,6 @@ type WidgetSettingsRow = {
   currentBackgroundImageIndex: number;
   updatedAt: Date;
 };
-
-/** Compare via string so this stays valid even if the local Prisma client lags the schema. */
-function isRandomBackgroundDesign(design: string): boolean {
-  return design === RANDOM_BACKGROUND_DESIGN;
-}
-
-function pickBackgroundImageIndex(): number {
-  return Math.floor(Math.random() * WIDGET_BACKGROUND_IMAGE_COUNT);
-}
 
 function serializeWidgetSettings(row: WidgetSettingsRow) {
   return {
@@ -98,11 +88,14 @@ const settingsSchema = z.object({
 
 widgetRouter.put("/widget-settings", async (req, res) => {
   const body = settingsSchema.parse(req.body);
-  const previous = await getOrCreateSettings(req.userId!);
-  const switchingToSanctuary =
-    isRandomBackgroundDesign(body.widgetDesign) &&
-    !isRandomBackgroundDesign(previous.widgetDesign);
+  // Row must exist before the update below; the values are not read back.
+  await getOrCreateSettings(req.userId!);
 
+  // `currentBackgroundImageIndex` is deliberately absent here. It belongs to the
+  // citation window, not to the settings: re-rolling it on a save (which this
+  // route used to do when switching into sanctuary) made the photo change
+  // because the user touched a font or a source, with the same quote still on
+  // the widget. Only `/widget/citation` moves it, and only with a new citation.
   const updated = (await prisma.widgetSettings.update({
     where: { userId: req.userId! },
     data: {
@@ -113,9 +106,6 @@ widgetRouter.put("/widget-settings", async (req, res) => {
       widgetDesign: body.widgetDesign,
       showAttribution: body.showAttribution,
       showActions: body.showActions,
-      ...(switchingToSanctuary
-        ? { currentBackgroundImageIndex: pickBackgroundImageIndex() }
-        : {}),
     } as Parameters<typeof prisma.widgetSettings.update>[0]["data"],
   })) as WidgetSettingsRow;
 
@@ -183,14 +173,18 @@ widgetRouter.get("/widget/citation", async (req, res) => {
     current = null;
   }
 
-  const usesRandomBackground = isRandomBackgroundDesign(settings.widgetDesign);
   let backgroundImageIndex = settings.currentBackgroundImageIndex;
 
   if (!current) {
     current = await pickCitationForPool(settings.sourceSelection, req.userId!);
-    // Re-roll only for sanctuary, and only when assigning a new citation window —
-    // the index is not permanently bound to the citation id.
-    backgroundImageIndex = usesRandomBackground ? pickBackgroundImageIndex() : 0;
+    // Roll for every new citation window, whatever the design is set to today.
+    // Rolling only under sanctuary left the index parked at whatever a solid
+    // design last wrote, so switching over mid-window showed that same photo
+    // until the quote happened to rotate. The index is not bound to a citation
+    // id — it is simply this window's pick.
+    backgroundImageIndex = rollBackgroundImageIndex(
+      settings.currentBackgroundImageIndex,
+    );
     await prisma.widgetSettings.update({
       where: { userId: req.userId! },
       data: {
@@ -207,10 +201,13 @@ widgetRouter.get("/widget/citation", async (req, res) => {
   }
 
   res.json({
+    // Sent whatever the design is. Withholding it outside sanctuary made the
+    // client fall back to image 0 (or roll its own, disagreeing with what the
+    // home widget would show) the moment someone previewed the photo design.
     citation: await withAttribution(
       current,
       settings.showAttribution,
-      usesRandomBackground ? backgroundImageIndex : undefined,
+      backgroundImageIndex,
     ),
   });
 });
@@ -225,16 +222,18 @@ const previewSchema = z.object({
 widgetRouter.post("/widget/preview", async (req, res) => {
   const body = previewSchema.parse(req.body);
   const settings = await getOrCreateSettings(req.userId!);
-  const design = body.widgetDesign ?? settings.widgetDesign;
   const picked = await pickCitationForPool(body.sourceSelection, req.userId!);
   if (!picked) {
     res.json({ citation: null, reason: "empty_pool" });
     return;
   }
-  const randomIndex = isRandomBackgroundDesign(design)
-    ? pickBackgroundImageIndex()
-    : undefined;
+  // A different citation than the committed one, so a fresh photo goes with it.
+  // Non-committing: nothing here writes `currentBackgroundImageIndex`.
   res.json({
-    citation: await withAttribution(picked, body.showAttribution, randomIndex),
+    citation: await withAttribution(
+      picked,
+      body.showAttribution,
+      rollBackgroundImageIndex(settings.currentBackgroundImageIndex),
+    ),
   });
 });

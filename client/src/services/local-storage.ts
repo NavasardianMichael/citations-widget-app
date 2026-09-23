@@ -8,6 +8,7 @@ import {
 } from "@/constants/widget-designs";
 import { DEFAULT_QUOTE_FONT_SIZE } from "@/constants/widget-layout";
 import { DEFAULT_WIDGET_FONT } from "@/fonts/registry";
+import { getAccessToken } from "@/services/auth-storage";
 import type { Citation, SourceSelection, WidgetCitation, WidgetSettingsDraft } from "@/types/citation";
 
 const GUEST_MODE_KEY = "citations_guest_mode";
@@ -32,8 +33,20 @@ export type CachedWidgetCitation = {
   sourceSelection: SourceSelection;
 };
 
+/**
+ * Guests never hold a session, so a stored token outranks the flag — and clears it.
+ *
+ * This is the only guest check the headless widget task and the widget-action deep
+ * link can make (no React context out there). A flag left set after sign-in used to
+ * route their saves into guest AsyncStorage while the Citations tab — which reads
+ * `isGuest` from `AuthContext` — listed the account's bookmarks from the server, so
+ * a citation saved from the widget showed up nowhere.
+ */
 export async function isGuestMode(): Promise<boolean> {
-  return (await AsyncStorage.getItem(GUEST_MODE_KEY)) === "true";
+  if ((await AsyncStorage.getItem(GUEST_MODE_KEY)) !== "true") return false;
+  if (!(await getAccessToken())) return true;
+  await AsyncStorage.removeItem(GUEST_MODE_KEY);
+  return false;
 }
 
 export async function setGuestMode(value: boolean): Promise<void> {

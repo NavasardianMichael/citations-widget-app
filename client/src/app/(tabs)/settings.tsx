@@ -28,10 +28,8 @@ import { WidgetPreview } from '@/components/widget-preview'
 import { pressableNoRipple } from '@/constants/pressable'
 import {
   DEFAULT_WIDGET_DESIGN,
-  designUsesRandomBackground,
   getWidgetDesign,
   normalizeWidgetDesignId,
-  pickBackgroundImageIndex,
   shiftWidgetDesign,
   WIDGET_DESIGN_IDS,
 } from '@/constants/widget-designs'
@@ -50,6 +48,7 @@ import {
 } from '@/fonts/registry'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { t } from '@/i18n'
+import { getUserFacingError } from '@/lib/user-facing-error'
 import {
   fetchProfile,
   fetchWidgetCitation,
@@ -169,7 +168,7 @@ export default function SettingsScreen() {
         }
 
         const result = isGuest
-          ? await pickGuestWidgetCitation(source, draftRef.current.widgetDesign)
+          ? await pickGuestWidgetCitation(source)
           : await fetchWidgetCitation(forceFresh || midnightDue)
         setPreview(result.citation)
         await setCachedWidgetCitation({
@@ -196,7 +195,7 @@ export default function SettingsScreen() {
       setPreviewLoading(true)
       try {
         const result = isGuest
-          ? await pickGuestWidgetCitation(source, draft.widgetDesign)
+          ? await pickGuestWidgetCitation(source)
           : await previewWidgetCitation({
               sourceSelection: source,
               fontStyle: draft.fontStyle,
@@ -296,34 +295,11 @@ export default function SettingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.sourceSelection])
 
-  // Sanctuary needs a stable display-only random index for the current preview.
-  // Adjust during render (not in an effect) when the citation id changes.
-  const [sanctuaryBgPick, setSanctuaryBgPick] = useState<{
-    citationId: string
-    index: number
-  } | null>(null)
-  const usesSanctuaryBg = designUsesRandomBackground(draft.widgetDesign)
-  if (
-    preview &&
-    usesSanctuaryBg &&
-    preview.backgroundImageIndex === undefined &&
-    sanctuaryBgPick?.citationId !== preview.id
-  ) {
-    setSanctuaryBgPick({
-      citationId: preview.id,
-      index: pickBackgroundImageIndex(),
-    })
-  }
-
-  const previewCitation = useMemo((): WidgetCitation | null => {
-    if (!preview) return null
-    if (!usesSanctuaryBg) return preview
-    if (preview.backgroundImageIndex !== undefined) return preview
-    if (sanctuaryBgPick?.citationId === preview.id) {
-      return { ...preview, backgroundImageIndex: sanctuaryBgPick.index }
-    }
-    return preview
-  }, [preview, usesSanctuaryBg, sanctuaryBgPick])
+  // The photo index arrives with the citation (server and guest picker both send
+  // one whatever the design is), so switching design in the picker re-skins the
+  // same quote over the same photo — no local re-roll here, which is what used
+  // to make a settings change look like it shuffled the image.
+  const previewCitation = preview
 
   const hasChanges = useMemo(() => {
     if (!saved) return false
@@ -408,7 +384,7 @@ export default function SettingsScreen() {
     } catch (e) {
       Alert.alert(
         t('common.error'),
-        e instanceof Error ? e.message : t('settings.saveFailed'),
+        getUserFacingError(e, 'settings.saveFailed'),
       )
     } finally {
       setSaving(false)
