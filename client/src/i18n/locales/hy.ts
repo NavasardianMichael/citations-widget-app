@@ -12,6 +12,8 @@ export const hy = {
   'common.note': 'Նշում',
   'common.back': 'Հետ',
   'common.reload': 'Թարմացնել էջը',
+  'common.select': 'Ընտրել',
+  'common.selectOption': 'Ընտրեք տարբերակ',
 
   'errors.generic': 'Ինչ-որ բան սխալ ընթացավ։ Խնդրում ենք կրկին փորձել։',
   'errors.network':
@@ -90,7 +92,7 @@ export const hy = {
   'auth.reset.newPassword': 'Նոր գաղտնաբառ',
   'auth.reset.confirmPassword': 'Կրկնել գաղտնաբառը',
   'auth.reset.confirmPasswordPlaceholder': 'Կրկին մուտքագրեք նոր գաղտնաբառը',
-  'auth.reset.submit': 'Թարմացնել գաղտնաբառը',
+  'auth.reset.submit': 'Փոխել գաղտնաբառը',
   'auth.reset.submitting': 'Պահպանվում է…',
   'auth.reset.invalidLink':
     'Անվավեր վերականգնման հղում։ Հավելվածից կատարեք նոր հղման հարցում։',
@@ -225,7 +227,7 @@ export const hy = {
   'profile.newPasswordPlaceholder': 'Առնվազն 8 նիշ',
   'profile.confirmNewPassword': 'Կրկնել նոր գաղտնաբառը',
   'profile.confirmNewPasswordPlaceholder': 'Կրկին մուտքագրեք նոր գաղտնաբառը',
-  'profile.changePasswordSubmit': 'Թարմացնել գաղտնաբառը',
+  'profile.changePasswordSubmit': 'Փոխել գաղտնաբառը',
   'profile.passwordChanged': 'Գաղտնաբառը հաջողությամբ թարմացվել է։',
   'profile.changePasswordFailed': 'Չհաջողվեց փոխել գաղտնաբառը',
   'profile.removeAccount': 'Ջնջել հաշիվը',
@@ -283,7 +285,7 @@ export const hy = {
   'settings.livePreview': 'Նախադիտում',
   'settings.previewLoading': 'Մեջբերումը բեռնվում է…',
   'settings.previewEmpty':
-    'Ընտրված աղբյուրից մեջբերումներ չկան․ սեղմե՛ք «թարմացնել» կոճակը կամ փոխեք աղբյուրը կարգավորումների էջում։',
+    'Ընտրված աղբյուրից մեջբերումներ չկան․ փոխեք աղբյուրը կարգավորումների էջում։',
   'settings.designLabel': 'Վիջեթի դիզայն',
   'settings.designClassic': 'Դասական',
   'settings.designParchment': 'Մագաղաթ',
@@ -357,6 +359,9 @@ export const hy = {
   'card.removeSavedConfirmTitle': 'Հեռացնե՞լ մեջբերումը',
   'card.removeSavedConfirmBody': 'Այն կհեռացվի Ձեր պահվածների ցանկից։',
   'card.removePending': 'Հեռացնել ուղարկվածներից',
+  'card.removePendingConfirmTitle': 'Հեռացնե՞լ ուղարկվածներից',
+  'card.removePendingConfirmBody':
+    'Մեջբերումը հետ կկանչվի դիտարկումից և կհեռացվի։',
   'card.removePrivate': 'Հեռացնել անձնականներից',
   'card.removeApproved': 'Հեռացնել հաստատվածներից',
   'card.saveCitation': 'Պահել մեջբերումը',
