@@ -296,7 +296,6 @@ export const hy = {
   'settings.designTransparentLight': 'Թափանցիկ (բաց)',
   'settings.designSanctuary': 'Սրբավայր',
   'settings.addedBy': 'Ավելացվել է {name}-ի կողմից',
-  'settings.actionRefresh': 'Թարմացնել',
   'settings.actionSettings': 'Կարգավորումներ',
   'settings.actionBookmark': 'Էջանշել',
   'settings.actionShare': 'Կիսվել',

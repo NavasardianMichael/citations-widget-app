@@ -40,7 +40,6 @@ type WidgetPreviewProps = {
   showActions?: boolean
   /** Settings-only chrome; hide on Citations library rows. */
   showLivePreviewLabel?: boolean
-  onRefresh?: () => void
   onSave?: () => void
   onShare?: () => void
 }
@@ -160,7 +159,6 @@ export function WidgetPreview({
   loading = false,
   showActions = true,
   showLivePreviewLabel = true,
-  onRefresh,
   onSave,
   onShare,
 }: WidgetPreviewProps) {
@@ -182,7 +180,6 @@ export function WidgetPreview({
     label: string
     onPress?: () => void
   }[] = [
-    { icon: 'refresh', label: t('settings.actionRefresh'), onPress: onRefresh },
     { icon: 'bookmark', label: t('settings.actionBookmark'), onPress: onSave },
     { icon: 'share', label: t('settings.actionShare'), onPress: onShare },
   ]

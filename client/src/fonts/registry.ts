@@ -30,12 +30,15 @@ export const APP_FONT_SOURCES = {
  * Several of these ship a cmap holding the Armenian block and almost nothing
  * else, and a face loaded from an asset gets no system fallback, so on those the
  * brackets came out as blank gaps around the quote. Verify with
- * `node ./scripts/check-font-glyphs.js` after adding or replacing a font.
+ * `node ./scripts/check-font-glyphs.js` after adding or replacing a font — but
+ * also look at the rendered quote: legacy ARMSCII-8 faces do cover U+00AB and
+ * U+00BB, with Armenian letters drawn in those slots instead of brackets.
  */
 export const WIDGET_FONT_OPTIONS = [
   {
     id: 'vrdznagir',
-    hasGuillemets: true,
+    // Maps ARMSCII-8 letters onto Latin-1: U+00AB draws "," and U+00BB draws "ե".
+    hasGuillemets: false,
     label: 'Վրձնագիր',
     family: 'Vrdznagir',
     postScriptName: 'Vrdznagir',

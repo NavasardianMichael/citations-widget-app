@@ -8,6 +8,10 @@
  * `src/fonts/registry.ts` records the answer for each face; re-run this after
  * adding or replacing a font and update the flag to match.
  *
+ * "yes" only means the codepoint has a glyph, not that the glyph is a bracket.
+ * Legacy ARMSCII-8 faces (e.g. Vrdznagir) put Armenian letters in the Latin-1
+ * slots, so « renders as "," and » as "ե" — check the rendered quote too.
+ *
  *   node ./scripts/check-font-glyphs.js
  */
 const fs = require("fs");
