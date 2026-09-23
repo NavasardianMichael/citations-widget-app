@@ -120,6 +120,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Login + oauthredirect can both call this after Google auth; coalesce.
     if (!guestSignInPromise.current) {
       guestSignInPromise.current = (async () => {
+        // Always drop the device guest flag, even with nothing to migrate: a guest
+        // who changed no setting and saved nothing has no guest data, so the
+        // migration short-circuits — and used to leave the flag set, which sends
+        // every later widget save into guest storage instead of the account.
+        await setGuestMode(false);
+
         const check = await checkGuestMigration();
         if (check.status === "none") return;
 
