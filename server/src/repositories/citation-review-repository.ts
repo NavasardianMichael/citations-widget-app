@@ -1,9 +1,8 @@
 import type { CitationReviewAction, CitationReviewToken } from "@prisma/client";
 import crypto from "crypto";
 
+import { CITATION_REVIEW_TTL_DAYS } from "../constants/token-ttl.js";
 import { prisma } from "../db/index.js";
-
-const TOKEN_EXPIRY_DAYS = 14;
 
 export const citationReviewRepository = {
   generateToken(): string {
@@ -15,7 +14,7 @@ export const citationReviewRepository = {
     approve: CitationReviewToken;
     reject: CitationReviewToken;
   }> {
-    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + CITATION_REVIEW_TTL_DAYS * 24 * 60 * 60 * 1000);
 
     await prisma.citationReviewToken.deleteMany({
       where: { citationId, usedAt: null },

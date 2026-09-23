@@ -1,9 +1,8 @@
 import type { PasswordResetToken } from "@prisma/client";
 import crypto from "crypto";
 
+import { PASSWORD_RESET_TTL_MINUTES } from "../constants/token-ttl.js";
 import { prisma } from "../db/index.js";
-
-const TOKEN_EXPIRY_MINUTES = 30;
 
 export const passwordResetRepository = {
   generateToken(): string {
@@ -12,7 +11,7 @@ export const passwordResetRepository = {
 
   async create(userId: string): Promise<PasswordResetToken> {
     const token = this.generateToken();
-    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MINUTES * 60 * 1000);
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MINUTES * 60 * 1000);
 
     await prisma.passwordResetToken.deleteMany({
       where: { userId, usedAt: null },

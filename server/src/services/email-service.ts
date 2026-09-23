@@ -1,4 +1,9 @@
 import { env, isDev } from '../config/env.js'
+import {
+  CITATION_REVIEW_TTL_DAYS,
+  EMAIL_VERIFICATION_TTL_HOURS,
+  PASSWORD_RESET_TTL_MINUTES,
+} from '../constants/token-ttl.js'
 import { logger } from '../lib/logger.js'
 
 const APP_ID = 'citations-widget'
@@ -339,7 +344,7 @@ function citationReviewDetails(
   if (details.approveUrl) base.approveUrl = details.approveUrl
   if (details.rejectUrl) base.rejectUrl = details.rejectUrl
   if (details.approveUrl || details.rejectUrl) {
-    base.reviewNote = 'Each link can be used once and expires in 14 days.'
+    base.reviewNote = `Each link can be used once and expires in ${CITATION_REVIEW_TTL_DAYS} days.`
   }
   Object.assign(base, {
     citationId: details.citationId,
@@ -365,7 +370,7 @@ export const emailService = {
     const { subject, text, html } = emailTemplates.passwordReset(
       name,
       resetUrl,
-      30,
+      PASSWORD_RESET_TTL_MINUTES,
     )
     await sendEmail({ to, subject, text, html })
   },
@@ -394,7 +399,7 @@ export const emailService = {
     const { subject, text, html } = emailTemplates.verifyEmail(
       name,
       verifyUrl,
-      48,
+      EMAIL_VERIFICATION_TTL_HOURS,
     )
     await sendEmail({ to, subject, text, html })
   },

@@ -1,9 +1,8 @@
 import type { EmailVerificationToken } from "@prisma/client";
 import crypto from "crypto";
 
+import { EMAIL_VERIFICATION_TTL_HOURS } from "../constants/token-ttl.js";
 import { prisma } from "../db/index.js";
-
-const TOKEN_EXPIRY_HOURS = 48;
 
 export const emailVerificationRepository = {
   generateToken(): string {
@@ -12,7 +11,7 @@ export const emailVerificationRepository = {
 
   async create(userId: string): Promise<EmailVerificationToken> {
     const token = this.generateToken();
-    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TTL_HOURS * 60 * 60 * 1000);
 
     await prisma.emailVerificationToken.deleteMany({
       where: { userId, usedAt: null },
