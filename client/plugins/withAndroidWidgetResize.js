@@ -10,6 +10,8 @@
  * - Forces resizeMode=horizontal|vertical
  * - Sets minResize* (110dp) so widgets can shrink without changing picker size
  * - Drops maxResize* caps
+ * - Opts the receivers out of Xiaomi's large-screen widget scaling (see
+ *   withMiuiNativeSizing)
  */
 const {
   withDangerousMod,
@@ -20,6 +22,37 @@ const fs = require("fs");
 const path = require("path");
 
 const MIN_RESIZE = "110dp";
+
+const MIUI_AUTO_SCALE = "miuiAutoScale";
+const BIND_APPWIDGET = "android.permission.BIND_APPWIDGET";
+
+/**
+ * Xiaomi tablets (HyperOS / MIUI Pad) "globally scale" third-party widgets:
+ * each one is laid out as a phone widget, snapped to a fixed phone size and
+ * scaled up. There every provider showed up as 4×2 in the picker and placed
+ * widgets could not be resized. miuiAutoScale=false opts out, so the launcher
+ * sizes and resizes the widget from the provider XML like other launchers do.
+ * Phones are unaffected; the scaling only applies on large screens.
+ * https://dev.mi.com/xiaomihyperos/documentation/detail?pId=1584
+ *
+ * The launcher reads that meta-data through PackageManager, which does not
+ * return it for an unexported receiver, so the receiver is exported. The
+ * BIND_APPWIDGET permission keeps other apps out: only the system and built-in
+ * launchers hold it, and the app's own click PendingIntents still pass as the
+ * receiver's owning uid.
+ */
+function withMiuiNativeSizing(receiver) {
+  const metaData = [receiver["meta-data"] ?? []]
+    .flat()
+    .filter((entry) => entry?.$?.["android:name"] !== MIUI_AUTO_SCALE);
+  metaData.push({
+    $: { "android:name": MIUI_AUTO_SCALE, "android:value": "false" },
+  });
+  receiver["meta-data"] = metaData;
+
+  receiver.$["android:exported"] = "true";
+  receiver.$["android:permission"] = BIND_APPWIDGET;
+}
 
 function configuredWidgetNames(config) {
   const plugins = config.plugins ?? [];
@@ -150,6 +183,11 @@ function withAndroidWidgetResize(config) {
       if (!short || !short.startsWith("CitationWidget")) return true;
       return allowedNames.includes(short);
     });
+
+    for (const receiver of app.receiver) {
+      const short = (receiver.$?.["android:name"] ?? "").split(".").pop();
+      if (allowedNames.includes(short)) withMiuiNativeSizing(receiver);
+    }
 
     return mod;
   });
