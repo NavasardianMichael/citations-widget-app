@@ -1,3 +1,29 @@
+diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
+index a2e30a7..043c66e 100644
+--- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
++++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
+@@ -170,14 +170,20 @@ public class RNWidget {
+         rootWidget.offsetDescendantRectToMyCoords(clickableWidget, offsetViewBounds);
+         RemoteViews clickableRemoteView = new RemoteViews(appContext.getPackageName(), R.layout.rn_widget_clickable);
+ 
++        // Anchor the tap target top-left with its own drawn size, the same way the
++        // bitmap is drawn (scaleType=matrix). Deriving the width from the reported
++        // widget width broke whenever the host laid the widget out narrower than
++        // that (tablets, launcher scaling): right-aligned targets shrank to nothing
++        // and taps fell through to the root click action.
+         clickableRemoteView.setViewPadding(
+             R.id.rn_widget_clickable_positioner,
+             offsetViewBounds.left,
+             offsetViewBounds.top,
+-            RNWidgetUtil.dpToPx(appContext, RNWidgetUtil.getWidgetWidth(appContext, widgetId)) - offsetViewBounds.right,
++            0,
+             0
+         );
+ 
++        clickableRemoteView.setInt(R.id.rn_widget_clickable_area, "setMinimumWidth", offsetViewBounds.width());
+         clickableRemoteView.setInt(R.id.rn_widget_clickable_area, "setMinimumHeight", offsetViewBounds.height());
+ 
+         // The clickable overlay draws its own ripple, so match it to the view's radius when supported
 diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
 index c138d81..fe0fe17 100644
 --- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
@@ -141,3 +167,18 @@ index 5a3ea00..cb1252a 100644
 +        return output;
      }
  }
+diff --git a/node_modules/react-native-android-widget/android/src/main/res/layout/rn_widget_clickable.xml b/node_modules/react-native-android-widget/android/src/main/res/layout/rn_widget_clickable.xml
+index 28d3836..4449c2e 100644
+--- a/node_modules/react-native-android-widget/android/src/main/res/layout/rn_widget_clickable.xml
++++ b/node_modules/react-native-android-widget/android/src/main/res/layout/rn_widget_clickable.xml
+@@ -5,8 +5,9 @@
+ 
+     <FrameLayout
+         android:id="@+id/rn_widget_clickable_area"
+-        android:layout_width="match_parent"
++        android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
++        android:layout_gravity="left|top"
+         android:background="?android:attr/selectableItemBackground"
+         android:clickable="true"
+         android:focusable="true" />
