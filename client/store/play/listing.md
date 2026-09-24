@@ -101,5 +101,5 @@ No ads.
 | ---------------------------------------------------- | ------------------------------------------------- | ---------------------------- |
 | App icon 512×512                                     | `store/play/icon-512.png`                         | generated                    |
 | Feature graphic 1024×500                             | `store/play/feature-graphic-1024x500.png`         | generated                    |
-| Phone screenshots (9:16)                             | `store/play/screenshots/mobile/01.jpg` … `05.jpg` | cropped from device captures |
+| Phone screenshots (9:16)                             | `store/play/screenshots/mobile/01.jpg` … `06.jpg` | cropped from device captures |
 | Tablet screenshots (16:9), 7-inch and 10-inch fields | `store/play/screenshots/tablet/01.jpg`, `02.jpg`  | cropped from device captures |
