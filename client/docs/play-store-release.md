@@ -265,7 +265,8 @@ comes from `store/play/`:
 | Full description (4000) | `listing.md` |
 | App icon | `store/play/icon-512.png` |
 | Feature graphic | `store/play/feature-graphic-1024x500.png` |
-| Phone screenshots | yours, from step 2 |
+| Phone screenshots | `store/play/screenshots/mobile/` |
+| 7-inch and 10-inch tablet screenshots | `store/play/screenshots/tablet/` (same files in both fields) |
 
 Then **Store settings**: category **Books & Reference**, plus contact email.
 
