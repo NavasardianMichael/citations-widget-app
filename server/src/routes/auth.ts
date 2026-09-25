@@ -190,7 +190,7 @@ router.post("/google/mobile", authLimiter, validate(googleMobileSchema), async (
   try {
     const audiences = [
       env.GOOGLE_CLIENT_ID,
-      env.GOOGLE_ANDROID_CLIENT_ID,
+      ...env.GOOGLE_ANDROID_CLIENT_ID,
       env.GOOGLE_IOS_CLIENT_ID,
     ].filter((value): value is string => Boolean(value && value !== "unused"));
 
