@@ -42,14 +42,14 @@ every push. What is left is the one-time server setup: a DNS record, the nginx
 config, and a certbot certificate.
 
 Full walkthrough in [`../../deployment/README.md`](../../deployment/README.md).
-Roughly: point `citations.mnavasardian.com` at the same IP as the API, install
-`deployment/citations.mnavasardian.com.conf`, run certbot, push.
+Roughly: point `legal.citations.mnavasardian.com` at the same IP as the API,
+install `deployment/legal.citations.mnavasardian.com.conf`, run certbot, push.
 
 Resulting URLs, which step 5 needs:
 
 ```
-https://citations.mnavasardian.com/privacy
-https://citations.mnavasardian.com/delete-account
+https://legal.citations.mnavasardian.com/privacy
+https://legal.citations.mnavasardian.com/delete-account
 ```
 
 Deliberately a separate domain from `api.citations.mnavasardian.com` — a policy
@@ -108,10 +108,10 @@ is the closed test in step 6, not the public release. Play App Signing re-signs
 your upload, so the app a tester downloads is signed by Google's key, not yours.
 An Android OAuth client holds exactly one fingerprint, and it will not match:
 
-| Build                 | Signed by                    | SHA-1                                                         |
-| --------------------- | ---------------------------- | ------------------------------------------------------------- |
-| `npm run android:apk` | `android/app/debug.keystore` | `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` |
-| Anything from Play    | Google's app signing key     | Play Console → Test and release → Setup → App signing         |
+| Build                 | Signed by                    | SHA-1                                                                          |
+| --------------------- | ---------------------------- | ------------------------------------------------------------------------------ |
+| `npm run android:apk` | `android/app/debug.keystore` | `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`                  |
+| Anything from Play    | Google's app signing key     | Play Console → Test and release → App integrity → Play app signing → Settings |
 
 You cannot know the second fingerprint until after the first AAB upload, because
 Google generates that key then. So the sequence is:
@@ -130,7 +130,19 @@ Google generates that key then. So the sequence is:
      --environment production --visibility plaintext
    ```
 
-5. Rebuild and re-upload, so the closed-test build carries the right client ID.
+5. Add the new client ID to the server too. `/api/auth/google/mobile` only
+   accepts tokens whose audience it knows, and `GOOGLE_ANDROID_CLIENT_ID` takes a
+   comma-separated list — keep the debug client and append the Play one in
+   `server/.env.production`:
+
+   ```
+   GOOGLE_ANDROID_CLIENT_ID=DEBUG_CLIENT_ID.apps.googleusercontent.com,NEW_CLIENT_ID.apps.googleusercontent.com
+   ```
+
+   Then `cd server && npm run envtobase64 -- production`, paste the output into
+   the `ENV_FILE_BASE64` GitHub secret, and deploy. Skip this and the button
+   appears but every Play install gets "Invalid Google token".
+6. Rebuild and re-upload, so the closed-test build carries the right client ID.
 
 `app.config.js` derives the `com.googleusercontent.apps.*` intent filter from
 that variable at build time, so the manifest follows automatically — each build
