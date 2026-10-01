@@ -7,11 +7,13 @@ type AuthStatusScreenProps = {
   icon: keyof typeof MaterialIcons.glyphMap;
   title: string;
   body: string;
+  /** Semibold line shown under the body. */
+  note?: string;
   children?: ReactNode;
 };
 
 /** Centered auth outcome screen (email sent, logout, account deleted, etc.). */
-export function AuthStatusScreen({ icon, title, body, children }: AuthStatusScreenProps) {
+export function AuthStatusScreen({ icon, title, body, note, children }: AuthStatusScreenProps) {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView contentContainerClassName="flex-grow justify-center px-margin-mobile py-8 md:px-margin-desktop">
@@ -22,6 +24,9 @@ export function AuthStatusScreen({ icon, title, body, children }: AuthStatusScre
             </View>
             <Text className="text-center font-display-lg text-display-lg-mobile text-primary">{title}</Text>
             <Text className="text-center font-body-md text-body-md text-on-surface-variant">{body}</Text>
+            {note ? (
+              <Text className="text-center font-semibold text-on-surface-variant">{note}</Text>
+            ) : null}
           </View>
 
           {children ? <View className="w-full gap-4">{children}</View> : null}

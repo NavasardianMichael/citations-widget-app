@@ -36,6 +36,7 @@ export default function CheckEmailScreen() {
       icon="mark-email-read"
       title={t("auth.checkEmail.title")}
       body={t("auth.checkEmail.body", { email: email ?? "" })}
+      note={t("auth.emailSent.spamHint")}
     >
       {error ? <Text className="text-center text-error">{error}</Text> : null}
       {message ? <Text className="text-center text-primary">{message}</Text> : null}

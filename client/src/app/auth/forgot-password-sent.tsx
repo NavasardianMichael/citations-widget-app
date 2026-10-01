@@ -15,6 +15,7 @@ export default function ForgotPasswordSentScreen() {
       icon="mark-email-read"
       title={t("auth.forgotSent.title")}
       body={t("auth.forgotSent.body", { email: email ?? "" })}
+      note={t("auth.emailSent.spamHint")}
     >
       <Button label={t("auth.forgotSent.goLogin")} onPress={() => router.replace("/auth/login")} />
       <TextLink href="/auth/forgot-password" replace variant="underline" align="center">

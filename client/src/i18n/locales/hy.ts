@@ -64,6 +64,9 @@ export const hy = {
   'auth.register.signIn': 'Մուտք',
   'auth.register.failed': 'Գրանցումը ձախողվեց',
 
+  'auth.emailSent.spamHint':
+    'Եթե նամակը շուտով չստանաք, ստուգեք նաև «Սպամ» բաժնում։',
+
   'auth.checkEmail.title': 'Էլ․ փոստն ուղարկված է',
   'auth.checkEmail.body':
     'Հաստատման հղում ենք ուղարկել {email} հասցեին։ Բացեք էլ․ փոստը և սեղմեք կոճակը՝ հաշիվն ակտիվացնելու համար։',
@@ -396,6 +399,6 @@ export const hy = {
   'validation.socialUrlMax': 'Հղումը չի կարող գերազանցել 300 նիշը',
   'validation.messageRequired': 'Մուտքագրեք հաղորդագրությունը',
   'validation.messageMax': 'Հաղորդագրությունը չի կարող գերազանցել 4000 նիշը',
-} as const
+} as const;
 
-export type HyMessages = typeof hy
+export type HyMessages = typeof hy;
