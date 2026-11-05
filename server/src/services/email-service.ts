@@ -27,16 +27,13 @@ const COLORS = {
   white: '#ffffff',
 }
 
-function emailLayout(content: string, preheader?: string): string {
-  const preheaderHtml = preheader
-    ? `<div style="display:none;font-size:1px;color:#f5f5f5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</div>`
-    : ''
-
+// No hidden preheader: text styled to be invisible (display:none, background-colored)
+// is a spam-filter signal, and inboxes preview the visible heading anyway.
+function emailLayout(content: string): string {
   // Mail Engine sanitizes HTML to an allowlist (no html/head/body/meta, no `role`),
   // so page-level styles live on a wrapper div instead of <body>.
   return `
 <div style="margin:0;padding:0;background-color:${COLORS.background};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  ${preheaderHtml}
   <table width="100%" cellspacing="0" cellpadding="0" style="background-color:${COLORS.background};">
     <tr><td style="padding:24px 16px;">
       <table width="560" cellspacing="0" cellpadding="0" style="margin:0 auto;max-width:100%;background:${COLORS.white};border-radius:8px;">
@@ -154,7 +151,6 @@ export const emailTemplates = {
     const text = `Բարի գալուստ, ${name}։ Ձեր էլ. փոստը հաստատված է։ Բացեք հավելվածը՝ սկսելու համար։`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Բարի գալուստ, ${name}</h2><p style="color:${COLORS.textLight};">Ձեր էլ. փոստը հաստատված է։ Բացեք հավելվածը՝ շարունակելու համար։</p>`,
-      `Բարի գալուստ «${APP_NAME}»`,
     )
     return { subject, text, html }
   },
@@ -164,7 +160,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name},\n\nՎերականգնեք գաղտնաբառը՝ ${resetUrl}\n\nՀղումը գործում է ${expiresInMinutes} րոպե։`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Գաղտնաբառի վերականգնում</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Սեղմեք ստորև՝ նոր գաղտնաբառ սահմանելու համար։</p>${emailButton('Վերականգնել գաղտնաբառը', resetUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Հղումը գործում է ${expiresInMinutes} րոպե։</p>`,
-      `Վերականգնել «${APP_NAME}» գաղտնաբառը`,
     )
     return { subject, text, html }
   },
@@ -174,7 +169,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name}, Ձեր հաշիվը կապված է Google մուտքի հետ։ Բացեք՝ ${loginUrl}`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Մուտք Google-ով</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Այս հաշիվը օգտագործում է Google մուտք՝ գաղտնաբառ չի պահվում։</p>${emailButton('Բացել հավելվածը', loginUrl)}`,
-      `Մուտք Google-ով`,
     )
     return { subject, text, html }
   },
@@ -184,7 +178,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name}, Ձեր գաղտնաբառը հաջողությամբ փոխվել է։`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Գաղտնաբառը փոխված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր գաղտնաբառը թարմացվել է։</p>`,
-      'Գաղտնաբառը փոխված է',
     )
     return { subject, text, html }
   },
@@ -194,7 +187,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name}, Ձեր հաշիվը ջնջվել է։`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Հաշիվը ջնջված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր հաշիվը և տվյալները հեռացվել են։</p>`,
-      'Հաշիվը ջնջված է',
     )
     return { subject, text, html }
   },
@@ -204,7 +196,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name},\n\nՀաստատեք՝ ${verifyUrl}\n\nՀղումը գործում է ${expiresInHours} ժամ։`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Հաստատեք էլ. փոստը</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Սեղմեք ստորև՝ գրանցումն ավարտելու համար։</p>${emailButton('Հաստատել էլ. փոստը', verifyUrl)}<p style="color:${COLORS.textMuted};font-size:13px;">Հղումը գործում է ${expiresInHours} ժամ։</p>`,
-      'Հաստատեք էլ. փոստը',
     )
     return { subject, text, html }
   },
@@ -216,7 +207,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name},\n\nՁեր մեջբերումը հաստատվել է և հասանելի է հավելվածում։\n\n${snippet}\n\n${CONTACT_FOOTER_TEXT}`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Մեջբերումը հաստատված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ձեր ներկայացրած մեջբերումը հաստատվել է և այժմ հասանելի է հավելվածում։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p>${contactFooterHtml()}`,
-      'Մեջբերումը հաստատված է',
     )
     return { subject, text, html }
   },
@@ -229,7 +219,6 @@ export const emailTemplates = {
     const text = `Ողջույն, ${name},\n\nՑավոք, Ձեր մեջբերման հայտը մերժվել է։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։\n\n${snippet}\n\n${reasonNote}\n\n${CONTACT_FOOTER_TEXT}`
     const html = emailLayout(
       `<h2 style="color:${COLORS.textDark};">Մեջբերման հայտը մերժված է</h2><p style="color:${COLORS.textLight};">Ողջույն, ${name}։ Ցավոք, Ձեր ներկայացրած մեջբերումը չի հաստատվել։ Կարող եք նոր մեջբերում ուղարկել հավելվածից։</p><p style="color:${COLORS.textDark};font-style:italic;margin:16px 0;">${escapeHtml(details.text)}</p><p style="color:${COLORS.textMuted};font-size:13px;">${escapeHtml(details.source)} · ${escapeHtml(category)}</p><p style="color:${COLORS.textLight};margin:16px 0 0;">${reasonNote}</p>${contactFooterHtml()}`,
-      'Մեջբերման հայտը մերժված է',
     )
     return { subject, text, html }
   },
