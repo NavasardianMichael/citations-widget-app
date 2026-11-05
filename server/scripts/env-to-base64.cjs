@@ -25,6 +25,19 @@ if (env && envFile === '.env') {
 const envPath = path.join(serverDir, envFile);
 
 const content = fs.readFileSync(envPath, 'utf-8').replace(/\r\n/g, '\n');
+
+// Same keys the deploy workflow's "Prepare server env file" step requires —
+// catch a missing one here instead of in a failed production deploy.
+const REQUIRED_KEYS = ['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB', 'DATABASE_URL'];
+const missing = REQUIRED_KEYS.filter(
+  (key) => !new RegExp(`^${key}=\\S`, 'm').test(content),
+);
+if (missing.length) {
+  console.error(`${envFile} is missing or has empty: ${missing.join(', ')}`);
+  console.error('The deploy would fail. Add them to that file and run this again.');
+  process.exit(1);
+}
+
 const base64 = Buffer.from(content).toString('base64');
 
 console.log(`\nEncoded ${envFile} to base64 (paste into GitHub secret ENV_FILE_BASE64):\n`);

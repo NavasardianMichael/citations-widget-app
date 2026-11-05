@@ -8,7 +8,9 @@
 #
 # Encode env locally:
 #   node server/scripts/env-to-base64.cjs production
-#   (expects server/.env.production or falls back to server/.env)
+#   (uses the first that exists: server/.env.production.local, server/.env.production,
+#   server/.env — so the .local file alone must hold every required key:
+#   POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DATABASE_URL)
 #
 # On-host layout after deploy:
 #   $APP_DIR/server/.env.production  (persistent; not inside a release)
