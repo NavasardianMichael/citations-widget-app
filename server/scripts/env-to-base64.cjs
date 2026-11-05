@@ -26,15 +26,24 @@ const envPath = path.join(serverDir, envFile);
 
 const content = fs.readFileSync(envPath, 'utf-8').replace(/\r\n/g, '\n');
 
-// Same keys the deploy workflow's "Prepare server env file" step requires —
-// catch a missing one here instead of in a failed production deploy.
-const REQUIRED_KEYS = ['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB', 'DATABASE_URL'];
-const missing = REQUIRED_KEYS.filter(
-  (key) => !new RegExp(`^${key}=\\S`, 'm').test(content),
-);
-if (missing.length) {
-  console.error(`${envFile} is missing or has empty: ${missing.join(', ')}`);
-  console.error('The deploy would fail. Add them to that file and run this again.');
+// The deploy only requires DATABASE_URL — it derives POSTGRES_USER/PASSWORD/DB
+// from it when absent ("Prepare server env file" in deploy.yml). Catch a missing
+// or incomplete URL here instead of in a failed production deploy.
+const urlLine = content.match(/^DATABASE_URL=(.*)$/m);
+const databaseUrl = urlLine ? urlLine[1].trim().replace(/^["']|["']$/g, '') : '';
+let urlOk = false;
+try {
+  const u = new URL(databaseUrl);
+  urlOk = Boolean(u.username && u.password && u.pathname.replace(/^\//, ''));
+} catch {
+  urlOk = false;
+}
+if (!urlOk) {
+  console.error(
+    `${envFile}: DATABASE_URL is missing or lacks user, password or database name ` +
+      '(expected postgresql://user:password@host:port/db).',
+  );
+  console.error('The deploy would fail. Fix it in that file and run this again.');
   process.exit(1);
 }
 

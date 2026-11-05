@@ -9,8 +9,9 @@
 # Encode env locally:
 #   node server/scripts/env-to-base64.cjs production
 #   (uses the first that exists: server/.env.production.local, server/.env.production,
-#   server/.env — so the .local file alone must hold every required key:
-#   POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DATABASE_URL)
+#   server/.env — so the .local file alone must hold every required key.
+#   Only DATABASE_URL is required: POSTGRES_USER/PASSWORD/DB are derived from it
+#   in "Prepare server env file" when absent.)
 #
 # On-host layout after deploy:
 #   $APP_DIR/server/.env.production  (persistent; not inside a release)
@@ -243,6 +244,35 @@ jobs:
             echo "::error::Decoded ENV_FILE_BASE64 is empty or not valid base64. Paste only the base64 string from npm run envtobase64."
             exit 1
           fi
+          # The postgres container reads POSTGRES_USER/PASSWORD/DB from this same file;
+          # the server only needs DATABASE_URL. Fill in whichever are absent from
+          # DATABASE_URL (postgresql://user:pass@host:port/db) so they live in one place.
+          python3 - /tmp/env.production <<'PY'
+          import re, sys
+          from urllib.parse import urlsplit, unquote
+          path = sys.argv[1]
+          text = open(path, encoding='utf-8').read()
+          def get(key):
+              found = re.findall(rf'^{key}=(.*)$', text, re.M)
+              return found[-1].strip().strip('"\'') if found else ''
+          url = get('DATABASE_URL')
+          if url:
+              u = urlsplit(url)
+              derived = {
+                  'POSTGRES_USER': unquote(u.username or ''),
+                  'POSTGRES_PASSWORD': unquote(u.password or ''),
+                  'POSTGRES_DB': unquote(u.path.lstrip('/')),
+              }
+              # Single quotes: Compose env_file takes them literally (no $ interpolation).
+              quote = lambda v: v if "'" in v else f"'{v}'"
+              add = [f'{k}={quote(v)}' for k, v in derived.items() if v and not get(k)]
+              if add:
+                  with open(path, 'a', encoding='utf-8') as f:
+                      if text and not text.endswith('\n'):
+                          f.write('\n')
+                      f.write('\n'.join(add) + '\n')
+                  print('Derived from DATABASE_URL: ' + ', '.join(a.split('=')[0] for a in add))
+          PY
           echo "Env file: $(wc -c < /tmp/env.production) bytes, $(wc -l < /tmp/env.production) lines"
           echo "Variable names in decoded file:"
           sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/  - \1/p' /tmp/env.production
