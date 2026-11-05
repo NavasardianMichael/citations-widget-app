@@ -20,7 +20,7 @@ Nothing below needs your attention; it is recorded so you know what changed.
 | **Listing copy**       | `store/play/listing.md` — Armenian and English, all within Play's limits                                                                                                                                                                                                                                               |
 | **Privacy policy**     | `docs/legal/privacy.html` — written against the real Prisma schema, including the `shareProfile` disclosure                                                                                                                                                                                                            |
 | **Deletion page**      | `docs/legal/delete-account.html` — matches the real cascade behaviour (submitted citations are `SetNull`, everything else `Cascade`)                                                                                                                                                                                   |
-| **Support address**    | `navasardianmichael@gmail.com` on both legal pages. It is published and scrapeable — swap it for an alias on `mnavasardian.com` if you would rather not have a personal inbox on a public policy page                                                                                                                  |
+| **Support address**    | `citations@eapps.site` (the app's own mailbox) on both legal pages and as the Play Console contact email                                                                                                                                                                                                               |
 
 Already compliant, no action needed:
 
@@ -280,7 +280,8 @@ comes from `store/play/`:
 | Phone screenshots | `store/play/screenshots/mobile/` |
 | 7-inch and 10-inch tablet screenshots | `store/play/screenshots/tablet/` (same files in both fields) |
 
-Then **Store settings**: category **Books & Reference**, plus contact email.
+Then **Store settings**: category **Books & Reference**, plus contact email
+`citations@eapps.site`.
 
 Add an English (en-US) listing afterwards for reach beyond Armenian-language
 search — copy is already written in `listing.md`.
