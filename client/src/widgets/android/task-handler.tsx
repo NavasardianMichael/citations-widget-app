@@ -23,6 +23,7 @@ import {
   saveGuestSavedCitation,
   setCachedWidgetCitation,
 } from "@/services/local-storage";
+import { rotateStaleWidgetCitation } from "@/services/home-widget-sync";
 import { getWidgetSettings } from "@/services/widget-settings";
 import {
   buildHomeWidgetSnapshot,
@@ -143,6 +144,43 @@ async function refreshCitationSnapshot(
       return snapshot;
     } catch {
       return loadSnapshot();
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+/**
+ * Periodic `WIDGET_UPDATE` tick (`updatePeriodMillis`): rotate the citation once the
+ * user's refresh window (6/12/24h or local midnight) has passed. Without this the
+ * widget only re-painted the cached quote and changed only when the app was opened.
+ * Returns `current` unchanged when not due or on any failure (e.g. offline).
+ */
+async function rotateSnapshotIfDue(
+  current: HomeWidgetSnapshot,
+): Promise<HomeWidgetSnapshot> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    try {
+      const local = await useLocalWidgetSettings();
+      const settings = local
+        ? await getGuestWidgetSettings()
+        : await getWidgetSettings();
+      const cached = await getCachedWidgetCitation();
+      const rotated = await rotateStaleWidgetCitation(settings, cached, local);
+      if (!rotated) return current;
+
+      const snapshot = await buildHomeWidgetSnapshotAsync(settings, rotated);
+      await AsyncStorage.setItem(
+        HOME_WIDGET_SNAPSHOT_KEY,
+        JSON.stringify(snapshot),
+      );
+      return snapshot;
+    } catch {
+      return current;
     } finally {
       refreshInFlight = null;
     }
@@ -289,6 +327,8 @@ export async function citationWidgetTaskHandler(props: WidgetTaskHandlerProps) {
         loadingMessage: snapshot.loadingMessage || t("settings.previewLoading"),
       });
       snapshot = await awaitBootstrapSnapshot();
+    } else if (snapshot.citationText && props.widgetAction === "WIDGET_UPDATE") {
+      snapshot = await rotateSnapshotIfDue(snapshot);
     }
 
     // Parked; see `widgets/widget-features.ts`. The chip is not rendered, so this

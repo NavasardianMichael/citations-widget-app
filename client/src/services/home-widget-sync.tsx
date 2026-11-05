@@ -38,18 +38,17 @@ function mark(step: string): void {
  * Rotates the cached citation once its refresh window has passed, mirroring what
  * the Settings preview does on mount.
  *
- * Neither widget host rotates quotes by itself: WidgetKit can't run our JS at
- * all, and Android's `WIDGET_UPDATE` deliberately skips fetching when a quote is
- * already cached (see `task-handler.tsx`). Without this, the same citation stays
- * on the home screen until the user opens Settings or taps refresh. Launch is
- * the natural rotation point. Interval rates leave the decision to the server;
+ * Runs on app launch (both platforms) and on Android's periodic `WIDGET_UPDATE`
+ * tick (see `task-handler.tsx`), so the Android widget rotates on schedule
+ * without the app being opened. WidgetKit can't run our JS, so on iOS launch is
+ * the only rotation point. Interval rates leave the decision to the server;
  * midnight forces after the local date changes so UTC offset cannot skip a day.
  * Relaunching the app repeatedly the same day doesn't burn through citations.
  *
  * Returns null when the cache is still warm or the fetch fails — the caller then
  * keeps showing the cached quote rather than blanking the widget while offline.
  */
-async function rotateStaleWidgetCitation(
+export async function rotateStaleWidgetCitation(
   settings: WidgetSettingsDraft,
   cached: CachedWidgetCitation | null,
   guest: boolean,
