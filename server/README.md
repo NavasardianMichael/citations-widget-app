@@ -70,7 +70,7 @@ Copy `.env.example`. Required:
 | `CLIENT_URL` | App deep-link scheme for verify/reset (`citationswidget://`) |
 | `API_URL` | Public API base used as HTTPS bridge in emails (required in prod so mail clients keep the button `href`) |
 
-Optional: `MAIL_API_URL` + `MAIL_API_KEY` for [api-mail-engine](https://github.com/NavasardianMichael/api-mail-engine) — user emails via `POST /mail/external/send`, citation review/withdrawn alerts via `POST /mail/internal/send` (admin inbox from mail-engine `RECIPIENT_EMAIL`). `GOOGLE_*` for OAuth.
+Optional: `MAIL_API_URL` + `MAIL_API_KEY` for [api-mail-engine](https://github.com/NavasardianMichael/api-mail-engine) — user emails via `POST /mail/external/send` (sent as `Մեջբերումներ Աստվածաշնչից <no-reply.citations@eapps.site>`), citation review/withdrawn alerts and contact messages via `POST /mail/internal/send` (to the Mail Engine owner's inbox). `GOOGLE_*` for OAuth.
 
 For mobile Google sign-in, set `GOOGLE_ANDROID_CLIENT_ID` and `GOOGLE_IOS_CLIENT_ID` to the same OAuth client IDs as the Expo app (`EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`). `/api/auth/google/mobile` verifies the id_token `aud` against those values; iOS sign-in fails if `GOOGLE_IOS_CLIENT_ID` is missing. `GOOGLE_ANDROID_CLIENT_ID` takes a comma-separated list, because each Android client is bound to one signing key: list both the debug-keystore client (local APKs) and the Play app-signing client (installs from Play), or one of the two will get "Invalid Google token".
 
@@ -102,8 +102,8 @@ CI runs on PRs to `master` that touch the server. CD deploys on push to `master`
 Encode a local env file:
 
 ```bash
-# from repo root — reads server/.env.production (falls back to .env)
-npm run envtobase64 -- production
+# from repo root — reads server/.env.production.local, else .env.production, else .env
+npm run envtobase64 --production   # or: npm run envtobase64 -- production
 
 # or from server/
 cd server && npm run envtobase64 -- production

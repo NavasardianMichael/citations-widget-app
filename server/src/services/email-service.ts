@@ -9,6 +9,15 @@ import { logger } from '../lib/logger.js'
 const APP_ID = 'citations-widget'
 const APP_NAME = 'Մեջբերումներ Աստվածաշնչից'
 
+/**
+ * User-facing sender: `Մեջբերումներ Աստվածաշնչից <no-reply.citations@eapps.site>`.
+ * Keep both stable — mailbox providers build sender reputation per address.
+ * "no-reply" because replies go to the Mail Engine owner, not to us; emails point
+ * users to the in-app Contact button instead.
+ */
+const MAIL_FROM_NAME = APP_NAME
+const MAIL_FROM_PREFIX = 'no-reply.citations'
+
 const COLORS = {
   primary: '#18294d',
   textDark: '#262626',
@@ -23,22 +32,20 @@ function emailLayout(content: string, preheader?: string): string {
     ? `<div style="display:none;font-size:1px;color:#f5f5f5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</div>`
     : ''
 
+  // Mail Engine sanitizes HTML to an allowlist (no html/head/body/meta, no `role`),
+  // so page-level styles live on a wrapper div instead of <body>.
   return `
-<!DOCTYPE html>
-<html lang="hy">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:${COLORS.background};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="margin:0;padding:0;background-color:${COLORS.background};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   ${preheaderHtml}
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:${COLORS.background};">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background-color:${COLORS.background};">
     <tr><td style="padding:24px 16px;">
-      <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="margin:0 auto;background:${COLORS.white};border-radius:8px;">
+      <table width="560" cellspacing="0" cellpadding="0" style="margin:0 auto;max-width:100%;background:${COLORS.white};border-radius:8px;">
         <tr><td style="padding:24px;">${content}</td></tr>
         <tr><td style="padding:12px 24px;text-align:center;color:${COLORS.textMuted};font-size:12px;">&copy; ${new Date().getFullYear()} ${APP_NAME}</td></tr>
       </table>
     </td></tr>
   </table>
-</body>
-</html>`.trim()
+</div>`.trim()
 }
 
 function escapeHtml(value: string): string {
@@ -245,37 +252,71 @@ async function sendEmail(params: {
     throw new Error('Mail API not configured')
   }
 
-  // https://github.com/NavasardianMichael/api-mail-engine — POST /mail/external/send
-  const response = await fetch(`${env.MAIL_API_URL}/mail/external/send`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': env.MAIL_API_KEY,
-    },
-    body: JSON.stringify({
-      appId: APP_ID,
-      to: params.to,
-      subject: params.subject,
-      text: params.text,
-      html: params.html,
-    }),
+  await postMail('/mail/external/send', {
+    appId: APP_ID,
+    fromName: MAIL_FROM_NAME,
+    mailFromPrefix: MAIL_FROM_PREFIX,
+    to: params.to,
+    subject: params.subject,
+    text: params.text,
+    html: params.html,
   })
-
-  const data = (await response.json()) as {
-    success?: boolean
-    message?: string
-    error?: string
-  }
-  if (!response.ok || !data.success) {
-    throw new Error(data.message ?? data.error ?? 'Failed to send email')
-  }
 
   return { success: true }
 }
 
+type MailEngineResponse = {
+  success?: boolean
+  message?: string
+  messageId?: string
+  errors?: Array<{ field: string; message: string }>
+}
+
+/**
+ * POST to Mail Engine (https://github.com/NavasardianMichael/api-mail-engine, see
+ * its API_DOCS.md). Throws with status + field errors on failure; logs `messageId`
+ * on success so a delivery can be traced with the Mail Engine owner.
+ */
+async function postMail(
+  path: '/mail/external/send' | '/mail/internal/send',
+  payload: Record<string, unknown>,
+): Promise<void> {
+  const base = env.MAIL_API_URL!.replace(/\/+$/, '')
+  const response = await fetch(`${base}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.MAIL_API_KEY!,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  // A proxy error page (502/504) is HTML, not JSON — don't let that mask the status.
+  const data = (await response.json().catch(() => ({}))) as MailEngineResponse
+
+  if (!response.ok || !data.success) {
+    const fieldErrors = data.errors?.length
+      ? ` (${data.errors.map((e) => `${e.field}: ${e.message}`).join('; ')})`
+      : ''
+    const retryAfter =
+      response.status === 429
+        ? ` — retry after ${response.headers.get('RateLimit-Reset') ?? '?'}s`
+        : ''
+    throw new Error(
+      `Mail Engine ${response.status}: ${data.message ?? 'Failed to send email'}${fieldErrors}${retryAfter}`,
+    )
+  }
+
+  logger.info(
+    { path, subject: payload.subject, messageId: data.messageId },
+    'Email accepted by Mail Engine',
+  )
+}
+
 /**
  * Admin/operator notifications via Mail Engine internal API.
- * Recipient is `RECIPIENT_EMAIL` on the mail service (not passed here).
+ * Recipient is the Mail Engine owner's fixed inbox (not passed here); `senderEmail`
+ * becomes reply-to so the owner can answer the user directly.
  * @see https://github.com/NavasardianMichael/api-mail-engine — POST /mail/internal/send
  */
 async function sendInternalEmail(params: {
@@ -309,25 +350,7 @@ async function sendInternalEmail(params: {
     payload.body = params.body.trim()
   }
 
-  const response = await fetch(`${env.MAIL_API_URL}/mail/internal/send`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': env.MAIL_API_KEY,
-    },
-    body: JSON.stringify(payload),
-  })
-
-  const data = (await response.json()) as {
-    success?: boolean
-    message?: string
-    error?: string
-  }
-  if (!response.ok || !data.success) {
-    throw new Error(
-      data.message ?? data.error ?? 'Failed to send internal email',
-    )
-  }
+  await postMail('/mail/internal/send', payload)
 
   return { success: true }
 }
