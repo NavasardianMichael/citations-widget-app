@@ -131,8 +131,16 @@ try {
   Set-Location $clientDir
 
   # Bake EXPO_PUBLIC_* into the release JS bundle and derive OAuth schemes.
-  Import-DotEnv (Join-Path $clientDir ".env")
-  Import-DotEnv (Join-Path $clientDir ".env.local")
+  # Same precedence as Expo (later wins): .env < .env.<mode> < .env.local < .env.<mode>.local,
+  # where mode is production for release APKs and development for -Debug.
+  $envMode = if ($Debug) { "development" } else { "production" }
+  foreach ($envName in @(".env", ".env.$envMode", ".env.local", ".env.$envMode.local")) {
+    $envPath = Join-Path $clientDir $envName
+    if (Test-Path $envPath) {
+      Write-Host "Loading $envName" -ForegroundColor DarkGray
+      Import-DotEnv $envPath
+    }
+  }
 
   # @citations/shared ships from dist/ (gitignored). Rebuild so defaults like
   # DEFAULT_WIDGET_DESIGN = sanctuary are what the JS bundle actually embeds.
