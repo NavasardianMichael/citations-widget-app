@@ -16,6 +16,12 @@ function canUsePrettyTransport(): boolean {
 
 export const logger = pino({
   level: env.LOG_LEVEL,
+  // pino only serializes Errors under `err` by default; call sites also log
+  // `{ error }`, which otherwise prints as `"error":{}` and hides the cause.
+  serializers: {
+    err: pino.stdSerializers.err,
+    error: pino.stdSerializers.err,
+  },
   ...(canUsePrettyTransport() && {
     transport: {
       target: "pino-pretty",
