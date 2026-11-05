@@ -82,8 +82,15 @@ function Ensure-GoogleOAuthManifestScheme([string]$manifestPath, [string]$scheme
   Write-Host "Injected Google OAuth scheme into AndroidManifest." -ForegroundColor Green
 }
 
+# Only long repo paths (e.g. under Desktop) need the C:\cw short copy. A short
+# repo root (C:\citations-widget-app) builds in place — same 50-char threshold as
+# ensure-windows-path.ps1. Syncing anyway built from a C:\cw tree that robocopy
+# leaves without node_modules, so `shared` (and then `client`) failed to build.
+$needsShortCopy = $desktopRoot.Length -gt 50
+
 # Keep C:\cw in sync when launching from the Desktop tree.
 if (
+  $needsShortCopy -and
   ($desktopRoot -ne $cwRoot) -and
   ($desktopClient -notlike "C:\cw\*") -and
   ($desktopClient -notlike "W:\*")
@@ -106,7 +113,7 @@ if ($clientDir -like "W:\*") {
 }
 
 # Prefer real short path for Gradle (avoid mixed W:/C: roots).
-if (Test-Path (Join-Path $cwClient "package.json")) {
+if ($needsShortCopy -and (Test-Path (Join-Path $cwClient "package.json"))) {
   $clientDir = $cwClient
 }
 

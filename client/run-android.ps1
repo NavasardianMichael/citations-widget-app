@@ -6,7 +6,9 @@ $cwRoot = "C:\cw"
 $desktopRoot = (Resolve-Path (Join-Path $desktopClient "..")).Path
 
 # Keep C:\cw in sync when launching from the Desktop tree (separate copy until symlink).
+# A short repo root builds in place (same 50-char threshold as ensure-windows-path.ps1).
 if (
+  ($desktopRoot.Length -gt 50) -and
   (Test-Path (Join-Path $cwClient "package.json")) -and
   ($desktopRoot -ne $cwRoot) -and
   ($desktopClient -notlike "C:\cw\*") -and
